@@ -1,177 +1,199 @@
-const siteConfig = {
-  name: "EG Shop",
-  apiBaseUrl: "",
-};
+const categories = [
+  ["▦", "Elektronika"],
+  ["♟", "Qadın geyimləri"],
+  ["▣", "Kişi geyimləri"],
+  ["●", "Uşaq və körpə"],
+  ["◒", "Ayaqqabı"],
+  ["♟", "Gözəllik və baxım"],
+  ["⌂", "Ev və mətbəx"],
+  ["▰", "Mebel"],
+];
+
+const subCategories = [
+  "Smartfonlar",
+  "Telefon aksesuarları",
+  "Noutbuklar",
+  "Planşetlər",
+  "Stolüstü kompüterlər",
+  "Monitorlar",
+  "Klaviatura və mouse",
+];
 
 const products = [
-  { id: 1, name: "Premium smart saat", category: "Elektronika", price: 89, oldPrice: 119, stock: "24 saatda teslim", toneA: "#5b35d5", toneB: "#10a6a6", mark: "S" },
-  { id: 2, name: "Minimal sirt cantasi", category: "Moda", price: 42, oldPrice: 58, stock: "Anbarda var", toneA: "#111827", toneB: "#64748b", mark: "C" },
-  { id: 3, name: "Ev ucun LED lampa", category: "Ev", price: 18, oldPrice: 25, stock: "Cox satilan", toneA: "#f05a28", toneB: "#f59e0b", mark: "L" },
-  { id: 4, name: "Kosmetik baxim seti", category: "Gozellik", price: 34, oldPrice: 48, stock: "Yeni kolleksiya", toneA: "#db2777", toneB: "#fb7185", mark: "B" },
-  { id: 5, name: "Usta idman ayaqqabisi", category: "Idman", price: 76, oldPrice: 99, stock: "Pulsuz qaytarma", toneA: "#0f766e", toneB: "#14b8a6", mark: "A" },
-  { id: 6, name: "Ofis organizer", category: "Ofis", price: 21, oldPrice: 29, stock: "Bugun gonderilir", toneA: "#4338ca", toneB: "#7c3aed", mark: "O" },
-  { id: 7, name: "Usaq oyun seti", category: "Usaq", price: 31, oldPrice: 44, stock: "Sertifikatli", toneA: "#0369a1", toneB: "#38bdf8", mark: "U" },
-  { id: 8, name: "Mutfak saklama kabi", category: "Ev", price: 15, oldPrice: 22, stock: "Toplu endirim", toneA: "#15803d", toneB: "#84cc16", mark: "M" },
+  { name: "EG hədiyyə qutusu", price: 45, old: 59, image: "/assets/product-1.jpg", rating: "4.9", reviews: 18 },
+  { name: "İtaliya yataq dəsti", price: 1500, old: 1800, image: "/assets/product-2.jpg", rating: "5.0", reviews: 2 },
+  { name: "Elektrikli skuter", price: 1000, old: 1250, image: "/assets/product-3.jpg", rating: "4.8", reviews: 6 },
+  { name: "Redmi Note 14 Pro", price: 1199, old: 1399, image: "/assets/product-4.jpg", rating: "4.7", reviews: 31 },
+  { name: "Premium ev kolleksiyası", price: 790, old: 990, image: "/assets/product-5.jpg", rating: "4.9", reviews: 12 },
+  { name: "Yeni mövsüm seçimi", price: 129, old: 179, image: "/assets/product-6.jpg", rating: "4.6", reviews: 9 },
 ];
 
-const sellerRows = [
-  ["Yeni sifaris", "12", "Hazirlama gozleyir"],
-  ["Aktiv mehsul", "248", "8 mehsulda stok az"],
-  ["Bu ay gelir", "4 820 AZN", "Test gostergesi"],
-];
-
-const adminRows = [
-  ["Katalog temizlik", "Hazir", "Mock data ile acilir"],
-  ["Veritabani baglantisi", "Sonra", "Tek config/API katmani ile"],
-  ["Harici servisler", "Kapali", "Build yolunda yok"],
-];
-
-let activeCategory = "Hamisi";
-
-function money(value) {
-  return new Intl.NumberFormat("az-AZ", { style: "currency", currency: "AZN" }).format(value);
-}
-
-function productCard(product) {
-  const discount = product.oldPrice ? Math.round((1 - product.price / product.oldPrice) * 100) : 0;
+function productCard(product, sponsored = false) {
   return `
     <article class="product-card">
-      <div class="product-media" style="--tone-a:${product.toneA};--tone-b:${product.toneB}">${product.mark}</div>
-      <div class="product-body">
-        <h3>${product.name}</h3>
-        <p>${product.category} / ${product.stock}</p>
-        <div class="product-meta">
-          <span class="price">${money(product.price)}</span>
-          ${discount ? `<span class="badge">-${discount}%</span>` : ""}
+      <div class="product-image">
+        ${sponsored ? '<span class="ad-label">REKLAM</span>' : '<button class="heart" aria-label="Sevimlilərə əlavə et">♡</button>'}
+        <img src="${product.image}" alt="${product.name}" loading="lazy">
+      </div>
+      <div class="product-info">
+        <div class="price-row">
+          <strong>${product.price} ₼</strong>
+          <del>${product.old} ₼</del>
         </div>
+        <h3>${product.name}</h3>
+        <div class="rating"><span>★</span> ${product.rating} · ${product.reviews}</div>
+        <button class="cart-button" data-add="${product.name}">Səbətə at</button>
       </div>
     </article>
   `;
 }
 
-function dashboardCard(row) {
-  return `
-    <div class="dashboard-card">
-      <span>${row[0]}</span>
-      <strong>${row[1]}</strong>
-      <p>${row[2]}</p>
-    </div>
+function render() {
+  document.querySelector("#app").innerHTML = `
+    <header class="site-header">
+      <div class="header-inner">
+        <button class="icon-button menu-button" aria-label="Menyu">☰</button>
+        <a class="logo" href="#top">
+          <img src="/assets/logo.png" alt="EG Shop">
+          <span>EG SHOP</span>
+        </a>
+        <div class="clock"><b id="clock">17:50</b><small id="date">2026-07-04</small></div>
+        <label class="search">
+          <span>⌕</span>
+          <input id="searchInput" type="search" placeholder="Məhsul, marka və ya kateqoriya axtar...">
+          <button type="button" aria-label="Şəkillə axtar">▣</button>
+        </label>
+        <nav class="header-actions" aria-label="İstifadəçi menyusu">
+          <button><span>◎</span><b>AZ AZ</b></button>
+          <button><span>🔥</span><b>Kəşf et</b></button>
+          <button><span>♡</span><b>Sevimli</b></button>
+          <button class="basket-action"><span>🛒</span><b>Səbət</b><i id="cartCount">0</i></button>
+          <button><span>♙</span><b>Giriş</b></button>
+        </nav>
+      </div>
+    </header>
+
+    <main id="top">
+      <div class="quick-links">
+        <button>Satıcı girişi</button>
+        <button>PVZ girişi</button>
+        <button>Admin</button>
+        <button class="seller">Satıcı ol</button>
+      </div>
+
+      <section class="category-strip" aria-label="Kateqoriyalar">
+        ${categories.map(([icon, name], index) => `
+          <button class="category ${index === 0 ? "active" : ""}" data-category="${name}">
+            <span>${icon}</span>${name}
+          </button>
+        `).join("")}
+      </section>
+
+      <section class="sub-category-section">
+        <div class="section-title">
+          <h2>Önə çıxan kateqoriyalar</h2>
+          <button>Hamısı ›</button>
+        </div>
+        <div class="sub-categories">
+          ${subCategories.map((name) => `<button><span>▦</span>${name}</button>`).join("")}
+        </div>
+      </section>
+
+      <section class="campaign">
+        <span class="ad-label">REKLAM</span>
+        <div class="campaign-copy">
+          <p>Yay endirimləri</p>
+          <h1>Seçilmiş məhsullarda<br><strong>40%-dək endirim</strong></h1>
+          <button>Məhsullara bax</button>
+        </div>
+        <img src="/assets/product-1.jpg" alt="EG Shop yay kampaniyası">
+        <div class="slider-dots"><i></i><i class="active"></i><i></i></div>
+      </section>
+
+      <section class="products-section">
+        <div class="section-title">
+          <h2>✨ Sponsor məhsullar <small>REKLAM</small></h2>
+          <button>Hamısı ›</button>
+        </div>
+        <div class="product-grid" id="productGrid">
+          ${products.slice(0, 4).map((product) => productCard(product, true)).join("")}
+        </div>
+      </section>
+
+      <section class="gift-banner">
+        <span>🎁 UDUŞ</span>
+        <div><small>Hər sifariş bir şansdır</small><h2>Həftəlik hədiyyələr qazan</h2></div>
+        <button>Ətraflı bax ›</button>
+      </section>
+
+      <section class="products-section">
+        <div class="section-title">
+          <h2>Yeni məhsullar</h2>
+          <button>Hamısı ›</button>
+        </div>
+        <div class="product-grid">
+          ${products.map((product) => productCard(product)).join("")}
+        </div>
+      </section>
+
+      <section class="benefits">
+        <div><span>🚚</span><b>Sürətli çatdırılma</b><small>Bütün Azərbaycan üzrə</small></div>
+        <div><span>✓</span><b>Təhlükəsiz alış-veriş</b><small>Məhsulları rahat seç</small></div>
+        <div><span>↺</span><b>Asan geri qaytarma</b><small>Sadə və aydın proses</small></div>
+        <div><span>☎</span><b>Dəstək xidməti</b><small>Hər gün yanınızdayıq</small></div>
+      </section>
+    </main>
+
+    <nav class="mobile-nav" aria-label="Mobil menyu">
+      <button><span>⌂</span>Ana səhifə</button>
+      <button><span>🔥</span>Kəşf et</button>
+      <button><span>♡</span>Sevimli</button>
+      <button class="basket-action"><span>🛒</span>Səbət<i id="mobileCartCount">0</i></button>
+      <button><span>♙</span>Giriş</button>
+    </nav>
+
+    <div class="toast" id="toast">Məhsul səbətə əlavə edildi</div>
   `;
 }
 
-function renderCatalog() {
-  const catalog = document.querySelector("[data-catalog]");
-  const chips = document.querySelector("[data-chips]");
-  if (!catalog || !chips) return;
+function startClock() {
+  const update = () => {
+    const now = new Date();
+    document.querySelector("#clock").textContent = now.toLocaleTimeString("az-AZ", { hour: "2-digit", minute: "2-digit" });
+    document.querySelector("#date").textContent = now.toLocaleDateString("az-AZ");
+  };
+  update();
+  setInterval(update, 30000);
+}
 
-  const categories = ["Hamisi", ...new Set(products.map((product) => product.category))];
-  chips.innerHTML = categories.map((category) => (
-    `<button class="chip ${category === activeCategory ? "active" : ""}" data-category="${category}">${category}</button>`
-  )).join("");
-
-  const visibleProducts = activeCategory === "Hamisi"
-    ? products
-    : products.filter((product) => product.category === activeCategory);
-  catalog.innerHTML = visibleProducts.map(productCard).join("");
-
-  chips.querySelectorAll("[data-category]").forEach((button) => {
+function bindInteractions() {
+  let cartCount = 0;
+  document.querySelectorAll("[data-add]").forEach((button) => {
     button.addEventListener("click", () => {
-      activeCategory = button.dataset.category || "Hamisi";
-      renderCatalog();
+      cartCount += 1;
+      document.querySelector("#cartCount").textContent = cartCount;
+      document.querySelector("#mobileCartCount").textContent = cartCount;
+      const toast = document.querySelector("#toast");
+      toast.classList.add("show");
+      window.setTimeout(() => toast.classList.remove("show"), 1600);
+    });
+  });
+
+  document.querySelectorAll("[data-category]").forEach((button) => {
+    button.addEventListener("click", () => {
+      document.querySelectorAll("[data-category]").forEach((item) => item.classList.remove("active"));
+      button.classList.add("active");
+    });
+  });
+
+  document.querySelector("#searchInput").addEventListener("input", (event) => {
+    const query = event.target.value.trim().toLocaleLowerCase("az-AZ");
+    document.querySelectorAll(".product-card").forEach((card) => {
+      card.hidden = query && !card.textContent.toLocaleLowerCase("az-AZ").includes(query);
     });
   });
 }
 
-function render() {
-  document.title = siteConfig.name;
-  document.querySelector("#app").innerHTML = `
-    <div class="app">
-      <header class="topbar">
-        <div class="shell topbar-inner">
-          <a class="brand" href="#home" aria-label="Ana sehife">
-            <span class="brand-mark">EG</span>
-            <span>${siteConfig.name}</span>
-          </a>
-          <nav class="nav" aria-label="Esas menu">
-            <a href="#catalog">Katalog</a>
-            <a href="#seller">Satici paneli</a>
-            <a href="#admin">Admin</a>
-            <a href="#deploy">Deploy</a>
-          </nav>
-        </div>
-      </header>
-
-      <section class="shell hero" id="home">
-        <div class="hero-copy">
-          <span class="eyebrow">Bagimsiz marketplace hazirligi</span>
-          <h1>Temiz, hizli ve sunucuya hazir vitrin.</h1>
-          <p class="lead">Bu surum dis connector, hazir musteri verisi ve aktif backend baglantisi tasimaz. Hetzner uzerinde statik olarak acilir.</p>
-          <div class="actions">
-            <a class="btn btn-primary" href="#catalog">Urunleri incele</a>
-            <a class="btn btn-secondary" href="#deploy">Kurulum notu</a>
-          </div>
-        </div>
-        <aside class="hero-panel" aria-label="Arama ve ozet">
-          <div class="search-card">
-            <span class="eyebrow">Canli backend kapali</span>
-            <h2>Demo katalog</h2>
-            <div class="search-row">
-              <input placeholder="Urun, kategori veya marka ara" aria-label="Arama" />
-              <button class="btn btn-primary" type="button">Ara</button>
-            </div>
-          </div>
-          <div class="mini-grid">
-            <div class="mini-stat"><b>0</b><span>Gercek musteri verisi</span></div>
-            <div class="mini-stat"><b>0</b><span>Harici servis</span></div>
-            <div class="mini-stat"><b>1</b><span>Temiz deploy yolu</span></div>
-            <div class="mini-stat"><b>100%</b><span>Mobil uyumlu</span></div>
-          </div>
-        </aside>
-      </section>
-
-      <section class="shell section" id="catalog">
-        <div class="section-head">
-          <div>
-            <h2>Katalog</h2>
-            <p>Gercek stok ve fiyatlar ileride kendi veri kaynagindan gelecek.</p>
-          </div>
-          <div class="chips" data-chips aria-label="Kategori filtresi"></div>
-        </div>
-        <div class="product-grid" data-catalog></div>
-      </section>
-
-      <section class="shell section" id="seller">
-        <div class="section-head"><div><h2>Satici paneli</h2><p>Veri kaydetmeyen, bagimsiz panel onizlemesi.</p></div></div>
-        <div class="dashboard">${sellerRows.map(dashboardCard).join("")}</div>
-      </section>
-
-      <section class="shell section" id="admin">
-        <div class="section-head"><div><h2>Admin hazirlik</h2><p>Dis cloud baglantilari olmadan sade yonetim ozeti.</p></div></div>
-        <div class="dashboard">${adminRows.map(dashboardCard).join("")}</div>
-      </section>
-
-      <section class="shell section">
-        <div class="section-head">
-          <div>
-            <h2>Sonraki baglanti plani</h2>
-            <p>Veritabani ve API baglantisi su an kapali; domain acildiginda yapilandirma hatasi vermez.</p>
-          </div>
-        </div>
-        <div class="timeline">
-          <div class="timeline-item"><span class="dot"></span><strong>Frontend deploy</strong><span class="badge">Hazir</span></div>
-          <div class="timeline-item"><span class="dot"></span><strong>Kendi veritabani ve API ayarlari</strong><span class="badge">Sonra</span></div>
-          <div class="timeline-item"><span class="dot"></span><strong>Gercek odeme ve siparis akisi</strong><span class="badge">Sonra</span></div>
-        </div>
-      </section>
-
-      <section class="shell notice" id="deploy">
-        <strong>Deploy hedefi:</strong> GitHub'a bu temiz projeyi gonder, Hetzner'de <code>npm run build</code> calistir, <code>dist</code> klasorunu Nginx ile domainine servis et.
-      </section>
-
-      <footer class="shell footer">EG Shop temiz surum / harici connector yok / aktif backend baglantisi yok</footer>
-    </div>
-  `;
-  renderCatalog();
-}
-
 render();
+startClock();
+bindInteractions();
