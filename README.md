@@ -18,4 +18,16 @@ Build sonucu `dist/` klasorune yazilir. Hetzner uzerinde Nginx ile bu klasoru se
 
 ## Veritabani
 
-Bu surum backend'e baglanmaz. Kendi veritabani sunucunuza gecince baglanti ayarlari icin `src/main.js` icindeki `siteConfig` alanini veya ayri bir API katmanini kullanin.
+Supabase baglantisi `src/supabase.js` icinde yapilandirilmistir.
+
+1. Supabase panelinde SQL Editor'u acin.
+2. `supabase/schema.sql` dosyasinin tamamini calistirin.
+3. Ilk admin kullaniciyi olusturduktan sonra SQL Editor'da rolunu guncelleyin:
+
+```sql
+update public.profiles
+set role = 'admin'
+where id = (select id from auth.users where email = 'admin@egshop.az');
+```
+
+Satici rolu icin `admin` yerine `seller` kullanin.

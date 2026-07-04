@@ -206,6 +206,42 @@ main { width: min(1000px, calc(100% - 30px)); margin: 0 auto; padding-bottom: 70
 }
 .toast.show { opacity: 1; transform: translate(-50%,0); }
 
+.account-dialog, .panel-dialog {
+  width: min(520px, calc(100% - 28px));
+  max-height: calc(100vh - 40px);
+  padding: 30px;
+  overflow: auto;
+  border: 0;
+  border-radius: 16px;
+  color: #20152a;
+  box-shadow: 0 24px 80px rgba(35, 12, 53, .28);
+}
+.panel-dialog { width: min(760px, calc(100% - 28px)); }
+.account-dialog::backdrop, .panel-dialog::backdrop { background: rgba(22, 10, 32, .58); backdrop-filter: blur(4px); }
+.dialog-close {
+  position: absolute; top: 12px; right: 14px; width: 36px; height: 36px;
+  border: 0; border-radius: 50%; background: #f4effa; font-size: 22px;
+}
+.dialog-kicker { color: #832fe7; font-size: 12px; font-weight: 900; text-transform: uppercase; }
+.account-dialog h2, .panel-dialog h2 { margin: 8px 0 20px; }
+.account-dialog form, .product-form { display: grid; gap: 14px; }
+.account-dialog label, .product-form label { display: grid; gap: 6px; font-size: 13px; font-weight: 800; }
+.account-dialog input, .product-form input {
+  width: 100%; min-height: 46px; padding: 0 13px; border: 1px solid #ddd4e8; border-radius: 9px; outline: 0;
+}
+.account-dialog input:focus, .product-form input:focus { border-color: #8430e7; box-shadow: 0 0 0 3px rgba(132,48,231,.12); }
+.form-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.form-submit, .form-secondary {
+  min-height: 44px; padding: 0 16px; border-radius: 9px; font-weight: 900;
+}
+.form-submit { border: 0; color: white; background: linear-gradient(100deg, #7628e7, #c845e6); }
+.form-secondary { border: 1px solid #d9cce8; color: #6721b9; background: white; }
+.form-message { min-height: 20px; margin: 0; color: #ba1530; font-size: 13px; }
+.panel-stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 20px; }
+.panel-stats div { padding: 18px; border-radius: 10px; background: #f5f1fa; }
+.panel-stats b { display: block; font-size: 26px; }
+.panel-stats span { color: #74677e; font-size: 12px; }
+
 @media (max-width: 900px) {
   .header-inner { height: auto; padding: 10px 0; flex-wrap: wrap; }
   .logo img { width: 52px; height: 52px; }
