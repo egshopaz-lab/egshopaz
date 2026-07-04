@@ -1,6 +1,6 @@
 # EG Shop Clean
 
-Harici connector, yapay zeka endpointleri ve hazir backend baglantisi olmadan hazirlanan temiz, bagimliliksiz vitrin surumu.
+Harici connector ve hazir backend baglantisi olmadan hazirlanan temiz, bagimliliksiz vitrin surumu.
 
 ## Yerel calistirma
 
