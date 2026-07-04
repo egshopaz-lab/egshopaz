@@ -18,7 +18,7 @@ import {
   signUp,
   toggleFavorite,
   updateOrderStatus,
-} from "./supabase.js";
+} from "./supabase.js?v=20260704-5";
 
 const categories = [
   ["▦", "Elektronika"],
