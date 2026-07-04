@@ -122,7 +122,7 @@ function render() {
           </div>
           <div class="mini-grid">
             <div class="mini-stat"><b>0</b><span>Gercek musteri verisi</span></div>
-            <div class="mini-stat"><b>0</b><span>AI endpoint</span></div>
+            <div class="mini-stat"><b>0</b><span>Harici servis</span></div>
             <div class="mini-stat"><b>1</b><span>Temiz deploy yolu</span></div>
             <div class="mini-stat"><b>100%</b><span>Mobil uyumlu</span></div>
           </div>
