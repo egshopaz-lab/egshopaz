@@ -1,0 +1,29 @@
+server {
+    listen 80;
+    listen [::]:80;
+
+    server_name 178.105.240.35 _;
+    root /var/www/eg-shop/dist;
+    index index.html;
+
+    location = /health.txt {
+        access_log off;
+        add_header Content-Type text/plain;
+        try_files $uri =404;
+    }
+
+    location /src/ {
+        try_files $uri =404;
+        expires 7d;
+        add_header Cache-Control "public, max-age=604800";
+    }
+
+    location / {
+        try_files $uri $uri/ /index.html;
+        add_header Cache-Control "no-cache";
+    }
+
+    gzip on;
+    gzip_types text/plain text/css application/javascript application/json image/svg+xml;
+}
+
