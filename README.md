@@ -1,8 +1,8 @@
-# EG Shop Clean
+# EG Shop
 
-Harici connector ve hazir backend baglantisi olmadan hazirlanan temiz, bagimliliksiz vitrin surumu.
+Supabase backend ilə işləyən, asılılıqsız mağaza vitrini.
 
-## Yerel calistirma
+## Yerli işə salma
 
 ```bash
 npm run dev
@@ -14,15 +14,23 @@ npm run dev
 npm run build
 ```
 
-Build sonucu `dist/` klasorune yazilir. Hetzner uzerinde Nginx ile bu klasoru servis edebilirsiniz.
+Build nəticəsi `dist/` qovluğuna yazılır. Serverə göndərməzdən əvvəl build əmrini hər dəfə yenidən işlədin; Nginx `dist/` qovluğunu servis etməlidir.
 
-## Veritabani
+## Supabase quraşdırılması
 
-Supabase baglantisi `src/supabase.js` icinde yapilandirilmistir.
+Supabase bağlantısı `src/supabase.js` daxilində konfiqurasiya olunub.
 
-1. Supabase panelinde SQL Editor'u acin.
-2. `supabase/schema.sql` dosyasinin tamamini calistirin.
-3. Ilk admin kullaniciyi olusturduktan sonra SQL Editor'da rolunu guncelleyin:
+Yeni layihədə SQL Editor vasitəsilə faylları bu sıra ilə tam işlədin:
+
+1. `supabase/schema.sql`
+2. `supabase/upgrade-002.sql`
+3. `supabase/upgrade-003-auth-repair.sql`
+
+Mövcud bazada qeydiyyat və profil problemi varsa, ən azı `upgrade-003-auth-repair.sql` faylını işlədin. Bu yeniləmə qeydiyyat triggerini bərpa edir və profili yaranmamış köhnə istifadəçiləri düzəldir.
+
+Supabase Authentication → URL Configuration bölməsində saytın real ünvanını **Site URL** kimi qeyd edin. E-poçt təsdiqi aktivdirsə, həmin ünvanı **Redirect URLs** siyahısına da əlavə edin.
+
+İlk admin istifadəçini yaratdıqdan sonra:
 
 ```sql
 update public.profiles
@@ -30,4 +38,4 @@ set role = 'admin'
 where id = (select id from auth.users where email = 'admin@egshop.az');
 ```
 
-Satici rolu icin `admin` yerine `seller` kullanin.
+Satıcı rolu üçün `admin` əvəzinə `seller` istifadə edin.
