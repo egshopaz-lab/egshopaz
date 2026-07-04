@@ -1,13 +1,23 @@
 import {
   addCartItem,
+  createOrder,
   createProduct,
+  createSellerApplication,
   currentUser,
+  getAdminData,
+  getCart,
+  getFavorites,
+  getOrders,
   getProfile,
   getProducts,
   getSellerProducts,
+  removeCartItem,
+  reviewSeller,
   signIn,
   signOut,
   signUp,
+  toggleFavorite,
+  updateOrderStatus,
 } from "./supabase.js";
 
 const categories = [
@@ -44,7 +54,7 @@ function productCard(product, sponsored = false) {
   return `
     <article class="product-card">
       <div class="product-image">
-        ${sponsored ? '<span class="ad-label">REKLAM</span>' : '<button class="heart" aria-label="Sevimlilərə əlavə et">♡</button>'}
+        ${sponsored ? '<span class="ad-label">REKLAM</span>' : `<button class="heart" data-favorite="${product.id || ""}" aria-label="Sevimlilərə əlavə et">♡</button>`}
         <img src="${product.image}" alt="${product.name}" loading="lazy">
       </div>
       <div class="product-info">
@@ -77,9 +87,9 @@ function render() {
         </label>
         <nav class="header-actions" aria-label="İstifadəçi menyusu">
           <button><span>◎</span><b>AZ AZ</b></button>
-          <button><span>🔥</span><b>Kəşf et</b></button>
-          <button><span>♡</span><b>Sevimli</b></button>
-          <button class="basket-action"><span>🛒</span><b>Səbət</b><i id="cartCount">0</i></button>
+          <button data-action="discover"><span>🔥</span><b>Kəşf et</b></button>
+          <button data-action="favorites"><span>♡</span><b>Sevimli</b></button>
+          <button class="basket-action" data-action="cart"><span>🛒</span><b>Səbət</b><i id="cartCount">0</i></button>
           <button data-auth><span>♙</span><b>${currentUser() ? "Hesab" : "Giriş"}</b></button>
         </nav>
       </div>
@@ -88,9 +98,9 @@ function render() {
     <main id="top">
       <div class="quick-links">
         <button data-panel="seller">Satıcı girişi</button>
-        <button>PVZ girişi</button>
+        <button data-action="pvz">PVZ girişi</button>
         <button data-panel="admin">Admin</button>
-        <button class="seller">Satıcı ol</button>
+        <button class="seller" data-action="seller-apply">Satıcı ol</button>
       </div>
 
       <section class="category-strip" aria-label="Kateqoriyalar">
@@ -158,9 +168,9 @@ function render() {
 
     <nav class="mobile-nav" aria-label="Mobil menyu">
       <button><span>⌂</span>Ana səhifə</button>
-      <button><span>🔥</span>Kəşf et</button>
-      <button><span>♡</span>Sevimli</button>
-      <button class="basket-action"><span>🛒</span>Səbət<i id="mobileCartCount">0</i></button>
+      <button data-action="discover"><span>🔥</span>Kəşf et</button>
+      <button data-action="favorites"><span>♡</span>Sevimli</button>
+      <button class="basket-action" data-action="cart"><span>🛒</span>Səbət<i id="mobileCartCount">0</i></button>
       <button data-auth><span>♙</span>${currentUser() ? "Hesab" : "Giriş"}</button>
     </nav>
 
@@ -228,6 +238,22 @@ function bindInteractions() {
   document.querySelectorAll("[data-auth]").forEach((button) => button.addEventListener("click", openAccountDialog));
   document.querySelectorAll("[data-panel]").forEach((button) => {
     button.addEventListener("click", () => openPanel(button.dataset.panel));
+  });
+  document.querySelectorAll("[data-action]").forEach((button) => {
+    button.addEventListener("click", () => openFeature(button.dataset.action));
+  });
+  document.querySelectorAll("[data-favorite]").forEach((button) => {
+    button.addEventListener("click", async () => {
+      if (!button.dataset.favorite) return showToast("Bu demo məhsuldur");
+      if (!currentUser()) return openAccountDialog();
+      try {
+        const added = await toggleFavorite(button.dataset.favorite);
+        button.textContent = added ? "♥" : "♡";
+        showToast(added ? "Sevimlilərə əlavə edildi" : "Sevimlilərdən silindi");
+      } catch (error) {
+        showToast(error.message);
+      }
+    });
   });
   document.querySelectorAll("[data-close]").forEach((button) => {
     button.addEventListener("click", () => document.querySelector(`#${button.dataset.close}`).close());
@@ -311,6 +337,43 @@ async function openPanel(type) {
       content.innerHTML = `<span class="dialog-kicker">Giriş məhduddur</span><h2>${type === "admin" ? "Admin" : "Satıcı"} paneli</h2><p>Bu hesab üçün uyğun rol təyin edilməyib.</p>`;
       return;
     }
+    if (type === "admin") {
+      const admin = await getAdminData();
+      content.innerHTML = `
+        <span class="dialog-kicker">Admin paneli</span>
+        <h2>Platforma idarəetməsi</h2>
+        <div class="panel-stats">
+          <div><b>${admin.profiles.length}</b><span>İstifadəçi</span></div>
+          <div><b>${admin.products.length}</b><span>Məhsul</span></div>
+          <div><b>${admin.orders.length}</b><span>Sifariş</span></div>
+          <div><b>${admin.applications.filter((item) => item.status === "pending").length}</b><span>Gözləyən satıcı</span></div>
+        </div>
+        <h3>Satıcı müraciətləri</h3>
+        <div class="management-list">
+          ${admin.applications.length ? admin.applications.map((item) => `
+            <div><span><b>${item.store_name}</b><small>${item.phone} · ${item.status}</small></span>
+            ${item.status === "pending" ? `<span><button data-review="${item.id}" data-approve="true">Təsdiq</button><button data-review="${item.id}" data-approve="false">Rədd</button></span>` : ""}</div>
+          `).join("") : "<p>Müraciət yoxdur.</p>"}
+        </div>
+        <h3>Sifarişlər</h3>
+        <div class="management-list">
+          ${admin.orders.length ? admin.orders.map((order) => `
+            <div><span><b>${Number(order.total).toFixed(2)} ₼</b><small>${new Date(order.created_at).toLocaleDateString("az-AZ")}</small></span>
+            <select data-order="${order.id}">${["pending","confirmed","shipped","delivered","cancelled"].map((status) => `<option ${status === order.status ? "selected" : ""}>${status}</option>`).join("")}</select></div>
+          `).join("") : "<p>Sifariş yoxdur.</p>"}
+        </div>
+      `;
+      content.querySelectorAll("[data-review]").forEach((button) => button.addEventListener("click", async () => {
+        await reviewSeller(button.dataset.review, button.dataset.approve === "true");
+        showToast("Müraciət yeniləndi");
+        dialog.close();
+      }));
+      content.querySelectorAll("[data-order]").forEach((select) => select.addEventListener("change", async () => {
+        await updateOrderStatus(select.dataset.order, select.value);
+        showToast("Sifariş statusu yeniləndi");
+      }));
+      return;
+    }
     const sellerProducts = await getSellerProducts();
     content.innerHTML = `
       <span class="dialog-kicker">${type === "admin" ? "Admin" : "Satıcı"} paneli</span>
@@ -339,6 +402,104 @@ async function openPanel(type) {
   } catch (error) {
     content.innerHTML = `<h2>Bağlantı xətası</h2><p>${error.message}</p>`;
   }
+}
+
+async function openFeature(action) {
+  if (action === "discover") {
+    document.querySelector(".products-section:last-of-type")?.scrollIntoView({ behavior: "smooth" });
+    return;
+  }
+  if (action === "pvz") {
+    return showFeatureDialog("PVZ məntəqələri", `
+      <p>Sifarişlərinizi təhvil almaq üçün yaxın məntəqəni seçin.</p>
+      <div class="management-list">
+        <div><span><b>Bakı Mərkəz</b><small>28 May · hər gün 09:00-21:00</small></span></div>
+        <div><span><b>Gənclik</b><small>Atatürk prospekti · hər gün 10:00-20:00</small></span></div>
+        <div><span><b>Sumqayıt</b><small>Şəhər mərkəzi · hər gün 10:00-19:00</small></span></div>
+      </div>
+    `);
+  }
+  if (!currentUser()) return openAccountDialog();
+  if (action === "favorites") return openFavorites();
+  if (action === "cart") return openCart();
+  if (action === "seller-apply") return openSellerApplication();
+}
+
+function showFeatureDialog(title, html) {
+  const dialog = document.querySelector("#panelDialog");
+  document.querySelector("#panelContent").innerHTML = `<span class="dialog-kicker">EG Shop</span><h2>${title}</h2>${html}`;
+  dialog.showModal();
+}
+
+async function openFavorites() {
+  try {
+    const favorites = await getFavorites();
+    showFeatureDialog("Sevimlilər", favorites.length ? `
+      <div class="drawer-products">${favorites.map((item) => drawerProduct(item.products)).join("")}</div>
+    ` : "<p>Sevimli məhsulunuz yoxdur.</p>");
+  } catch (error) {
+    showToast(error.message);
+  }
+}
+
+function drawerProduct(product, extra = "") {
+  return `<div class="drawer-product"><img src="${product.image_url || "/assets/product-1.jpg"}" alt=""><span><b>${product.name}</b><small>${Number(product.price).toFixed(2)} ₼</small></span>${extra}</div>`;
+}
+
+async function openCart() {
+  try {
+    const items = await getCart();
+    const total = items.reduce((sum, item) => sum + Number(item.products.price) * item.quantity, 0);
+    showFeatureDialog("Səbət", items.length ? `
+      <div class="drawer-products">${items.map((item) => drawerProduct(item.products, `<button data-remove-cart="${item.id}">Sil</button>`)).join("")}</div>
+      <div class="cart-total"><span>Cəmi</span><b>${total.toFixed(2)} ₼</b></div>
+      <form id="checkoutForm" class="product-form">
+        <label>Çatdırılma ünvanı<input name="address" required></label>
+        <label>Telefon<input name="phone" required></label>
+        <button class="form-submit">Sifarişi tamamla</button>
+      </form>
+    ` : "<p>Səbətiniz boşdur.</p>");
+    document.querySelectorAll("[data-remove-cart]").forEach((button) => button.addEventListener("click", async () => {
+      await removeCartItem(button.dataset.removeCart);
+      openCart();
+    }));
+    document.querySelector("#checkoutForm")?.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const form = new FormData(event.currentTarget);
+      try {
+        await createOrder({ address: form.get("address"), phone: form.get("phone"), items });
+        showToast("Sifariş qəbul edildi");
+        document.querySelector("#panelDialog").close();
+      } catch (error) {
+        showToast(error.message);
+      }
+    });
+  } catch (error) {
+    showToast(error.message);
+  }
+}
+
+function openSellerApplication() {
+  showFeatureDialog("Satıcı ol", `
+    <p>Mağazanızı EG Shop platformasında açmaq üçün müraciət göndərin.</p>
+    <form id="sellerApplicationForm" class="product-form">
+      <label>Mağaza adı<input name="store_name" required></label>
+      <label>Telefon<input name="phone" required></label>
+      <label>VÖEN<input name="tax_id"></label>
+      <label>Qeyd<input name="note"></label>
+      <button class="form-submit">Müraciət göndər</button>
+    </form>
+  `);
+  document.querySelector("#sellerApplicationForm").addEventListener("submit", async (event) => {
+    event.preventDefault();
+    try {
+      await createSellerApplication(Object.fromEntries(new FormData(event.currentTarget)));
+      showToast("Müraciət qəbul edildi");
+      document.querySelector("#panelDialog").close();
+    } catch (error) {
+      showToast(error.message);
+    }
+  });
 }
 
 async function bootstrap() {

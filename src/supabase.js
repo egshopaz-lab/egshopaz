@@ -79,6 +79,69 @@ export async function addCartItem(productId) {
   });
 }
 
+export async function removeCartItem(id) {
+  return request(`/rest/v1/cart_items?id=eq.${id}`, { method: "DELETE" });
+}
+
+export async function getFavorites() {
+  const user = currentUser();
+  if (!user) return [];
+  return request(`/rest/v1/favorites?user_id=eq.${user.id}&select=*,products(*)`);
+}
+
+export async function toggleFavorite(productId) {
+  const user = currentUser();
+  if (!user) throw new Error("Sevimlilər üçün giriş edin");
+  const existing = await request(`/rest/v1/favorites?user_id=eq.${user.id}&product_id=eq.${productId}&select=id`);
+  if (existing[0]) {
+    await request(`/rest/v1/favorites?id=eq.${existing[0].id}`, { method: "DELETE" });
+    return false;
+  }
+  await request("/rest/v1/favorites", {
+    method: "POST",
+    body: JSON.stringify({ user_id: user.id, product_id: productId }),
+  });
+  return true;
+}
+
+export async function createOrder({ address, phone, items }) {
+  const user = currentUser();
+  const total = items.reduce((sum, item) => sum + Number(item.products.price) * item.quantity, 0);
+  const orders = await request("/rest/v1/orders", {
+    method: "POST",
+    prefer: "return=representation",
+    body: JSON.stringify({ user_id: user.id, total, delivery_address: address, phone }),
+  });
+  const order = orders[0];
+  await request("/rest/v1/order_items", {
+    method: "POST",
+    body: JSON.stringify(items.map((item) => ({
+      order_id: order.id,
+      product_id: item.products.id,
+      seller_id: item.products.seller_id,
+      product_name: item.products.name,
+      price: item.products.price,
+      quantity: item.quantity,
+    }))),
+  });
+  await request(`/rest/v1/cart_items?user_id=eq.${user.id}`, { method: "DELETE" });
+  return order;
+}
+
+export async function createSellerApplication(application) {
+  const user = currentUser();
+  return request("/rest/v1/seller_applications?on_conflict=user_id", {
+    method: "POST",
+    prefer: "resolution=merge-duplicates,return=representation",
+    body: JSON.stringify({ ...application, user_id: user.id, status: "pending" }),
+  });
+}
+
+export async function getOrders() {
+  const user = currentUser();
+  return request(`/rest/v1/orders?user_id=eq.${user.id}&select=*,order_items(*)&order=created_at.desc`);
+}
+
 export async function createProduct(product) {
   const user = currentUser();
   return request("/rest/v1/products", {
@@ -93,3 +156,26 @@ export async function getSellerProducts() {
   return request(`/rest/v1/products?seller_id=eq.${user.id}&select=*&order=created_at.desc`);
 }
 
+export async function getAdminData() {
+  const [profiles, applications, orders, allProducts] = await Promise.all([
+    request("/rest/v1/profiles?select=*&order=created_at.desc"),
+    request("/rest/v1/seller_applications?select=*,profiles(full_name)&order=created_at.desc"),
+    request("/rest/v1/orders?select=*,profiles(full_name)&order=created_at.desc"),
+    request("/rest/v1/products?select=*&order=created_at.desc"),
+  ]);
+  return { profiles, applications, orders, products: allProducts };
+}
+
+export async function reviewSeller(applicationId, approve) {
+  return request("/rest/v1/rpc/admin_review_seller", {
+    method: "POST",
+    body: JSON.stringify({ _application_id: applicationId, _approve: approve }),
+  });
+}
+
+export async function updateOrderStatus(orderId, status) {
+  return request(`/rest/v1/orders?id=eq.${orderId}`, {
+    method: "PATCH",
+    body: JSON.stringify({ status }),
+  });
+}

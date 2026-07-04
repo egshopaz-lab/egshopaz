@@ -241,6 +241,26 @@ main { width: min(1000px, calc(100% - 30px)); margin: 0 auto; padding-bottom: 70
 .panel-stats div { padding: 18px; border-radius: 10px; background: #f5f1fa; }
 .panel-stats b { display: block; font-size: 26px; }
 .panel-stats span { color: #74677e; font-size: 12px; }
+.management-list, .drawer-products { display: grid; gap: 10px; margin: 12px 0 24px; }
+.management-list > div {
+  min-height: 58px; padding: 10px 12px; display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  border: 1px solid #e4dcec; border-radius: 9px;
+}
+.management-list span { display: flex; align-items: center; gap: 7px; }
+.management-list span:first-child { display: grid; }
+.management-list small { color: #74677e; }
+.management-list button, .drawer-product button {
+  min-height: 34px; padding: 0 11px; border: 1px solid #d9cce8; border-radius: 7px; color: #6721b9; background: white; font-weight: 800;
+}
+.management-list select { min-height: 38px; border: 1px solid #d9cce8; border-radius: 7px; background: white; }
+.drawer-product {
+  min-height: 76px; padding: 8px; display: grid; grid-template-columns: 62px 1fr auto; align-items: center; gap: 12px;
+  border: 1px solid #e4dcec; border-radius: 10px;
+}
+.drawer-product img { width: 62px; height: 62px; object-fit: cover; border-radius: 8px; }
+.drawer-product span { display: grid; gap: 5px; }
+.drawer-product small { color: #d6132a; font-weight: 800; }
+.cart-total { margin: 18px 0; padding: 15px; display: flex; justify-content: space-between; border-radius: 9px; background: #f5f1fa; font-size: 18px; }
 
 @media (max-width: 900px) {
   .header-inner { height: auto; padding: 10px 0; flex-wrap: wrap; }

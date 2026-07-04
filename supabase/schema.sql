@@ -127,4 +127,3 @@ insert into public.categories (name) values
   ('Uşaq və körpə'), ('Ayaqqabı'), ('Gözəllik və baxım'),
   ('Ev və mətbəx'), ('Mebel')
 on conflict do nothing;
-
