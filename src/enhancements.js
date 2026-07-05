@@ -16,8 +16,7 @@ function showInfo(title, html) {
 }
 
 function scrollToProducts(sectionIndex = 0) {
-  const sections = document.querySelectorAll(".products-section");
-  sections[sectionIndex]?.scrollIntoView({ behavior: "smooth", block: "start" });
+  document.querySelectorAll(".products-section")[sectionIndex]?.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
 function bindOnce(element, event, handler) {
@@ -45,7 +44,7 @@ function enhancePage() {
   document.querySelectorAll(".sub-categories button").forEach((button) => {
     bindOnce(button, "click", () => {
       const name = button.textContent.replace("▦", "").trim();
-      showInfo(name, `<p>Bu alt kateqoriya üçün məhsullar əlavə olunduqca burada göstəriləcək.</p>`);
+      showInfo(name, "<p>Bu alt kateqoriya üçün məhsullar əlavə olunduqca burada göstəriləcək.</p>");
     });
   });
 
@@ -57,18 +56,29 @@ function enhancePage() {
   });
 
   bindOnce(document.querySelector(".campaign button:not(.ad-label)"), "click", () => scrollToProducts(0));
-
   bindOnce(document.querySelector(".gift-banner button"), "click", () => {
     showInfo("Həftəlik hədiyyələr", "<p>Aktiv kampaniya müddətində tamamlanan hər sifariş avtomatik olaraq həftəlik uduşda bir iştirak haqqı qazandırır.</p><p>Qaliblər hesablarında qeydiyyatda olan əlaqə məlumatı ilə məlumatlandırılır.</p>");
   });
 
   document.querySelectorAll("[data-category]").forEach((button) => {
-    button.addEventListener("click", () => {
+    bindOnce(button, "click", () => {
       scrollToProducts(1);
       toast(`${button.dataset.category} kateqoriyası seçildi`);
     });
   });
 }
 
-if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", enhancePage);
-else enhancePage();
+function startEnhancements() {
+  if (document.querySelector(".site-header")) return enhancePage();
+  const app = document.querySelector("#app");
+  if (!app) return;
+  const observer = new MutationObserver(() => {
+    if (!document.querySelector(".site-header")) return;
+    observer.disconnect();
+    enhancePage();
+  });
+  observer.observe(app, { childList: true });
+}
+
+if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", startEnhancements);
+else startEnhancements();
