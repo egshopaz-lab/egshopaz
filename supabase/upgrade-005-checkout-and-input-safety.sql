@@ -9,17 +9,13 @@ as $$
 declare
   buyer uuid := auth.uid();
   new_order uuid;
-  item_count integer;
 begin
   if buyer is null then raise exception 'Giriş tələb olunur'; end if;
   if length(trim(coalesce(_address, ''))) < 5 then raise exception 'Çatdırılma ünvanını düzgün daxil edin'; end if;
   if length(trim(coalesce(_phone, ''))) < 7 then raise exception 'Telefon nömrəsini düzgün daxil edin'; end if;
 
-  select count(*) into item_count
-  from public.cart_items
-  where user_id = buyer
-  for update;
-  if item_count = 0 then raise exception 'Səbət boşdur'; end if;
+  perform 1 from public.cart_items where user_id = buyer for update;
+  if not found then raise exception 'Səbət boşdur'; end if;
 
   insert into public.orders (user_id, total, delivery_address, phone)
   values (buyer, 0, trim(_address), trim(_phone))
@@ -38,7 +34,6 @@ $$;
 
 grant execute on function public.checkout_cart(text, text) to authenticated;
 
--- Stop newly entered marketplace content from breaking out of HTML attributes/templates.
 do $$
 begin
   if not exists (select 1 from pg_constraint where conname = 'products_safe_name') then
