@@ -44,13 +44,8 @@ function enhancePage() {
 
   document.querySelectorAll(".sub-categories button").forEach((button) => {
     bindOnce(button, "click", () => {
-      const input = document.querySelector("#searchInput");
-      if (input) {
-        input.value = button.textContent.replace("▦", "").trim();
-        input.dispatchEvent(new Event("input", { bubbles: true }));
-      }
-      scrollToProducts(1);
-      toast(`${button.textContent.replace("▦", "").trim()} üzrə nəticələr`);
+      const name = button.textContent.replace("▦", "").trim();
+      showInfo(name, `<p>Bu alt kateqoriya üçün məhsullar əlavə olunduqca burada göstəriləcək.</p>`);
     });
   });
 
@@ -61,8 +56,7 @@ function enhancePage() {
     });
   });
 
-  const campaignButton = document.querySelector(".campaign button:not(.ad-label)");
-  bindOnce(campaignButton, "click", () => scrollToProducts(0));
+  bindOnce(document.querySelector(".campaign button:not(.ad-label)"), "click", () => scrollToProducts(0));
 
   bindOnce(document.querySelector(".gift-banner button"), "click", () => {
     showInfo("Həftəlik hədiyyələr", "<p>Aktiv kampaniya müddətində tamamlanan hər sifariş avtomatik olaraq həftəlik uduşda bir iştirak haqqı qazandırır.</p><p>Qaliblər hesablarında qeydiyyatda olan əlaqə məlumatı ilə məlumatlandırılır.</p>");
