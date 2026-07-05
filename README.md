@@ -18,18 +18,17 @@ Build nəticəsi `dist/` qovluğuna yazılır. Serverə göndərməzdən əvvəl
 
 ## Supabase quraşdırılması
 
-Supabase bağlantısı `src/supabase.js` daxilində konfiqurasiya olunub.
-
-Yeni layihədə SQL Editor vasitəsilə faylları bu sıra ilə tam işlədin:
+SQL Editor vasitəsilə faylları bu sıra ilə işlədin:
 
 1. `supabase/schema.sql`
 2. `supabase/upgrade-002.sql`
 3. `supabase/upgrade-003-auth-repair.sql`
 4. `supabase/upgrade-004-commerce-integrity.sql`
+5. `supabase/upgrade-005-checkout-and-input-safety.sql`
 
-Mövcud bazada 003 və 004 yeniləmələrini sıra ilə işlədin. 003 qeydiyyat triggerini və çatışmayan profilləri bərpa edir. 004 səbət miqdarını, stok yoxlamasını və sifariş məbləğinin serverdə təhlükəsiz hesablanmasını düzəldir.
+Mövcud production bazasında yalnız hələ işlədilməmiş upgrade fayllarını sıra ilə tətbiq edin. 005 sifarişi bir DB tranzaksiyasında tamamlayır və təhlükəli marketplace mətnlərini bloklayır.
 
-Supabase Authentication → URL Configuration bölməsində `https://egshop.az` ünvanını **Site URL** kimi qeyd edin. E-poçt təsdiqi aktivdirsə, `https://egshop.az/**` ünvanını **Redirect URLs** siyahısına da əlavə edin.
+Supabase Authentication → URL Configuration bölməsində `https://egshop.az` ünvanını **Site URL**, `https://egshop.az/**` ünvanını **Redirect URLs** kimi qeyd edin.
 
 İlk admin istifadəçini yaratdıqdan sonra:
 
@@ -39,4 +38,6 @@ set role = 'admin'
 where id = (select id from auth.users where email = 'admin@egshop.az');
 ```
 
-Satıcı rolu üçün `admin` əvəzinə `seller` istifadə edin.
+## Nginx
+
+`deploy/nginx.conf.example` təhlükəsizlik başlıqlarını ehtiva edir. Server konfiqurasiyasına uyğunlaşdırdıqdan sonra `nginx -t` ilə yoxlayıb Nginx-i reload edin. HSTS sətrini yalnız HTTPS server blokunda aktivləşdirin.
