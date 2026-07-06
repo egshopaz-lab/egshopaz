@@ -25,6 +25,8 @@ SQL Editor vasitəsilə faylları bu sıra ilə işlədin:
 3. `supabase/upgrade-003-auth-repair.sql`
 4. `supabase/upgrade-004-commerce-integrity.sql`
 5. `supabase/upgrade-005-checkout-and-input-safety.sql`
+6. `supabase/upgrade-006-seller-tax-id.sql`
+7. `supabase/upgrade-007-epoint-payments.sql`
 
 Mövcud production bazasında yalnız hələ işlədilməmiş upgrade fayllarını sıra ilə tətbiq edin. 005 sifarişi bir DB tranzaksiyasında tamamlayır və təhlükəli marketplace mətnlərini bloklayır.
 
@@ -37,6 +39,26 @@ update public.profiles
 set role = 'admin'
 where id = (select id from auth.users where email = 'admin@egshop.az');
 ```
+
+## Epoint ödənişləri
+
+Epoint açarlarını yalnız Supabase Edge Functions secret kimi saxlayın:
+
+```bash
+supabase secrets set EPOINT_PUBLIC_KEY=... EPOINT_PRIVATE_KEY=...
+supabase functions deploy epoint-create --no-verify-jwt
+supabase functions deploy epoint-callback --no-verify-jwt
+```
+
+Epoint kabinetində URL-ləri belə qeyd edin:
+
+```text
+success_url: https://egshop.az/?payment=success
+error_url:   https://egshop.az/?payment=error
+result_url:  https://ootloyfutihvupfforrv.supabase.co/functions/v1/epoint-callback
+```
+
+`EPOINT_PRIVATE_KEY` brauzer koduna, GitHub-a və ya statik server fayllarına yazılmamalıdır.
 
 ## Nginx
 
