@@ -1,0 +1,1 @@
+const main=document.querySelector("main");if(main&&!document.querySelector(".site-footer")){const footer=document.createElement("footer");footer.className="site-footer";footer.innerHTML='<b>EG SHOP</b><nav><a href="/about.html">Haqqımızda</a><a href="/contact.html">Əlaqə</a><a href="/privacy.html">Məxfilik siyasəti</a></nav><small>© 2026 EG Shop</small>';main.after(footer)}
