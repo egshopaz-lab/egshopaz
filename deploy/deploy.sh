@@ -14,6 +14,9 @@ if [ ! -d "$APP_DIR/.git" ]; then
   mkdir -p "$APP_DIR"
   git clone "$REPO_URL" "$APP_DIR"
 else
+  if ! git -C "$APP_DIR" diff --quiet -- dist; then
+    git -C "$APP_DIR" restore --worktree -- dist
+  fi
   git -C "$APP_DIR" pull --ff-only
 fi
 
@@ -26,5 +29,4 @@ find "$APP_DIR" -type f -exec chmod 644 {} \;
 nginx -t
 systemctl reload nginx
 
-echo "Deploy tamamlandi: http://178.105.240.35"
-
+echo "Deploy tamamlandi: https://egshop.az"
