@@ -159,6 +159,17 @@ export async function createSellerApplication(application) {
   if (!user) throw new Error("Satici muracieti ucun giris edin.");
   return request("/rest/v1/seller_applications?on_conflict=user_id", { method: "POST", prefer: "resolution=merge-duplicates,return=representation", body: JSON.stringify({ ...application, user_id: user.id, status: "pending" }) });
 }
+export async function getSellerApplication() {
+  const user = currentUser();
+  if (!user) return null;
+  const rows = await request(`/rest/v1/seller_applications?user_id=eq.${user.id}&select=*&limit=1`);
+  return rows[0] || null;
+}
+export async function updateSellerApplication(application) {
+  const user = currentUser();
+  if (!user) throw new Error("Satici profilini yenilemek ucun giris edin.");
+  return request(`/rest/v1/seller_applications?user_id=eq.${user.id}`, { method: "PATCH", prefer: "return=representation", body: JSON.stringify(application) });
+}
 export async function getOrders() {
   const user = currentUser();
   return request(`/rest/v1/orders?user_id=eq.${user.id}&select=*,order_items(*)&order=created_at.desc`);

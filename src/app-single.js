@@ -1,4 +1,4 @@
-import * as supabase from "./supabase.js?v=20260707-6";
+import * as supabase from "./supabase.js?v=20260707-7";
 
 const {
   addCartItem,
@@ -12,6 +12,7 @@ const {
   getOrders,
   getProducts,
   getProfile,
+  getSellerApplication,
   getSellerProducts,
   getSellerOrders,
   initializeAuth,
@@ -25,6 +26,7 @@ const {
   toggleFavorite,
   updateOrderStatus,
   updatePassword,
+  updateSellerApplication,
   uploadProductImage,
 } = supabase;
 
@@ -92,12 +94,12 @@ const categoryWords = {
 };
 
 const fallbackProducts = [
-  { id: "31d03601-5ff1-4b36-8825-5884c00d3332", name: "Etir", price: 100, old: 110, image: "https://ibhmwwdrzgjgwfrvpjht.supabase.co/storage/v1/object/public/product-images/d39654de-946a-4352-b1f1-77b7facd2705/986c0fbc-169b-49a9-b6f1-f4a79a844db9.jpg", rating: "4.8", reviews: 12, brand: "Brend" },
-  { id: "118306a5-3867-42db-a025-170f52e786f7", name: "italya mebel", price: 1500, old: 1800, image: "https://ibhmwwdrzgjgwfrvpjht.supabase.co/storage/v1/object/public/product-images/d39654de-946a-4352-b1f1-77b7facd2705/cbb4919c-9264-42fb-88cb-3351e81d812c.jpg", rating: "5.0", reviews: 2, brand: "avilla" },
-  { id: "e6635adc-e394-485f-b999-a7ee263760cd", name: "Mopet", price: 1000, old: null, image: "https://ibhmwwdrzgjgwfrvpjht.supabase.co/storage/v1/object/public/product-images/d39654de-946a-4352-b1f1-77b7facd2705/721da7d9-71c3-43fb-9cc2-7e34fded753b.jpg", rating: "4.6", reviews: 7, brand: "Bmv" },
-  { id: "9dfcd652-cfd9-4e1e-8496-8a11934f4fb2", name: "Xiaomi", price: 800, old: null, image: "https://ibhmwwdrzgjgwfrvpjht.supabase.co/storage/v1/object/public/product-images/d39654de-946a-4352-b1f1-77b7facd2705/b43b3238-5324-4b67-87e4-fa2ad6232ce7.jpg", rating: "4.9", reviews: 19, brand: "Redmi" },
-  { id: "af318359-3b26-4080-ac5b-67c4518d3ac8", name: "kofe", price: 100, old: null, image: "https://ibhmwwdrzgjgwfrvpjht.supabase.co/storage/v1/object/public/product-images/d39654de-946a-4352-b1f1-77b7facd2705/d58b87e3-b1b5-4084-b21f-3545cc816552.jpg", rating: "4.5", reviews: 4, brand: "EG Shop" },
-  { id: "69fbe1c2-af49-4b0e-a4f6-c6d4ec75fb57", name: "Portable", price: 30, old: null, image: "https://ibhmwwdrzgjgwfrvpjht.supabase.co/storage/v1/object/public/product-images/ab3f5c02-b3d9-461c-ba4a-f3b22c627bfb/3a362ccf-4a19-4f86-8e4e-333ff846e46c.jpg", rating: "4.2", reviews: 5, brand: "Audio" },
+  { id: "31d03601-5ff1-4b36-8825-5884c00d3332", name: "Etir", price: 100, old: 110, image: "https://ibhmwwdrzgjgwfrvpjht.supabase.co/storage/v1/object/public/product-images/d39654de-946a-4352-b1f1-77b7facd2705/986c0fbc-169b-49a9-b6f1-f4a79a844db9.jpg", rating: "4.8", reviews: 12, brand: "Brend", category: "Gozellik ve baxim" },
+  { id: "118306a5-3867-42db-a025-170f52e786f7", name: "italya mebel", price: 1500, old: 1800, image: "https://ibhmwwdrzgjgwfrvpjht.supabase.co/storage/v1/object/public/product-images/d39654de-946a-4352-b1f1-77b7facd2705/cbb4919c-9264-42fb-88cb-3351e81d812c.jpg", rating: "5.0", reviews: 2, brand: "avilla", category: "Ev ve metbex" },
+  { id: "e6635adc-e394-485f-b999-a7ee263760cd", name: "Mopet", price: 1000, old: null, image: "https://ibhmwwdrzgjgwfrvpjht.supabase.co/storage/v1/object/public/product-images/d39654de-946a-4352-b1f1-77b7facd2705/721da7d9-71c3-43fb-9cc2-7e34fded753b.jpg", rating: "4.6", reviews: 7, brand: "Bmv", category: "Velosiped ve skuter" },
+  { id: "9dfcd652-cfd9-4e1e-8496-8a11934f4fb2", name: "Xiaomi", price: 800, old: null, image: "https://ibhmwwdrzgjgwfrvpjht.supabase.co/storage/v1/object/public/product-images/d39654de-946a-4352-b1f1-77b7facd2705/b43b3238-5324-4b67-87e4-fa2ad6232ce7.jpg", rating: "4.9", reviews: 19, brand: "Redmi", category: "Elektronika" },
+  { id: "af318359-3b26-4080-ac5b-67c4518d3ac8", name: "kofe", price: 100, old: null, image: "https://ibhmwwdrzgjgwfrvpjht.supabase.co/storage/v1/object/public/product-images/d39654de-946a-4352-b1f1-77b7facd2705/d58b87e3-b1b5-4084-b21f-3545cc816552.jpg", rating: "4.5", reviews: 4, brand: "EG Shop", category: "Erzaq mehsullari" },
+  { id: "69fbe1c2-af49-4b0e-a4f6-c6d4ec75fb57", name: "Portable", price: 30, old: null, image: "https://ibhmwwdrzgjgwfrvpjht.supabase.co/storage/v1/object/public/product-images/ab3f5c02-b3d9-461c-ba4a-f3b22c627bfb/3a362ccf-4a19-4f86-8e4e-333ff846e46c.jpg", rating: "4.2", reviews: 5, brand: "Audio", category: "Elektronika" },
 ];
 
 let products = fallbackProducts.slice();
@@ -119,6 +121,8 @@ function notify(message) {
 function setCartCount(count) {
   document.querySelectorAll("#cartCount,#mobileCartCount").forEach((item) => {
     item.textContent = String(count);
+    item.classList.toggle("has-items", Number(count) > 0);
+    item.setAttribute("aria-label", `${count} mehsul`);
   });
 }
 
@@ -152,6 +156,55 @@ function slug(value) {
     .replace(/ç/g, "c")
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
+}
+
+function normalizeText(value) {
+  return String(value || "")
+    .toLowerCase()
+    .replace(/ə/g, "e")
+    .replace(/ı/g, "i")
+    .replace(/ö/g, "o")
+    .replace(/ü/g, "u")
+    .replace(/ğ/g, "g")
+    .replace(/ş/g, "s")
+    .replace(/ç/g, "c")
+    .replace(/É™/g, "e")
+    .replace(/Ä±/g, "i")
+    .replace(/Ă¶/g, "o")
+    .replace(/ĂĽ/g, "u")
+    .replace(/Äź/g, "g")
+    .replace(/Ĺź/g, "s")
+    .replace(/Ă§/g, "c");
+}
+
+function productSearchText(product) {
+  return normalizeText([
+    product.name,
+    product.brand,
+    product.category,
+    product.description,
+    product.seller_name,
+  ].filter(Boolean).join(" "));
+}
+
+function productMatches(product, query = "", category = "") {
+  const text = productSearchText(product);
+  const q = normalizeText(query).trim();
+  const c = normalizeText(category).trim();
+  const categoryTerms = category ? [category, ...(categoryWords[category] || [])].map(normalizeText) : [];
+  const categoryOk = !category || categoryTerms.some((term) => text.includes(term));
+  const queryOk = !q || q.split(/\s+/).every((part) => text.includes(part));
+  return categoryOk && queryOk;
+}
+
+function filteredProducts(query = "", category = "") {
+  return products.filter((product) => productMatches(product, query, category));
+}
+
+function inferCategory(product) {
+  if (product.category) return product.category;
+  const found = categories.find(([, name]) => productMatches(product, "", name));
+  return found?.[1] || "Diger";
 }
 
 function routeTo(path) {
@@ -191,6 +244,31 @@ function pageTitle(path) {
   return titles[path] || "EG Shop";
 }
 
+function setMeta(name, value, property = false) {
+  const selector = property ? `meta[property="${name}"]` : `meta[name="${name}"]`;
+  let tag = document.querySelector(selector);
+  if (!tag) {
+    tag = document.createElement("meta");
+    tag.setAttribute(property ? "property" : "name", name);
+    document.head.append(tag);
+  }
+  tag.setAttribute("content", value);
+}
+
+function updateSeo(path) {
+  const product = path.startsWith("/product/") ? findProduct(path.split("/").pop()) : null;
+  const title = product ? `${product.name} | EG Shop` : (path === "/" ? "EG Shop - Marketplace" : `${pageTitle(path)} | EG Shop`);
+  const description = product
+    ? `${product.name} - ${money(product.price)}. EG Shop-da sebet, sifaris ve onlayn odenis.`
+    : "EG Shop marketplace: kateqoriyalar, axtaris, satici paneli, sebet, sifaris ve onlayn odenis.";
+  document.title = title;
+  document.querySelector("link[rel='canonical']")?.setAttribute("href", `https://egshop.az${window.location.pathname}`);
+  setMeta("description", description);
+  setMeta("og:title", title, true);
+  setMeta("og:description", description, true);
+  setMeta("og:url", `https://egshop.az${window.location.pathname}`, true);
+}
+
 function productList(items = products, highlighted = false) {
   return items.map((product) => productCard(product, highlighted)).join("");
 }
@@ -210,18 +288,22 @@ function routePage(path) {
 }
 
 function catalogPage() {
+  const params = new URLSearchParams(window.location.search);
+  const query = params.get("q") || "";
+  const category = params.get("category") || "";
+  const items = filteredProducts(query, category);
   return `
     <section class="route-hero">
       <span>KATALOQ</span>
       <h1>Butun kateqoriyalar ve mehsullar</h1>
-      <p>EG Shop-da elektronika, ev, moda, hediyye ve daha cox bolme tek ekranda toplanir.</p>
+      <p>${category || query ? `${items.length} netice tapildi.` : "EG Shop-da elektronika, ev, moda, hediyye ve daha cox bolme tek ekranda toplanir."}</p>
     </section>
     <section class="route-category-grid">
-      ${categories.map(([icon, name]) => `<button type="button" data-category="${name}"><span>${icon}</span><b>${name}</b><small>${(categoryWords[name] || [name]).join(", ")}</small></button>`).join("")}
+      ${categories.map(([icon, name]) => `<button type="button" class="${name === category ? "active" : ""}" data-category="${name}"><span>${icon}</span><b>${name}</b><small>${(categoryWords[name] || [name]).join(", ")}</small></button>`).join("")}
     </section>
     <section class="products-section route-products">
-      <div class="section-title"><h2>Kataloq mehsullari</h2><button type="button" data-show-all>Hamisi ></button></div>
-      <div class="product-grid">${productList(products)}</div>
+      <div class="section-title"><h2>${category || query ? "Filtr neticeleri" : "Kataloq mehsullari"}</h2><button type="button" data-show-all>Hamisi ></button></div>
+      <div class="product-grid">${productResults(items, false, query, category)}</div>
     </section>`;
 }
 
@@ -326,7 +408,7 @@ function infoPage(kicker, title, text, items) {
 function productCard(product, highlighted = false) {
   const percent = discount(product);
   return `
-    <article class="${highlighted ? "lv-card" : "product-card"}" data-product-id="${product.id || ""}">
+    <article class="${highlighted ? "lv-card" : "product-card"}" data-product-id="${product.id || ""}" tabindex="0" role="link" aria-label="${product.name} mehsuluna bax">
       <div class="${highlighted ? "lv-card-media" : "product-image"}">
         ${highlighted && percent ? `<span class="lv-discount">-${percent}%</span>` : ""}
         ${highlighted ? `<button class="lv-heart" type="button" data-favorite="${product.id || ""}" aria-label="Sevimli">♡</button>` : `<button class="heart" type="button" data-favorite="${product.id || ""}" aria-label="Sevimli">♡</button>`}
@@ -345,6 +427,15 @@ function productCard(product, highlighted = false) {
       </div>
     </article>
   `;
+}
+
+function emptyProductsText(query = "", category = "") {
+  const detail = [category, query].filter(Boolean).join(" / ");
+  return `<div class="empty-products"><b>Mehsul tapilmadi</b><p>${detail ? `${detail} ucun` : "Bu bolmede"} netice yoxdur. Basqa soz ve ya kateqoriya yoxlayin.</p></div>`;
+}
+
+function productResults(items, highlighted = false, query = "", category = "") {
+  return items.length ? productList(items, highlighted) : emptyProductsText(query, category);
 }
 
 function renderApp() {
@@ -388,7 +479,7 @@ function renderApp() {
         </div>
       </section>
 
-      <section class="lv-ad">
+      <section class="lv-ad" data-route="/promotions" tabindex="0" role="link" aria-label="Aksiyalara bax">
         <video muted loop playsinline preload="none" poster="/assets/product-1.jpg" data-src="${BANNER_VIDEO}"></video>
         <span class="lv-ad-label">REKLAM</span>
         <strong>EG Shop</strong>
@@ -410,10 +501,10 @@ function renderApp() {
         <div class="product-grid" id="productGrid">${products.map((product) => productCard(product, false)).join("")}</div>
       </section>
 
-      <section class="gift-banner">
+      <section class="gift-banner" data-route="/promotions">
         <span>UDUS</span>
         <div><small>Her sifaris bir sansdir</small><h2>Heftelik hediyyeler qazan</h2></div>
-        <button type="button" data-action="campaign">Etrafli bax ></button>
+        <button type="button" data-route="/promotions">Etrafli bax ></button>
       </section>
     </main>
 
@@ -446,12 +537,12 @@ function applyRouteView() {
   if (!main) return;
   if (!routed) {
     document.body.dataset.route = "home";
-    document.title = "EG Shop";
+    updateSeo("/");
     return;
   }
   document.body.dataset.route = slug(pageTitle(path));
   main.innerHTML = routed;
-  document.title = `${pageTitle(path)} | EG Shop`;
+  updateSeo(path);
   bindRouteInteractions(main);
   bindRoutedControls(main);
 }
@@ -467,7 +558,25 @@ function bindRouteInteractions(root = document) {
   });
 }
 
+function bindProductCards(root = document) {
+  root.querySelectorAll("[data-product-id]").forEach((card) => {
+    if (card.dataset.cardBound) return;
+    card.dataset.cardBound = "true";
+    const open = () => {
+      if (card.dataset.productId) routeTo(`/product/${card.dataset.productId}`);
+    };
+    card.addEventListener("click", (event) => {
+      if (event.target.closest("button,a,input,select,textarea")) return;
+      open();
+    });
+    card.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") open();
+    });
+  });
+}
+
 function bindRoutedControls(root = document) {
+  bindProductCards(root);
   root.querySelectorAll("[data-auth]").forEach((button) => {
     if (button.dataset.controlBound) return;
     button.dataset.controlBound = "true";
@@ -487,13 +596,15 @@ function bindRoutedControls(root = document) {
     if (button.dataset.controlBound) return;
     button.dataset.controlBound = "true";
     button.addEventListener("click", () => {
+      if (currentRoute() === "/catalog") return routeTo("/catalog");
       root.querySelectorAll(".product-card[hidden],.lv-card[hidden]").forEach((card) => { card.hidden = false; });
     });
   });
   root.querySelectorAll("[data-add]").forEach((button) => {
     if (button.dataset.controlBound) return;
     button.dataset.controlBound = "true";
-    button.addEventListener("click", async () => {
+    button.addEventListener("click", async (event) => {
+      event.stopPropagation();
       if (!currentUser()) return openAccountDialog();
       button.disabled = true;
       try {
@@ -510,7 +621,8 @@ function bindRoutedControls(root = document) {
   root.querySelectorAll("[data-favorite]").forEach((button) => {
     if (button.dataset.controlBound) return;
     button.dataset.controlBound = "true";
-    button.addEventListener("click", async () => {
+    button.addEventListener("click", async (event) => {
+      event.stopPropagation();
       if (!button.dataset.favorite) return;
       if (!currentUser()) return openAccountDialog();
       try {
@@ -596,16 +708,38 @@ function closeDrawer() {
 }
 
 function filterProducts(label) {
-  const words = categoryWords[label] || [label.toLowerCase()];
+  if (currentRoute() === "/catalog") {
+    const params = new URLSearchParams(window.location.search);
+    params.set("category", label);
+    routeTo(`/catalog?${params.toString()}`);
+    return;
+  }
+  let visible = applyProductFilter(document.querySelector("#searchInput")?.value || "", label);
+  notify(visible ? `${label}: ${visible} mehsul tapildi` : `${label} ucun hele mehsul yoxdur`);
+  document.querySelector(".products-section")?.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function applyProductFilter(query = "", category = "") {
   let visible = 0;
-  document.querySelectorAll(".product-card").forEach((card) => {
-    const text = card.textContent.toLowerCase();
-    const matches = words.some((word) => text.includes(word.toLowerCase()));
+  document.querySelectorAll(".product-card,.lv-card").forEach((card) => {
+    const product = findProduct(card.dataset.productId);
+    const matches = product && productMatches(product, query, category);
     card.hidden = !matches;
     if (matches) visible += 1;
   });
-  notify(visible ? `${label}: ${visible} mehsul tapildi` : `${label} ucun hele mehsul yoxdur`);
-  document.querySelector(".products-section")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  document.querySelectorAll("[data-category]").forEach((item) => {
+    item.classList.toggle("active", Boolean(category) && item.dataset.category === category);
+  });
+  return visible;
+}
+
+function submitSearch(query) {
+  const value = String(query || "").trim();
+  if (!value) {
+    applyProductFilter();
+    return;
+  }
+  routeTo(`/catalog?q=${encodeURIComponent(value)}`);
 }
 
 function showInfo(title, html) {
@@ -820,9 +954,10 @@ async function openPanel(type) {
       }));
       return;
     }
-    const [sellerProducts, sellerOrders] = await Promise.all([
+    const [sellerProducts, sellerOrders, sellerApplication] = await Promise.all([
       getSellerProducts(),
       getSellerOrders().catch(() => []),
+      getSellerApplication().catch(() => null),
     ]);
     const activeProducts = sellerProducts.filter((item) => item.active !== false).length;
     const sellerRevenue = sellerOrders.reduce((sum, item) => sum + Number(item.price || 0) * Number(item.quantity || 1), 0);
@@ -858,6 +993,17 @@ async function openPanel(type) {
       </form>
         </section>
         <section>
+          <h3>Satici profili</h3>
+          <form id="sellerProfileForm" class="product-form compact-form">
+            <p class="flow-hint">Bu melumatlar admin yoxlamasi, musteri etibari ve payout ucun istifade olunur.</p>
+            <label>Magaza adi<input name="store_name" value="${sellerApplication?.store_name || ""}" required></label>
+            <label>Telefon<input name="phone" value="${sellerApplication?.phone || ""}" required></label>
+            <label>Seher<input name="city" value="${sellerApplication?.city || ""}" placeholder="Baki"></label>
+            <label>Unvan<input name="address" value="${sellerApplication?.address || ""}" placeholder="Magaza/ofis unvani"></label>
+            <label>Odenis hesabi<input name="payout_account" value="${sellerApplication?.payout_account || ""}" placeholder="IBAN ve ya kart hesabi"></label>
+            <label>Magaza qeydi<textarea name="note" rows="3">${sellerApplication?.note || ""}</textarea></label>
+            <button class="form-secondary" type="submit">Profili yenile</button>
+          </form>
           <h3>Mehsullarim</h3>
           <div class="management-list seller-products-list">
             ${sellerProducts.length ? sellerProducts.slice(0, 8).map((item) => `<div><span><b>${item.name}</b><small>${money(item.price)} - stok ${item.stock || 0} - ${item.active === false ? "passiv" : "aktiv"}</small></span><img src="${item.image_url || "/assets/product-1.jpg"}" alt=""></div>`).join("") : "<p>Hele mehsul yuklenmeyib.</p>"}
@@ -870,6 +1016,21 @@ async function openPanel(type) {
           <p class="flow-hint">Kart odemeleri Epoint uzerinden qebul olunur. Satici balans ve payout bolmesi novbeti merhelede bank hesabina avtomatik cixaris ucun genislendirile biler.</p>
         </section>
       </div>`;
+    content.querySelector("#sellerProfileForm")?.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const submit = event.currentTarget.querySelector("button");
+      submit.disabled = true;
+      submit.textContent = "Yenilenir...";
+      try {
+        await updateSellerApplication(Object.fromEntries(new FormData(event.currentTarget)));
+        notify("Satici profili yenilendi");
+      } catch (error) {
+        notify(error.message);
+      } finally {
+        submit.disabled = false;
+        submit.textContent = "Profili yenile";
+      }
+    });
     content.querySelector("#productForm")?.addEventListener("submit", async (event) => {
       event.preventDefault();
       const submit = event.currentTarget.querySelector(".form-submit");
@@ -1039,6 +1200,7 @@ async function showOrders() {
 
 function bindCoreInteractions() {
   bindRouteInteractions();
+  bindProductCards();
   document.querySelector(".menu-button")?.addEventListener("click", openDrawer);
   document.querySelectorAll("[data-close]").forEach((button) => {
     button.addEventListener("click", () => document.querySelector(`#${button.dataset.close}`)?.close());
@@ -1053,18 +1215,23 @@ function bindCoreInteractions() {
   }));
   document.querySelectorAll("[data-subcategory]").forEach((button) => button.addEventListener("click", () => filterProducts(button.dataset.subcategory)));
   document.querySelectorAll("[data-show-all]").forEach((button) => button.addEventListener("click", () => {
-    document.querySelectorAll(".product-card[hidden]").forEach((card) => { card.hidden = false; });
+    document.querySelector("#searchInput")?.value && (document.querySelector("#searchInput").value = "");
+    document.querySelectorAll(".product-card[hidden],.lv-card[hidden]").forEach((card) => { card.hidden = false; });
+    document.querySelectorAll("[data-category]").forEach((item) => item.classList.remove("active"));
     document.querySelector(".products-section")?.scrollIntoView({ behavior: "smooth", block: "start" });
   }));
   document.querySelector("[data-language]")?.addEventListener("click", () => showInfo("Dil secimi", "<p>Hazirda sayt Azerbaycan dilindedir. Rus ve ingilis dili sonra elave olunacaq.</p>"));
   document.querySelector("[data-action='campaign']")?.addEventListener("click", () => showInfo("Kampaniya", "<p>Aktiv kampaniya dovrunde tamamlanan her sifaris heftelik udusda istirak edir.</p>"));
-  document.querySelector("#searchInput")?.addEventListener("input", (event) => {
-    const query = event.target.value.trim().toLowerCase();
-    document.querySelectorAll(".product-card,.lv-card").forEach((card) => {
-      card.hidden = Boolean(query) && !card.textContent.toLowerCase().includes(query);
-    });
+  const searchInput = document.querySelector("#searchInput");
+  searchInput?.addEventListener("input", (event) => {
+    applyProductFilter(event.target.value);
   });
-  document.querySelectorAll("[data-add]").forEach((button) => button.addEventListener("click", async () => {
+  searchInput?.addEventListener("keydown", (event) => {
+    if (event.key === "Enter") submitSearch(event.currentTarget.value);
+  });
+  document.querySelector(".search button")?.addEventListener("click", () => submitSearch(searchInput?.value || ""));
+  document.querySelectorAll("[data-add]").forEach((button) => button.addEventListener("click", async (event) => {
+    event.stopPropagation();
     if (!currentUser()) return openAccountDialog();
     button.disabled = true;
     try {
@@ -1077,7 +1244,8 @@ function bindCoreInteractions() {
       button.disabled = false;
     }
   }));
-  document.querySelectorAll("[data-favorite]").forEach((button) => button.addEventListener("click", async () => {
+  document.querySelectorAll("[data-favorite]").forEach((button) => button.addEventListener("click", async (event) => {
+    event.stopPropagation();
     if (!button.dataset.favorite) return;
     if (!currentUser()) return openAccountDialog();
     try {
@@ -1114,7 +1282,8 @@ function enhanceBannerVideo() {
   const button = banner?.querySelector(".lv-video-play");
   if (!banner || !video || !button || video.dataset.optimized) return;
   video.dataset.optimized = "true";
-  button.addEventListener("click", async () => {
+  button.addEventListener("click", async (event) => {
+    event.stopPropagation();
     if (!video.src) video.src = video.dataset.src;
     try {
       await video.play();
@@ -1195,14 +1364,18 @@ async function bootstrap() {
   try {
     const liveProducts = await getProducts();
     if (liveProducts.length) {
-      products = liveProducts.map((item) => ({
-        ...item,
+      products = liveProducts.map((item) => {
+        const product = {
+          ...item,
         old: item.old_price || null,
         image: item.image_url || "/assets/product-1.jpg",
         rating: "5.0",
         reviews: 0,
         brand: item.brand || "",
-      }));
+        };
+        product.category = inferCategory(product);
+        return product;
+      });
     }
   } catch {}
   renderApp();

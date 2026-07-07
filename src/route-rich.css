@@ -222,6 +222,51 @@
   background: rgba(15, 23, 42, .03);
 }
 
+.product-card,
+.lv-card,
+.lv-ad,
+.gift-banner {
+  cursor: pointer;
+}
+
+.product-card:focus-visible,
+.lv-card:focus-visible,
+.lv-ad:focus-visible {
+  outline: 3px solid rgba(107, 45, 230, .32);
+  outline-offset: 3px;
+}
+
+.empty-products {
+  grid-column: 1 / -1;
+  padding: 22px;
+  border: 1px dashed #d9d4e3;
+  border-radius: 12px;
+  background: #faf9fc;
+  color: #4d4658;
+}
+
+.empty-products b {
+  display: block;
+  margin-bottom: 6px;
+}
+
+#cartCount,
+#mobileCartCount {
+  transition: transform .18s ease, background .18s ease;
+}
+
+#cartCount.has-items,
+#mobileCartCount.has-items {
+  background: #e01433;
+  color: #fff;
+  transform: scale(1.08);
+}
+
+.compact-form {
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
 @media (max-width: 820px) {
   .route-category-grid,
   .promo-grid,
@@ -247,6 +292,10 @@
   .detail-copy h1 {
     font-size: 28px;
   }
+
+  .panel-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 @media (max-width: 560px) {
@@ -263,9 +312,21 @@
     border-radius: 20px;
   }
 
+  .route-category-grid button,
+  .promo-grid article,
+  .info-list article,
+  .support-grid > * {
+    min-height: 74px;
+    padding: 13px;
+  }
+
   .route-hero h1,
   .detail-copy h1 {
     font-size: 24px;
+  }
+
+  .detail-price strong {
+    font-size: 26px;
   }
 
   .detail-actions {
