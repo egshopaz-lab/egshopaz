@@ -25,11 +25,9 @@ node scripts/build.mjs
 sudo cp deploy/nginx.conf.example /etc/nginx/sites-available/eg-shop
 sudo ln -s /etc/nginx/sites-available/eg-shop /etc/nginx/sites-enabled/eg-shop
 sudo rm -f /etc/nginx/sites-enabled/default
-sudo nginx -t
-sudo systemctl reload nginx
 ```
 
-Bu noktada site `http://178.105.240.35` adresinde acilir.
+HTTPS sertifikati henuz qurulmayibsa once Certbot isleye bilsin deye muveqqeti HTTP konfiqurasiya ile baslayin ve sonra 5-ci addimdaki Certbot emrini icra edin.
 
 ## 4. Domain baglama
 
@@ -40,17 +38,7 @@ Domain DNS yonetiminde bir `A` kaydi ekleyin:
 www   A     178.105.240.35
 ```
 
-Sonra `/etc/nginx/sites-available/eg-shop` icindeki:
-
-```nginx
-server_name 178.105.240.35 _;
-```
-
-satirini su sekilde degistirin:
-
-```nginx
-server_name alanadiniz.com www.alanadiniz.com;
-```
+`egshop.az` ve `www.egshop.az` ucun DNS hazir olduqdan sonra server bloku `deploy/nginx.conf.example` faylindaki kimi qalmalidir.
 
 ## 5. HTTPS
 
@@ -58,7 +46,9 @@ DNS oturduktan sonra:
 
 ```bash
 sudo apt install -y certbot python3-certbot-nginx
-sudo certbot --nginx -d alanadiniz.com -d www.alanadiniz.com
+sudo certbot --nginx -d egshop.az -d www.egshop.az
+sudo nginx -t
+sudo systemctl reload nginx
 ```
 
 ## Guncelleme
