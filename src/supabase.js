@@ -178,3 +178,47 @@ export async function getAdminData() {
 }
 export async function reviewSeller(applicationId, approve) { return request("/rest/v1/rpc/admin_review_seller", { method: "POST", body: JSON.stringify({ _application_id: applicationId, _approve: approve }) }); }
 export async function updateOrderStatus(orderId, status) { return request(`/rest/v1/orders?id=eq.${orderId}`, { method: "PATCH", body: JSON.stringify({ status }) }); }
+
+export function captureAuthRedirect() {
+  const hash = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+  const query = new URLSearchParams(window.location.search);
+  const accessToken = hash.get("access_token");
+  const refreshToken = hash.get("refresh_token");
+  const type = hash.get("type") || query.get("type") || (query.get("recovery") ? "recovery" : "");
+
+  if (accessToken) {
+    const expiresIn = Number(hash.get("expires_in") || 3600);
+    saveSession({
+      access_token: accessToken,
+      refresh_token: refreshToken,
+      expires_in: expiresIn,
+      expires_at: Math.floor(Date.now() / 1000) + expiresIn,
+      token_type: hash.get("token_type") || "bearer",
+      user: session()?.user || null
+    });
+  }
+
+  if (window.location.hash) {
+    history.replaceState({}, "", window.location.pathname);
+  }
+
+  return type;
+}
+
+export async function updatePassword(password) {
+  if (String(password || "").length < 8) throw new Error("Sifre en azi 8 simvoldan ibaret olmalidir.");
+  return request("/auth/v1/user", {
+    method: "PUT",
+    body: JSON.stringify({ password })
+  });
+}
+
+export async function resendConfirmation(email) {
+  return request("/auth/v1/resend", {
+    method: "POST",
+    body: JSON.stringify({
+      type: "signup",
+      email: String(email || "").trim().toLowerCase()
+    })
+  });
+}

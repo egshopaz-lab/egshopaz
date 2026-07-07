@@ -1,4 +1,4 @@
-import * as supabase from "./supabase.js?v=20260707-3";
+import * as supabase from "./supabase.js?v=20260707-4";
 
 const {
   addCartItem,
@@ -32,14 +32,32 @@ const SESSION_KEY = "egshop_session";
 const BANNER_VIDEO = "https://ibhmwwdrzgjgwfrvpjht.supabase.co/storage/v1/object/public/product-images/12ea4064-c75b-46f7-be42-a9242b61737e/banner-video-1782387703134.mp4";
 
 const categories = [
-  ["EI", "Elektronika"],
-  ["QG", "Qadin geyimleri"],
-  ["KG", "Kisi geyimleri"],
-  ["UK", "Usaq ve korpe"],
-  ["AY", "Ayaqqabi"],
-  ["GB", "Gozellik ve baxim"],
-  ["EM", "Ev ve metbex"],
-  ["ME", "Mebel"],
+  ["📱", "Elektronika"],
+  ["👗", "Qadin geyimleri"],
+  ["👔", "Kisi geyimleri"],
+  ["👶", "Usaq ve korpe"],
+  ["👟", "Ayaqqabi"],
+  ["💄", "Gozellik ve baxim"],
+  ["🏠", "Ev ve metbex"],
+  ["🛏️", "Ev tekstili"],
+  ["🚗", "Avtomobil"],
+  ["🔧", "Tikinti ve temir"],
+  ["🌳", "Bag ve heyet"],
+  ["⚽", "Idman ve istirahet"],
+  ["🐾", "Heyvan mehsullari"],
+  ["📚", "Kitablar ve ofis"],
+  ["🛒", "Erzaq mehsullari"],
+  ["💊", "Saglamliq"],
+  ["🎁", "Hediyye ve suvenir"],
+  ["💍", "Zergerlik ve saatlar"],
+  ["🎮", "Oyun ve hobbi"],
+  ["🧳", "Cantalar ve aksesuarlar"],
+  ["💼", "Ofis ve biznes"],
+  ["🏡", "Smart ev"],
+  ["🚲", "Velosiped ve skuter"],
+  ["🍳", "Metbex texnikasi"],
+  ["🧺", "Meiset texnikasi"],
+  ["📸", "Foto ve video"],
 ];
 
 const subCategories = [
@@ -49,6 +67,12 @@ const subCategories = [
   "Plansetler",
   "Stolustu komputerler",
   "Monitorlar",
+  "Klaviatura ve mauslar",
+  "Yaddas ve diskler",
+  "Printerler ve skanerler",
+  "Televizorlar",
+  "Audio sistemler",
+  "Agilli saatlar",
 ];
 
 const categoryWords = {
@@ -59,6 +83,9 @@ const categoryWords = {
   Ayaqqabi: ["ayaqqabi"],
   "Gozellik ve baxim": ["etir", "gozellik", "baxim"],
   "Ev ve metbex": ["ev", "yataq", "metbex", "kofe"],
+  "Ev tekstili": ["yataq", "tekstil"],
+  Avtomobil: ["mopet", "skuter"],
+  "Velosiped ve skuter": ["skuter", "mopet"],
   Mebel: ["mebel", "italya"],
 };
 
@@ -111,6 +138,189 @@ function discount(product) {
   return product.old ? Math.round((1 - product.price / product.old) * 100) : 0;
 }
 
+function slug(value) {
+  return String(value || "")
+    .toLowerCase()
+    .replace(/ə/g, "e")
+    .replace(/ı/g, "i")
+    .replace(/ö/g, "o")
+    .replace(/ü/g, "u")
+    .replace(/ğ/g, "g")
+    .replace(/ş/g, "s")
+    .replace(/ç/g, "c")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+function routeTo(path) {
+  if (path === "/") {
+    if (window.location.pathname !== "/") history.pushState({}, "", "/");
+    window.location.reload();
+    return;
+  }
+  if (window.location.pathname === path) return applyRouteView();
+  history.pushState({}, "", path);
+  applyRouteView();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function currentRoute() {
+  return window.location.pathname.replace(/\/+$/, "") || "/";
+}
+
+function findProduct(id) {
+  return products.find((product) => String(product.id) === String(id)) || products[0];
+}
+
+function pageTitle(path) {
+  const titles = {
+    "/catalog": "Kataloq",
+    "/discover": "Kesf et",
+    "/shops": "Magazalar",
+    "/compare": "Muqayise",
+    "/map": "Xerite",
+    "/promotions": "Aksiyalar",
+    "/bonus": "Bonuslar",
+    "/support": "Destek",
+    "/favorites": "Sevimliler",
+    "/cart": "Sebet",
+    "/download": "Mobil tetbiq",
+  };
+  return titles[path] || "EG Shop";
+}
+
+function productList(items = products, highlighted = false) {
+  return items.map((product) => productCard(product, highlighted)).join("");
+}
+
+function routePage(path) {
+  if (path.startsWith("/product/")) return productDetailPage(path.split("/").pop());
+  if (path === "/catalog") return catalogPage();
+  if (path === "/discover") return discoverPage();
+  if (path === "/shops") return infoPage("Magazalar", "Saticilar ve brend magazalar", "Platformada aktiv magazalar, reytinqlər ve satici profilleri burada toplanacaq.", ["Tesdiqli satici rozeti", "Satici mehsullari", "Elaqe ve teslimat melumatlari"]);
+  if (path === "/compare") return comparePage();
+  if (path === "/map") return infoPage("Xerite", "Catdirilma ve PVZ noqte leri", "Musteri yaxin teshvil menteqesini secmek ve sifarisi xəritədə izləmək imkanina sahib olacaq.", ["PVZ menteqeleri", "Kuryer zonalari", "Canli status"]);
+  if (path === "/promotions") return promotionsPage();
+  if (path === "/bonus") return infoPage("Bonuslar", "Xal qazan, endirim kimi istifade et", "Her sifaris bonus balansina cevrilir. Bonus sistemi alicilari geri qaytarmaq ucun qurulur.", ["Sifaris bonusu", "Dostunu devet et", "VIP musteriler"]);
+  if (path === "/support") return supportPage();
+  if (path === "/download") return infoPage("EG Shop tetbiqi", "Surətli alis-veris cibinde", "Mobil tetbiq bildirisleri, sebeti ve kampaniyalari bir yerde saxlayacaq.", ["Push bildirisler", "Tez sifaris", "Ozel kuponlar"]);
+  return "";
+}
+
+function catalogPage() {
+  return `
+    <section class="route-hero">
+      <span>KATALOQ</span>
+      <h1>Butun kateqoriyalar ve mehsullar</h1>
+      <p>EG Shop-da elektronika, ev, moda, hediyye ve daha cox bolme tek ekranda toplanir.</p>
+    </section>
+    <section class="route-category-grid">
+      ${categories.map(([icon, name]) => `<button type="button" data-category="${name}"><span>${icon}</span><b>${name}</b><small>${(categoryWords[name] || [name]).join(", ")}</small></button>`).join("")}
+    </section>
+    <section class="products-section route-products">
+      <div class="section-title"><h2>Kataloq mehsullari</h2><button type="button" data-show-all>Hamisi ></button></div>
+      <div class="product-grid">${productList(products)}</div>
+    </section>`;
+}
+
+function discoverPage() {
+  const discounted = products.filter((product) => product.old).concat(products).slice(0, 8);
+  return `
+    <section class="route-hero discover">
+      <span>KESF ET</span>
+      <h1>Trend, endirim ve uduslu secimler</h1>
+      <p>Alis-verisi daha maraqli etmek ucun populyar mehsullar, endirimler ve hefte hediyyeleri burada gosterilir.</p>
+    </section>
+    <section class="lv-product-section lv-sale route-block">
+      <div class="lv-section-heading"><div><span class="lv-kicker">ENDIRIM</span><h2>Bugunun secimi</h2></div></div>
+      <div class="lv-products">${productList(discounted.slice(0, 4), true)}</div>
+    </section>
+    <section class="products-section route-products">
+      <div class="section-title"><h2>Sizin ucun</h2></div>
+      <div class="product-grid">${productList(products)}</div>
+    </section>`;
+}
+
+function productDetailPage(id) {
+  const product = findProduct(id);
+  const related = products.filter((item) => item.id !== product.id).slice(0, 4);
+  return `
+    <section class="product-detail-page">
+      <button class="route-back" type="button" data-route="/">‹ Ana sehife</button>
+      <div class="detail-media"><img src="${product.image}" alt="${product.name}"></div>
+      <div class="detail-copy">
+        <span>${product.brand || "EG Shop"}</span>
+        <h1>${product.name}</h1>
+        <div class="detail-price"><strong>${money(product.price)}</strong>${product.old ? `<del>${money(product.old)}</del><em>-${discount(product)}%</em>` : ""}</div>
+        <p>Keyfiyyetli mehsul, rahat sebet, sevimliler ve sifaris axini ile EG Shop marketplace tecrubesi.</p>
+        <div class="detail-actions">
+          <button class="lv-cart" type="button" data-add="${product.id || ""}">Sebete at</button>
+          <button class="detail-favorite" type="button" data-favorite="${product.id || ""}">Sevimliye elave et</button>
+        </div>
+        <ul>
+          <li>Catdirilma ve PVZ secimi desteklenir</li>
+          <li>Satici paneli ile mehsul idareetmesi</li>
+          <li>Təhlükəsiz hesab ve sifaris tarixcesi</li>
+        </ul>
+      </div>
+    </section>
+    <section class="products-section route-products">
+      <div class="section-title"><h2>Oxsar mehsullar</h2></div>
+      <div class="product-grid">${productList(related)}</div>
+    </section>`;
+}
+
+function promotionsPage() {
+  return `
+    <section class="route-hero promo">
+      <span>AKSIYALAR</span>
+      <h1>Endirimler, kuponlar ve uduslar</h1>
+      <p>Hefte sonu endirimleri, uduşlu məhsullar və xüsusi kampaniyalar üçün ayrılmış bölmə.</p>
+    </section>
+    <section class="promo-grid">
+      <article><b>70% endirim</b><p>Secilmis kolleksiyalarda boyuk endirim bloklari.</p></article>
+      <article><b>Uduşlu sifaris</b><p>Her tamamlanan sifaris hefte hediyyesinde istirak edir.</p></article>
+      <article><b>Yeni satici bonusu</b><p>Yeni magazalar ucun komissiya ve reklam destekleri.</p></article>
+    </section>`;
+}
+
+function comparePage() {
+  return `
+    <section class="route-hero">
+      <span>MUQAYISE</span>
+      <h1>Mehsullari yan-yana yoxla</h1>
+      <p>Qiymet, endirim, reytinq ve brend melumatlarini bir ekranda muqayise et.</p>
+    </section>
+    <section class="compare-grid">
+      ${products.slice(0, 3).map((product) => `<article>${productCard(product, true)}<dl><dt>Qiymet</dt><dd>${money(product.price)}</dd><dt>Reytinq</dt><dd>${product.rating || "5.0"}</dd><dt>Brend</dt><dd>${product.brand || "EG Shop"}</dd></dl></article>`).join("")}
+    </section>`;
+}
+
+function supportPage() {
+  return `
+    <section class="route-hero support">
+      <span>DESTEK</span>
+      <h1>Alıcı, satıcı və PVZ dəstəyi</h1>
+      <p>Sifariş, ödəniş, qaytarma və satıcı müraciətləri üçün mərkəz.</p>
+    </section>
+    <section class="support-grid">
+      <button type="button" data-auth>Hesaba giriş</button>
+      <button type="button" data-action="cart">Səbəti aç</button>
+      <button type="button" data-action="seller-apply">Satıcı müraciəti</button>
+      <a href="mailto:info@egshop.az">info@egshop.az</a>
+    </section>`;
+}
+
+function infoPage(kicker, title, text, items) {
+  return `
+    <section class="route-hero">
+      <span>${kicker}</span>
+      <h1>${title}</h1>
+      <p>${text}</p>
+    </section>
+    <section class="info-list">${items.map((item) => `<article><b>${item}</b><p>Bu modul marketplace inkişaf planına daxil edilib və əsas alis-veris axını ilə birləşdirilir.</p></article>`).join("")}</section>`;
+}
+
 function productCard(product, highlighted = false) {
   const percent = discount(product);
   return `
@@ -128,6 +338,7 @@ function productCard(product, highlighted = false) {
         ${highlighted ? `<small>${product.brand || ""}</small>` : ""}
         <h3>${product.name}</h3>
         <div class="rating"><span>*</span> ${product.rating || "5.0"} · ${product.reviews || 0}</div>
+        <button class="${highlighted ? "lv-detail" : "detail-button"}" type="button" data-route="/product/${product.id || ""}">Detalli bax</button>
         <button class="${highlighted ? "lv-cart" : "cart-button"}" type="button" data-add="${product.id || ""}">Sebete at</button>
       </div>
     </article>
@@ -226,6 +437,91 @@ function renderApp() {
   `;
 }
 
+function applyRouteView() {
+  const path = currentRoute();
+  const routed = routePage(path);
+  const main = document.querySelector("main#top");
+  if (!main) return;
+  if (!routed) {
+    document.body.dataset.route = "home";
+    document.title = "EG Shop";
+    return;
+  }
+  document.body.dataset.route = slug(pageTitle(path));
+  main.innerHTML = routed;
+  document.title = `${pageTitle(path)} | EG Shop`;
+  bindRouteInteractions(main);
+  bindRoutedControls(main);
+}
+
+function bindRouteInteractions(root = document) {
+  root.querySelectorAll("[data-route]").forEach((item) => {
+    if (item.dataset.routeBound) return;
+    item.dataset.routeBound = "true";
+    item.addEventListener("click", (event) => {
+      event.preventDefault();
+      routeTo(item.dataset.route);
+    });
+  });
+}
+
+function bindRoutedControls(root = document) {
+  root.querySelectorAll("[data-auth]").forEach((button) => {
+    if (button.dataset.controlBound) return;
+    button.dataset.controlBound = "true";
+    button.addEventListener("click", openAccountDialog);
+  });
+  root.querySelectorAll("[data-action]").forEach((button) => {
+    if (button.dataset.controlBound) return;
+    button.dataset.controlBound = "true";
+    button.addEventListener("click", () => openFeature(button.dataset.action));
+  });
+  root.querySelectorAll("[data-category]").forEach((button) => {
+    if (button.dataset.controlBound) return;
+    button.dataset.controlBound = "true";
+    button.addEventListener("click", () => filterProducts(button.dataset.category));
+  });
+  root.querySelectorAll("[data-show-all]").forEach((button) => {
+    if (button.dataset.controlBound) return;
+    button.dataset.controlBound = "true";
+    button.addEventListener("click", () => {
+      root.querySelectorAll(".product-card[hidden],.lv-card[hidden]").forEach((card) => { card.hidden = false; });
+    });
+  });
+  root.querySelectorAll("[data-add]").forEach((button) => {
+    if (button.dataset.controlBound) return;
+    button.dataset.controlBound = "true";
+    button.addEventListener("click", async () => {
+      if (!currentUser()) return openAccountDialog();
+      button.disabled = true;
+      try {
+        await addCartItem(button.dataset.add);
+        await syncCartCount();
+        notify("Mehsul sebete elave edildi");
+      } catch (error) {
+        notify(error.message);
+      } finally {
+        button.disabled = false;
+      }
+    });
+  });
+  root.querySelectorAll("[data-favorite]").forEach((button) => {
+    if (button.dataset.controlBound) return;
+    button.dataset.controlBound = "true";
+    button.addEventListener("click", async () => {
+      if (!button.dataset.favorite) return;
+      if (!currentUser()) return openAccountDialog();
+      try {
+        const added = await toggleFavorite(button.dataset.favorite);
+        button.textContent = added ? "♡" : "♧";
+        notify(added ? "Sevimlilere elave edildi" : "Sevimlilerden silindi");
+      } catch (error) {
+        notify(error.message);
+      }
+    });
+  });
+}
+
 function addFooter() {
   if (document.querySelector(".site-footer")) return;
   const footer = document.createElement("footer");
@@ -259,13 +555,19 @@ function createDrawer() {
       </div>
       <nav class="drawer-links">
         <button type="button" data-drawer-target="#top"><span>H</span><b>Ana sehife</b></button>
-        <button type="button" data-drawer-target=".lv-category-area"><span>K</span><b>Kateqoriyalar</b></button>
+        <button type="button" data-route="/catalog"><span>K</span><b>Kataloq</b></button>
         <button type="button" data-drawer-target=".products-section"><span>M</span><b>Mehsullar</b></button>
+        <button type="button" data-route="/shops"><span>S</span><b>Magazalar</b></button>
+        <button type="button" data-route="/compare"><span>C</span><b>Muqayise</b></button>
+        <button type="button" data-route="/promotions"><span>A</span><b>Aksiyalar</b></button>
+        <button type="button" data-route="/bonus"><span>B</span><b>Bonuslar</b></button>
+        <button type="button" data-route="/support"><span>D</span><b>Destek</b></button>
         <button type="button" data-drawer-seller><span>S</span><b>Satici ol</b></button>
       </nav>
       <div class="drawer-support"><small>Destek</small><b>Her gun yaninizdayiq</b><a href="mailto:info@egshop.az">info@egshop.az</a></div>
     </aside>`;
   document.body.append(backdrop);
+  bindRouteInteractions(backdrop);
   backdrop.addEventListener("click", (event) => { if (event.target === backdrop) closeDrawer(); });
   backdrop.querySelector("[data-drawer-close]").addEventListener("click", closeDrawer);
   backdrop.querySelectorAll("[data-drawer-target]").forEach((button) => {
@@ -671,6 +973,7 @@ async function showOrders() {
 }
 
 function bindCoreInteractions() {
+  bindRouteInteractions();
   document.querySelector(".menu-button")?.addEventListener("click", openDrawer);
   document.querySelectorAll("[data-close]").forEach((button) => {
     button.addEventListener("click", () => document.querySelector(`#${button.dataset.close}`)?.close());
@@ -722,8 +1025,8 @@ function bindCoreInteractions() {
   }));
   document.querySelectorAll("[data-mobile]").forEach((button) => button.addEventListener("click", () => {
     const action = button.dataset.mobile;
-    if (action === "home") window.scrollTo({ top: 0, behavior: "smooth" });
-    if (action === "catalog") document.querySelector(".lv-category-area")?.scrollIntoView({ behavior: "smooth" });
+    if (action === "home") routeTo("/");
+    if (action === "catalog") routeTo("/catalog");
     if (action === "cart") openCart();
     if (action === "favorites") openFavorites();
     if (action === "account") openAccountDialog();
@@ -732,8 +1035,8 @@ function bindCoreInteractions() {
 }
 
 async function openFeature(action) {
-  if (action === "discover") return document.querySelector(".products-section")?.scrollIntoView({ behavior: "smooth" });
-  if (action === "pvz") return showInfo("PVZ menteqeleri", "<p>Yaxin teshvil menteqesi secimi tezlikle burada olacaq.</p>");
+  if (action === "discover") return routeTo("/discover");
+  if (action === "pvz") return routeTo("/map");
   if (!currentUser()) return openAccountDialog();
   if (action === "favorites") return openFavorites();
   if (action === "cart") return openCart();
@@ -838,6 +1141,7 @@ async function bootstrap() {
     }
   } catch {}
   renderApp();
+  applyRouteView();
   addFooter();
   createDrawer();
   startClock();
@@ -849,4 +1153,5 @@ async function bootstrap() {
 }
 
 handlePaymentForm();
+window.addEventListener("popstate", applyRouteView);
 bootstrap();

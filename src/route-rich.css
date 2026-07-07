@@ -1,0 +1,249 @@
+.route-hero {
+  margin: 22px 0 24px;
+  padding: 28px;
+  border-radius: 24px;
+  background: linear-gradient(135deg, #1c1f2b, #6b2de6);
+  color: #fff;
+}
+
+.route-hero span {
+  display: inline-flex;
+  margin-bottom: 8px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .16);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.route-hero h1 {
+  max-width: 780px;
+  margin: 0;
+  font-size: 34px;
+  letter-spacing: 0;
+}
+
+.route-hero p {
+  max-width: 720px;
+  margin: 10px 0 0;
+  color: rgba(255, 255, 255, .86);
+  font-size: 16px;
+}
+
+.route-hero.discover { background: linear-gradient(135deg, #ff7a18, #d71958); }
+.route-hero.promo { background: linear-gradient(135deg, #e01433, #7b1ee6); }
+.route-hero.support { background: linear-gradient(135deg, #0b7d68, #1e55d8); }
+
+.route-category-grid,
+.promo-grid,
+.info-list,
+.support-grid,
+.compare-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 20px;
+}
+
+.route-category-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.route-category-grid button,
+.promo-grid article,
+.info-list article,
+.support-grid > * {
+  min-height: 96px;
+  padding: 16px;
+  border: 1px solid #e9e7ed;
+  border-radius: 16px;
+  background: #fff;
+  text-align: left;
+}
+
+.route-category-grid span {
+  display: block;
+  font-size: 24px;
+}
+
+.route-category-grid b {
+  display: block;
+  margin: 7px 0 3px;
+}
+
+.route-category-grid small {
+  color: #6b6872;
+}
+
+.route-products {
+  margin-top: 28px;
+}
+
+.product-detail-page {
+  display: grid;
+  grid-template-columns: minmax(280px, 460px) 1fr;
+  gap: 28px;
+  margin-top: 22px;
+}
+
+.detail-media {
+  overflow: hidden;
+  border-radius: 24px;
+  background: #f2f0f6;
+}
+
+.detail-media img {
+  width: 100%;
+  height: 100%;
+  min-height: 430px;
+  object-fit: cover;
+}
+
+.detail-copy > span {
+  color: #6b2de6;
+  font-weight: 900;
+}
+
+.detail-copy h1 {
+  margin: 8px 0 14px;
+  font-size: 38px;
+  letter-spacing: 0;
+}
+
+.detail-price {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.detail-price strong {
+  color: #d90d2e;
+  font-size: 34px;
+}
+
+.detail-price del { color: #777; }
+
+.detail-price em {
+  padding: 4px 8px;
+  border-radius: 12px;
+  color: #fff;
+  background: #d90d2e;
+  font-style: normal;
+  font-weight: 900;
+}
+
+.detail-actions {
+  display: flex;
+  gap: 10px;
+  margin: 22px 0;
+}
+
+.detail-actions button {
+  max-width: 220px;
+}
+
+.detail-favorite,
+.detail-button,
+.lv-detail,
+.route-back {
+  min-height: 40px;
+  border: 1px solid #e9e7ed;
+  border-radius: 10px;
+  background: #fff;
+  color: #6b2de6;
+  font-weight: 800;
+}
+
+.detail-button,
+.lv-detail {
+  width: 100%;
+  margin-top: 10px;
+}
+
+.route-back {
+  padding: 0 14px;
+  justify-self: start;
+}
+
+.support-grid a,
+.support-grid button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6b2de6;
+  font-weight: 900;
+  text-decoration: none;
+}
+
+.compare-grid > article {
+  min-width: 0;
+}
+
+.compare-grid dl {
+  margin: 10px 0 0;
+  padding: 12px;
+  border-radius: 14px;
+  background: #fff;
+}
+
+.compare-grid dt {
+  color: #6b6872;
+  font-size: 12px;
+}
+
+.compare-grid dd {
+  margin: 0 0 8px;
+  font-weight: 900;
+}
+
+@media (max-width: 820px) {
+  .route-category-grid,
+  .promo-grid,
+  .info-list,
+  .support-grid,
+  .compare-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .product-detail-page {
+    grid-template-columns: 1fr;
+  }
+
+  .detail-media img {
+    min-height: 320px;
+  }
+
+  .route-hero h1,
+  .detail-copy h1 {
+    font-size: 28px;
+  }
+}
+
+@media (max-width: 560px) {
+  .route-category-grid,
+  .promo-grid,
+  .info-list,
+  .support-grid,
+  .compare-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .route-hero {
+    padding: 22px 18px;
+    border-radius: 20px;
+  }
+
+  .route-hero h1,
+  .detail-copy h1 {
+    font-size: 24px;
+  }
+
+  .detail-actions {
+    display: grid;
+  }
+
+  .detail-actions button {
+    max-width: none;
+  }
+}
