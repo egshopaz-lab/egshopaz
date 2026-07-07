@@ -1,4 +1,6 @@
-import {
+import * as supabase from "./supabase.js?v=20260707-3";
+
+const {
   addCartItem,
   captureAuthRedirect,
   createProduct,
@@ -22,7 +24,7 @@ import {
   toggleFavorite,
   updateOrderStatus,
   updatePassword,
-} from "./supabase.js?v=20260706-2";
+} = supabase;
 
 const SUPABASE_URL = "https://ootloyfutihvupfforrv.supabase.co";
 const SUPABASE_KEY = "sb_publishable_ppRwsR2EfF1Xx4ZTiQsSCw__w7tOLkG";
