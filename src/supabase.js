@@ -156,6 +156,7 @@ export async function createOrder({ address, phone, items }) {
 }
 export async function createSellerApplication(application) {
   const user = currentUser();
+  if (!user) throw new Error("Satici muracieti ucun giris edin.");
   return request("/rest/v1/seller_applications?on_conflict=user_id", { method: "POST", prefer: "resolution=merge-duplicates,return=representation", body: JSON.stringify({ ...application, user_id: user.id, status: "pending" }) });
 }
 export async function getOrders() {
@@ -164,11 +165,43 @@ export async function getOrders() {
 }
 export async function createProduct(product) {
   const user = currentUser();
+  if (!user) throw new Error("Mehsul yuklemek ucun giris edin.");
   return request("/rest/v1/products", { method: "POST", prefer: "return=representation", body: JSON.stringify({ ...product, seller_id: user.id }) });
 }
 export async function getSellerProducts() {
   const user = currentUser();
   return request(`/rest/v1/products?seller_id=eq.${user.id}&select=*&order=created_at.desc`);
+}
+export async function getSellerOrders() {
+  const user = currentUser();
+  if (!user) return [];
+  return request(`/rest/v1/order_items?seller_id=eq.${user.id}&select=*,orders(*),products(name,image_url)&order=created_at.desc`);
+}
+export async function uploadProductImage(file) {
+  const user = currentUser();
+  const current = session();
+  if (!user || !current?.access_token) throw new Error("Sekil yuklemek ucun giris edin.");
+  if (!file) return null;
+  if (!/^image\//i.test(file.type || "")) throw new Error("Yalniz sekil fayli yukleyin.");
+  if (file.size > 5 * 1024 * 1024) throw new Error("Sekil 5 MB-dan boyuk olmamalidir.");
+  const extension = (file.name.split(".").pop() || "jpg").toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
+  const id = crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+  const objectPath = `${user.id}/${id}.${extension}`;
+  const response = await fetch(`${SUPABASE_URL}/storage/v1/object/product-images/${objectPath}`, {
+    method: "POST",
+    headers: {
+      apikey: SUPABASE_KEY,
+      Authorization: `Bearer ${current.access_token}`,
+      "Content-Type": file.type || "image/jpeg",
+      "x-upsert": "false",
+    },
+    body: file,
+  });
+  const text = await response.text();
+  let data = null;
+  try { data = text ? JSON.parse(text) : null; } catch { data = { message: text }; }
+  if (!response.ok) throw new Error(authError(data, response.status));
+  return `${SUPABASE_URL}/storage/v1/object/public/product-images/${objectPath}`;
 }
 export async function getAdminData() {
   const [profiles, applications, orders, allProducts] = await Promise.all([

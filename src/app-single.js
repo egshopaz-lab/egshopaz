@@ -1,4 +1,4 @@
-import * as supabase from "./supabase.js?v=20260707-4";
+import * as supabase from "./supabase.js?v=20260707-6";
 
 const {
   addCartItem,
@@ -13,6 +13,7 @@ const {
   getProducts,
   getProfile,
   getSellerProducts,
+  getSellerOrders,
   initializeAuth,
   removeCartItem,
   resendConfirmation,
@@ -24,6 +25,7 @@ const {
   toggleFavorite,
   updateOrderStatus,
   updatePassword,
+  uploadProductImage,
 } = supabase;
 
 const SUPABASE_URL = "https://ootloyfutihvupfforrv.supabase.co";
@@ -670,9 +672,9 @@ function renderCheckoutForm(items, total) {
     <div class="drawer-products">${items.map((item) => drawerProduct(item.products, `<button type="button" data-remove-cart="${item.id}">Sil</button>`)).join("")}</div>
     <div class="cart-total"><span>Cemi</span><b>${money(total)}</b></div>
     <form id="checkoutForm" class="product-form">
-      <p class="flow-hint">Sifaris tesdiqlenende Epoint odenis sehifesine yonlendirileceksiniz.</p>
-      <label>Catdirilma unvani<input name="address" required></label>
-      <label>Telefon<input name="phone" required placeholder="+994 50 000 00 00"></label>
+      <p class="flow-hint">Sifaris tesdiqlenende sistem mehsullari saticilara baglayir ve Epoint odenis sehifesine yonlendirir.</p>
+      <label>Catdirilma unvani<input name="address" required minlength="8" placeholder="Seher, kuce, bina, menzil"></label>
+      <label>Telefon<input name="phone" required inputmode="tel" placeholder="+994 50 000 00 00"></label>
       <label>Odenis usulu
         <select name="payment_method">
           <option value="card">Bank karti</option>
@@ -681,6 +683,8 @@ function renderCheckoutForm(items, total) {
           <option value="widget">Apple Pay / Google Pay</option>
         </select>
       </label>
+      <label>Catdirilma qeydi<textarea name="note" rows="3" placeholder="Kuryer ucun qeyd varsa yazin"></textarea></label>
+      <label class="terms-check"><input name="terms" type="checkbox" required><span>Sifaris ve odenis sertlerini qebul edirem</span></label>
       <button type="button" class="form-secondary" data-register-card>Karti yadda saxla</button>
       <button class="form-submit" type="submit">Kartla ode</button>
     </form>`;
@@ -728,14 +732,37 @@ async function openCart() {
 }
 
 function openSellerApplication() {
+  if (!currentUser()) return openAccountDialog();
   showInfo("Satici ol", `
     <p>Magazanizi EG Shop platformasinda acmaq ucun muraciet gonderin.</p>
     <form id="sellerApplicationForm" class="product-form">
       <p class="flow-hint">Muraciet admin terefinden tesdiqlenenden sonra mehsul yukleme paneli acilacaq.</p>
       <label>Magaza adi<input name="store_name" required placeholder="Meselen: EG Elektronika"></label>
       <label>Telefon<input name="phone" required placeholder="+994 50 000 00 00"></label>
+      <label>Kateqoriya
+        <select name="category" required>
+          <option value="">Secin</option>
+          <option>Elektronika</option>
+          <option>Geyim ve aksesuar</option>
+          <option>Ev ve metbex</option>
+          <option>Gozellik ve baxim</option>
+          <option>Market ve gundelik</option>
+          <option>Diger</option>
+        </select>
+      </label>
+      <label>Seher<input name="city" required placeholder="Baki"></label>
+      <label>Unvan<input name="address" required placeholder="Magaza/ofis unvani"></label>
       <label>VOEN<input name="tax_id" required inputmode="numeric" pattern="[0-9]{10}" placeholder="10 reqemli VOEN"></label>
-      <label>Qeyd<textarea name="note" rows="4" placeholder="Satacaginiz mehsullar haqqinda qisa melumat"></textarea></label>
+      <label>Odenis hesabi<input name="payout_account" required placeholder="IBAN ve ya kart hesabi"></label>
+      <label>Catdirilma imkani
+        <select name="delivery_type" required>
+          <option>Oz kuryerim var</option>
+          <option>Platforma catdirilmasi isteyirem</option>
+          <option>Magazadan goturme</option>
+        </select>
+      </label>
+      <label>Qeyd<textarea name="note" rows="4" placeholder="Satacaginiz mehsullar, brendler ve is modeliniz haqqinda qisa melumat"></textarea></label>
+      <label class="terms-check"><input name="terms" type="checkbox" required><span>Satici qaydalarini qebul edirem</span></label>
       <button class="form-submit" type="submit">Muraciet gonder</button>
     </form>`);
   document.querySelector("#sellerApplicationForm")?.addEventListener("submit", async (event) => {
@@ -793,22 +820,56 @@ async function openPanel(type) {
       }));
       return;
     }
-    const sellerProducts = await getSellerProducts();
+    const [sellerProducts, sellerOrders] = await Promise.all([
+      getSellerProducts(),
+      getSellerOrders().catch(() => []),
+    ]);
+    const activeProducts = sellerProducts.filter((item) => item.active !== false).length;
+    const sellerRevenue = sellerOrders.reduce((sum, item) => sum + Number(item.price || 0) * Number(item.quantity || 1), 0);
     content.innerHTML = `
       <span class="dialog-kicker">Satici paneli</span>
-      <h2>Mehsul idareetmesi</h2>
-      <div class="panel-stats"><div><b>${sellerProducts.length}</b><span>Mehsul</span></div><div><b>${sellerProducts.reduce((sum, item) => sum + Number(item.stock || 0), 0)}</b><span>Stok</span></div></div>
+      <h2>Magaza idareetmesi</h2>
+      <div class="panel-stats">
+        <div><b>${sellerProducts.length}</b><span>Mehsul</span></div>
+        <div><b>${activeProducts}</b><span>Aktiv vitrin</span></div>
+        <div><b>${sellerProducts.reduce((sum, item) => sum + Number(item.stock || 0), 0)}</b><span>Stok</span></div>
+        <div><b>${money(sellerRevenue)}</b><span>Satis dovriyyesi</span></div>
+      </div>
+      <div class="seller-panel-grid">
+        <section>
+          <h3>Yeni mehsul yukle</h3>
       <form id="productForm" class="product-form">
-        <p class="flow-hint">Mehsul aktiv elave olunur ve tesdiqlenmis saticinin vitrinde gorunur.</p>
+        <p class="flow-hint">Mehsulu sekil fayli ile yukleyin ve ya hazir sekil URL-i daxil edin.</p>
         <label>Mehsul adi<input name="name" required></label>
+        <label>Kateqoriya
+          <select name="category" required>
+            ${categories.map((item) => `<option>${item[1]}</option>`).join("")}
+          </select>
+        </label>
         <label>Qiymet<input name="price" type="number" min="0" step="0.01" required></label>
         <label>Kohne qiymet<input name="old_price" type="number" min="0" step="0.01" placeholder="Endirim varsa"></label>
         <label>Stok<input name="stock" type="number" min="0" required></label>
+        <label>Brend<input name="brand" placeholder="Samsung, Apple, Zara..."></label>
         <label>Tesvir<textarea name="description" rows="3" placeholder="Mehsul haqqinda qisa melumat"></textarea></label>
+        <label>Mehsul sekli<input name="image_file" type="file" accept="image/*"></label>
         <label>Shekil URL<input name="image_url" type="url"></label>
         <label class="terms-check"><input name="active" type="checkbox" checked><span>Mehsul vitrinde aktiv gorunsun</span></label>
         <button class="form-submit" type="submit">Mehsul elave et</button>
-      </form>`;
+      </form>
+        </section>
+        <section>
+          <h3>Mehsullarim</h3>
+          <div class="management-list seller-products-list">
+            ${sellerProducts.length ? sellerProducts.slice(0, 8).map((item) => `<div><span><b>${item.name}</b><small>${money(item.price)} - stok ${item.stock || 0} - ${item.active === false ? "passiv" : "aktiv"}</small></span><img src="${item.image_url || "/assets/product-1.jpg"}" alt=""></div>`).join("") : "<p>Hele mehsul yuklenmeyib.</p>"}
+          </div>
+          <h3>Sifarislerim</h3>
+          <div class="management-list">
+            ${sellerOrders.length ? sellerOrders.slice(0, 8).map((item) => `<div><span><b>${item.product_name || item.products?.name || "Mehsul"}</b><small>${item.quantity || 1} eded - ${money(Number(item.price || 0) * Number(item.quantity || 1))} - ${item.orders?.status || "pending"}</small></span></div>`).join("") : "<p>Bu satici ucun hele sifaris yoxdur.</p>"}
+          </div>
+          <h3>Odenis hesabi</h3>
+          <p class="flow-hint">Kart odemeleri Epoint uzerinden qebul olunur. Satici balans ve payout bolmesi novbeti merhelede bank hesabina avtomatik cixaris ucun genislendirile biler.</p>
+        </section>
+      </div>`;
     content.querySelector("#productForm")?.addEventListener("submit", async (event) => {
       event.preventDefault();
       const submit = event.currentTarget.querySelector(".form-submit");
@@ -816,13 +877,17 @@ async function openPanel(type) {
       submit.textContent = "Mehsul yuklenir...";
       try {
         const data = Object.fromEntries(new FormData(event.currentTarget));
+        const imageFile = event.currentTarget.elements.image_file?.files?.[0];
+        const uploadedImage = imageFile ? await uploadProductImage(imageFile) : null;
         await createProduct({
           name: String(data.name || "").trim(),
           description: String(data.description || "").trim() || null,
+          category: String(data.category || "").trim() || null,
+          brand: String(data.brand || "").trim() || null,
           price: Number(data.price),
           old_price: data.old_price ? Number(data.old_price) : null,
           stock: Number(data.stock || 0),
-          image_url: String(data.image_url || "").trim() || null,
+          image_url: uploadedImage || String(data.image_url || "").trim() || null,
           active: Boolean(data.active),
         });
         notify("Mehsul elave edildi");
