@@ -1,65 +1,34 @@
-# EG Shop
+-- Persist the extended registration profile for new and existing accounts.
 
-Supabase backend ilə işləyən, asılılıqsız mağaza vitrini.
+create or replace function public.handle_new_user()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  insert into public.profiles (id, full_name, phone)
+  values (
+    new.id,
+    coalesce(new.raw_user_meta_data->>'full_name', ''),
+    nullif(new.raw_user_meta_data->>'phone', '')
+  )
+  on conflict (id) do update
+  set
+    full_name = coalesce(nullif(excluded.full_name, ''), profiles.full_name),
+    phone = coalesce(nullif(excluded.phone, ''), profiles.phone);
+  return new;
+end;
+$$;
 
-## Yerli işə salma
+drop trigger if exists on_auth_user_created on auth.users;
+create trigger on_auth_user_created
+  after insert or update of raw_user_meta_data on auth.users
+  for each row execute function public.handle_new_user();
 
-```bash
-npm run dev
-```
-
-## Production build
-
-```bash
-npm run build
-```
-
-Build nəticəsi `dist/` qovluğuna yazılır. Serverə göndərməzdən əvvəl build əmrini hər dəfə yenidən işlədin; Nginx `dist/` qovluğunu servis etməlidir.
-
-## Supabase quraşdırılması
-
-SQL Editor vasitəsilə faylları bu sıra ilə işlədin:
-
-1. `supabase/schema.sql`
-2. `supabase/upgrade-002.sql`
-3. `supabase/upgrade-003-auth-repair.sql`
-4. `supabase/upgrade-004-commerce-integrity.sql`
-5. `supabase/upgrade-005-checkout-and-input-safety.sql`
-6. `supabase/upgrade-006-seller-tax-id.sql`
-7. `supabase/upgrade-007-epoint-payments.sql`
-
-Mövcud production bazasında yalnız hələ işlədilməmiş upgrade fayllarını sıra ilə tətbiq edin. 005 sifarişi bir DB tranzaksiyasında tamamlayır və təhlükəli marketplace mətnlərini bloklayır.
-
-Supabase Authentication → URL Configuration bölməsində `https://egshop.az` ünvanını **Site URL**, `https://egshop.az/**` ünvanını **Redirect URLs** kimi qeyd edin.
-
-İlk admin istifadəçini yaratdıqdan sonra:
-
-```sql
-update public.profiles
-set role = 'admin'
-where id = (select id from auth.users where email = 'admin@egshop.az');
-```
-
-## Epoint ödənişləri
-
-Epoint açarlarını yalnız Supabase Edge Functions secret kimi saxlayın:
-
-```bash
-supabase secrets set EPOINT_PUBLIC_KEY=... EPOINT_PRIVATE_KEY=...
-supabase functions deploy epoint-create --no-verify-jwt
-supabase functions deploy epoint-callback --no-verify-jwt
-```
-
-Epoint kabinetində URL-ləri belə qeyd edin:
-
-```text
-success_url: https://egshop.az/?payment=success
-error_url:   https://egshop.az/?payment=error
-result_url:  https://ootloyfutihvupfforrv.supabase.co/functions/v1/epoint-callback
-```
-
-`EPOINT_PRIVATE_KEY` brauzer koduna, GitHub-a və ya statik server fayllarına yazılmamalıdır.
-
-## Nginx
-
-`deploy/nginx.conf.example` təhlükəsizlik başlıqlarını ehtiva edir. Server konfiqurasiyasına uyğunlaşdırdıqdan sonra `nginx -t` ilə yoxlayıb Nginx-i reload edin. HSTS sətrini yalnız HTTPS server blokunda aktivləşdirin.
+update public.profiles p
+set
+  full_name = coalesce(nullif(u.raw_user_meta_data->>'full_name', ''), p.full_name),
+  phone = coalesce(nullif(u.raw_user_meta_data->>'phone', ''), p.phone)
+from auth.users u
+where u.id = p.id;

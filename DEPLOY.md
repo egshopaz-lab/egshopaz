@@ -1,61 +1,51 @@
-# Hetzner deployment
+-- Atomic checkout and input hardening.
 
-Sunucu: `178.105.240.35`
+create or replace function public.checkout_cart(_address text, _phone text)
+returns uuid
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  buyer uuid := auth.uid();
+  new_order uuid;
+begin
+  if buyer is null then raise exception 'Giriş tələb olunur'; end if;
+  if length(trim(coalesce(_address, ''))) < 5 then raise exception 'Çatdırılma ünvanını düzgün daxil edin'; end if;
+  if length(trim(coalesce(_phone, ''))) < 7 then raise exception 'Telefon nömrəsini düzgün daxil edin'; end if;
 
-## 1. Sunucu paketleri
+  perform 1 from public.cart_items where user_id = buyer for update;
+  if not found then raise exception 'Səbət boşdur'; end if;
 
-```bash
-sudo apt update
-sudo apt install -y nginx git nodejs
-```
+  insert into public.orders (user_id, total, delivery_address, phone)
+  values (buyer, 0, trim(_address), trim(_phone))
+  returning id into new_order;
 
-## 2. Projeyi cekin
+  insert into public.order_items (order_id, product_id, seller_id, product_name, price, quantity)
+  select new_order, p.id, p.seller_id, p.name, p.price, c.quantity
+  from public.cart_items c
+  join public.products p on p.id = c.product_id
+  where c.user_id = buyer;
 
-```bash
-sudo mkdir -p /var/www/eg-shop
-sudo chown "$USER":"$USER" /var/www/eg-shop
-git clone https://github.com/egshopaz-lab/egshopaz.git /var/www/eg-shop
-cd /var/www/eg-shop
-node scripts/build.mjs
-```
+  delete from public.cart_items where user_id = buyer;
+  return new_order;
+end;
+$$;
 
-## 3. Nginx
+grant execute on function public.checkout_cart(text, text) to authenticated;
 
-```bash
-sudo cp deploy/nginx.conf.example /etc/nginx/sites-available/eg-shop
-sudo ln -s /etc/nginx/sites-available/eg-shop /etc/nginx/sites-enabled/eg-shop
-sudo rm -f /etc/nginx/sites-enabled/default
-```
-
-HTTPS sertifikati henuz qurulmayibsa once Certbot isleye bilsin deye muveqqeti HTTP konfiqurasiya ile baslayin ve sonra 5-ci addimdaki Certbot emrini icra edin.
-
-## 4. Domain baglama
-
-Domain DNS yonetiminde bir `A` kaydi ekleyin:
-
-```text
-@     A     178.105.240.35
-www   A     178.105.240.35
-```
-
-`egshop.az` ve `www.egshop.az` ucun DNS hazir olduqdan sonra server bloku `deploy/nginx.conf.example` faylindaki kimi qalmalidir.
-
-## 5. HTTPS
-
-DNS oturduktan sonra:
-
-```bash
-sudo apt install -y certbot python3-certbot-nginx
-sudo certbot --nginx -d egshop.az -d www.egshop.az
-sudo nginx -t
-sudo systemctl reload nginx
-```
-
-## Guncelleme
-
-```bash
-cd /var/www/eg-shop
-git pull --ff-only
-node scripts/build.mjs
-sudo systemctl reload nginx
-```
+do $$
+begin
+  if not exists (select 1 from pg_constraint where conname = 'products_safe_name') then
+    alter table public.products add constraint products_safe_name
+      check (length(trim(name)) between 1 and 200 and position('<' in name) = 0 and position('>' in name) = 0) not valid;
+  end if;
+  if not exists (select 1 from pg_constraint where conname = 'products_safe_image_url') then
+    alter table public.products add constraint products_safe_image_url
+      check (image_url is null or (position('"' in image_url) = 0 and position(chr(39) in image_url) = 0 and position('<' in image_url) = 0 and position('>' in image_url) = 0)) not valid;
+  end if;
+  if not exists (select 1 from pg_constraint where conname = 'seller_applications_safe_store') then
+    alter table public.seller_applications add constraint seller_applications_safe_store
+      check (position('<' in store_name) = 0 and position('>' in store_name) = 0) not valid;
+  end if;
+end $$;

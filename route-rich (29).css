@@ -1,0 +1,1 @@
+.flow-hint{margin:0 0 14px;padding:12px 14px;border-radius:8px;color:#43246f;background:#f5edff;font-size:13px;line-height:1.45}.product-form textarea{width:100%;padding:12px 13px;border:1px solid #ddd4e8;border-radius:9px;outline:0;resize:vertical}.product-form textarea:focus{border-color:#8430e7;box-shadow:0 0 0 3px rgba(132,48,231,.12)}
