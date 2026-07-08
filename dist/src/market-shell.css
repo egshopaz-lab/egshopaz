@@ -189,6 +189,23 @@ body[data-route="destek"] .market-sidebar [data-route="/support"] {
   backdrop-filter: blur(12px);
 }
 
+.search input::placeholder {
+  color: rgba(255,255,255,.82);
+}
+
+.search input {
+  color: #ffffff;
+}
+
+.search button {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  color: #6b22df;
+  background: rgba(255,255,255,.9);
+  font-weight: 950;
+}
+
 .header-actions {
   gap: 8px;
 }
@@ -235,6 +252,11 @@ main {
     linear-gradient(135deg, rgba(255,255,255,.95), rgba(255,255,255,.82)),
     url("/assets/product-1.jpg") center / cover;
   box-shadow: 0 16px 42px rgba(33, 42, 69, .08);
+}
+
+.market-hero > div:first-child {
+  position: relative;
+  z-index: 1;
 }
 
 .market-hero::before {
@@ -300,9 +322,13 @@ main {
 }
 
 .role-links button {
+  min-height: 44px;
+  padding: 0 18px;
   border-radius: 10px;
   color: #5b227e;
   background: #f3edff;
+  font-weight: 900;
+  box-shadow: inset 0 0 0 1px rgba(123, 46, 231, .08);
 }
 
 .role-links .seller {
@@ -315,13 +341,18 @@ main {
   border: 1px solid #e4e7ef;
   border-radius: 16px;
   background: #ffffff;
+  box-shadow: 0 10px 28px rgba(33, 42, 69, .05);
 }
 
 .lv-categories button,
 .lv-subcategories button {
+  min-height: 46px;
+  padding: 0 15px;
   border-radius: 12px;
   border: 1px solid #e8ebf3;
   background: #f8f9fc;
+  color: #293044;
+  font-weight: 850;
 }
 
 .lv-categories button.active,
@@ -349,6 +380,7 @@ main {
   min-height: 180px;
   border-radius: 18px;
   background: linear-gradient(135deg, #171923, #3d2457);
+  box-shadow: 0 20px 42px rgba(27, 31, 48, .16);
 }
 
 .lv-ad strong {
@@ -368,16 +400,37 @@ main {
   box-shadow: 0 8px 24px rgba(33, 42, 69, .05);
 }
 
+.lv-card {
+  border: 1px solid #e7eaf2;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #ffffff;
+  box-shadow: 0 12px 32px rgba(33, 42, 69, .08);
+}
+
 .product-card h3,
 .lv-card h3 {
   min-height: 40px;
   line-height: 1.28;
 }
 
-.product-card .price,
+.product-card .price-row strong,
 .lv-card .lv-price {
   color: #171923;
   font-size: 19px;
+}
+
+.price-row,
+.lv-price {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.price-row del,
+.lv-price del {
+  color: #98a0b3;
+  font-size: 13px;
 }
 
 .product-card:hover {
@@ -386,12 +439,57 @@ main {
 }
 
 .product-image {
+  aspect-ratio: 1 / 1;
+  display: grid;
+  place-items: center;
   border-radius: 0;
   background: #f2f4f8;
 }
 
+.product-image img,
+.lv-card-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 12px;
+}
+
+.lv-card-media {
+  position: relative;
+  aspect-ratio: 1.1 / 1;
+  background: linear-gradient(145deg, #f5f7fb, #eef1f7);
+}
+
+.heart,
+.lv-heart {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 2;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  color: #7d2be5;
+  background: rgba(255,255,255,.92);
+  box-shadow: 0 8px 18px rgba(33, 42, 69, .12);
+}
+
 .product-info {
   padding: 12px;
+  display: grid;
+  gap: 8px;
+}
+
+.lv-card-body {
+  padding: 14px;
+  display: grid;
+  gap: 8px;
+}
+
+.rating {
+  color: #777f92;
+  font-size: 13px;
+  font-weight: 750;
 }
 
 .cart-button,
@@ -527,6 +625,39 @@ main {
   box-shadow: 0 20px 50px rgba(33, 42, 69, .1);
 }
 
+.auth-page-card input,
+.auth-page-card textarea,
+.auth-page-card select,
+.product-form input,
+.product-form textarea,
+.product-form select,
+.account-dialog input,
+.panel-dialog input {
+  min-height: 44px;
+  width: 100%;
+  border: 1px solid #dfe3ed;
+  border-radius: 10px;
+  padding: 0 12px;
+  background: #ffffff;
+  color: #171923;
+}
+
+.password-field {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+}
+
+.password-field button,
+.auth-link,
+.form-secondary {
+  min-height: 44px;
+  border-radius: 10px;
+  color: #5b227e;
+  background: #f3edff;
+  font-weight: 900;
+}
+
 .auth-tabs {
   padding: 5px;
   display: grid;
@@ -550,6 +681,15 @@ main {
   color: #ffffff;
   background: linear-gradient(135deg, #6924df, #d83ed5);
   box-shadow: 0 10px 20px rgba(105, 36, 223, .22);
+}
+
+.form-submit {
+  min-height: 48px;
+  border-radius: 11px;
+  color: #ffffff;
+  background: linear-gradient(135deg, #6924df, #d83ed5);
+  box-shadow: 0 12px 24px rgba(105, 36, 223, .22);
+  font-weight: 950;
 }
 
 .auth-page-card label,
