@@ -1,8 +1,11 @@
+@charset "UTF-8";
 :root {
-  font-family: Inter, Arial, sans-serif;
+  font-family: 'Segoe UI', 'Trebuchet MS', Arial, sans-serif;
   color: #16131d;
   background: #fff;
   font-synthesis: none;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   --purple: #7c2ee8;
   --pink: #c54ce5;
   --soft: #f7f5fb;
@@ -91,7 +94,9 @@ main { width: min(1000px, calc(100% - 30px)); margin: 0 auto; padding-bottom: 70
 .quick-links button {
   min-height: 30px; padding: 0 14px; border: 0; border-radius: 16px;
   color: #7133ac; background: #f4effa; font-size: 12px; font-weight: 700;
+  transition: all 0.2s ease;
 }
+.quick-links button:hover { background: #e8d5ff; transform: translateY(-1px); }
 .quick-links .seller { color: #087b54; background: #d9f8ea; }
 
 .category-strip, .sub-categories {
@@ -114,6 +119,7 @@ main { width: min(1000px, calc(100% - 30px)); margin: 0 auto; padding-bottom: 70
   border-radius: 23px;
   background: #faf9fc;
   font-weight: 800;
+  transition: all 0.2s ease;
 }
 .category { padding: 0 18px; }
 .category span, .sub-categories span { margin-right: 9px; color: #7d35d8; }
@@ -124,7 +130,8 @@ main { width: min(1000px, calc(100% - 30px)); margin: 0 auto; padding-bottom: 70
 .section-title { display: flex; align-items: center; justify-content: space-between; gap: 15px; margin-bottom: 12px; }
 .section-title h2 { margin: 0; font-size: 20px; }
 .section-title h2 small { color: #e0aa17; font-size: 10px; }
-.section-title > button { border: 0; color: #6f2ec8; background: transparent; font-weight: 700; }
+.section-title > button { border: 0; color: #6f2ec8; background: transparent; font-weight: 700; transition: all 0.2s ease; }
+.section-title > button:hover { color: #9e37e9; }
 .sub-categories { padding-bottom: 10px; }
 .sub-categories button { min-width: 160px; padding: 0 16px; border: 1px solid var(--line); background: white; }
 
@@ -152,7 +159,10 @@ main { width: min(1000px, calc(100% - 30px)); margin: 0 auto; padding-bottom: 70
 .campaign-copy button {
   min-height: 44px; margin-top: 24px; padding: 0 20px; border: 0; border-radius: 9px;
   color: #fff; background: linear-gradient(100deg, #7b2ee7, #d24bdd); font-weight: 800;
+  transition: all 0.2s ease;
+  cursor: pointer;
 }
+.campaign-copy button:hover { box-shadow: 0 8px 20px rgba(123, 46, 231, 0.3); }
 .ad-label {
   position: absolute; z-index: 4; top: 12px; left: 12px; padding: 4px 9px;
   border-radius: 6px; color: #6f4c00; background: #ffc21c; font-size: 10px; font-weight: 900;
@@ -162,13 +172,17 @@ main { width: min(1000px, calc(100% - 30px)); margin: 0 auto; padding-bottom: 70
 .slider-dots i.active { width: 24px; border-radius: 8px; background: white; }
 
 .product-grid { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 16px; }
-.product-card { min-width: 0; background: white; }
+.product-card { min-width: 0; background: white; border-radius: 16px; transition: all 0.3s ease; }
+.product-card:hover { box-shadow: 0 8px 24px rgba(102, 36, 185, 0.12); }
 .product-image { position: relative; aspect-ratio: .86; overflow: hidden; border-radius: 16px; background: #f4f2f6; }
 .product-image img { width: 100%; height: 100%; object-fit: cover; }
 .heart {
   position: absolute; z-index: 3; top: 10px; right: 10px; width: 34px; height: 34px;
   border: 0; border-radius: 50%; color: #6f2ec8; background: rgba(255,255,255,.92); font-size: 21px;
+  transition: all 0.2s ease;
+  cursor: pointer;
 }
+.heart:hover { transform: scale(1.1); color: #d24bdd; }
 .product-info { padding: 10px 5px 3px; }
 .price-row { display: flex; align-items: baseline; gap: 8px; }
 .price-row strong { color: var(--red); font-size: 20px; }
@@ -179,30 +193,36 @@ main { width: min(1000px, calc(100% - 30px)); margin: 0 auto; padding-bottom: 70
 .cart-button {
   width: 100%; min-height: 42px; margin-top: 13px; border: 0; border-radius: 10px;
   color: white; background: linear-gradient(100deg, #7628e7, #c845e6); font-weight: 800;
+  transition: all 0.2s ease;
+  cursor: pointer;
 }
+.cart-button:hover { box-shadow: 0 6px 18px rgba(198, 69, 230, 0.3); }
 
 .gift-banner {
   min-height: 120px; margin: 36px 0; padding: 25px 30px; display: flex; align-items: center; gap: 22px;
   border-radius: 20px; color: white; background: linear-gradient(100deg, #ffae00, #ff6a22);
+  box-shadow: 0 8px 24px rgba(255, 106, 34, 0.2);
 }
 .gift-banner > span { padding: 7px 11px; border-radius: 16px; background: rgba(255,255,255,.2); font-weight: 800; }
 .gift-banner div { flex: 1; }
 .gift-banner small { opacity: .9; }
 .gift-banner h2 { margin: 4px 0 0; }
-.gift-banner button { border: 0; color: white; background: transparent; font-weight: 900; }
+.gift-banner button { border: 0; color: white; background: transparent; font-weight: 900; transition: all 0.2s ease; cursor: pointer; }
+.gift-banner button:hover { transform: translateX(3px); }
 
 .benefits {
   margin-top: 46px; padding: 24px 0; display: grid; grid-template-columns: repeat(4,1fr);
   border-top: 1px solid var(--line); border-bottom: 1px solid var(--line);
 }
-.benefits div { display: grid; grid-template-columns: 42px 1fr; align-items: center; }
+.benefits div { display: grid; grid-template-columns: 42px 1fr; align-items: center; gap: 12px; }
 .benefits span { grid-row: 1/3; font-size: 27px; }
-.benefits small { color: #777; }
+.benefits small { color: #777; font-size: 12px; }
 .mobile-nav { display: none; }
 .toast {
   position: fixed; z-index: 100; left: 50%; bottom: 25px; transform: translate(-50%, 25px);
   padding: 13px 18px; border-radius: 9px; color: white; background: #20152a;
   opacity: 0; pointer-events: none; transition: .2s;
+  max-width: 90%;
 }
 .toast.show { opacity: 1; transform: translate(-50%,0); }
 
@@ -221,21 +241,29 @@ main { width: min(1000px, calc(100% - 30px)); margin: 0 auto; padding-bottom: 70
 .dialog-close {
   position: absolute; top: 12px; right: 14px; width: 36px; height: 36px;
   border: 0; border-radius: 50%; background: #f4effa; font-size: 22px;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
+.dialog-close:hover { background: #e8d5ff; }
 .dialog-kicker { color: #832fe7; font-size: 12px; font-weight: 900; text-transform: uppercase; }
 .account-dialog h2, .panel-dialog h2 { margin: 8px 0 20px; }
 .account-dialog form, .product-form { display: grid; gap: 14px; }
 .account-dialog label, .product-form label { display: grid; gap: 6px; font-size: 13px; font-weight: 800; }
 .account-dialog input, .product-form input {
   width: 100%; min-height: 46px; padding: 0 13px; border: 1px solid #ddd4e8; border-radius: 9px; outline: 0;
+  transition: all 0.2s ease;
 }
 .account-dialog input:focus, .product-form input:focus { border-color: #8430e7; box-shadow: 0 0 0 3px rgba(132,48,231,.12); }
 .form-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .form-submit, .form-secondary {
   min-height: 44px; padding: 0 16px; border-radius: 9px; font-weight: 900;
+  transition: all 0.2s ease;
+  cursor: pointer;
 }
 .form-submit { border: 0; color: white; background: linear-gradient(100deg, #7628e7, #c845e6); }
+.form-submit:hover { box-shadow: 0 6px 18px rgba(198, 69, 230, 0.3); }
 .form-secondary { border: 1px solid #d9cce8; color: #6721b9; background: white; }
+.form-secondary:hover { background: #faf9fc; border-color: #8430e7; }
 .form-message { min-height: 20px; margin: 0; color: #ba1530; font-size: 13px; }
 .panel-stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 20px; }
 .panel-stats div { padding: 18px; border-radius: 10px; background: #f5f1fa; }
@@ -251,7 +279,10 @@ main { width: min(1000px, calc(100% - 30px)); margin: 0 auto; padding-bottom: 70
 .management-list small { color: #74677e; }
 .management-list button, .drawer-product button {
   min-height: 34px; padding: 0 11px; border: 1px solid #d9cce8; border-radius: 7px; color: #6721b9; background: white; font-weight: 800;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
+.management-list button:hover { background: #faf9fc; border-color: #8430e7; }
 .management-list select { min-height: 38px; border: 1px solid #d9cce8; border-radius: 7px; background: white; }
 .drawer-product {
   min-height: 76px; padding: 8px; display: grid; grid-template-columns: 62px 1fr auto; align-items: center; gap: 12px;
