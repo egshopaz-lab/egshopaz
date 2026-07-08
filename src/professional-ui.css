@@ -1,3 +1,4 @@
+@charset "UTF-8";
 .drawer-open { overflow: hidden; }
 .drawer-backdrop {
   position: fixed; inset: 0; z-index: 1000; display: grid; grid-template-columns: minmax(280px, 380px) 1fr;
@@ -16,7 +17,8 @@
 .drawer-brand span { display: grid; gap: 2px; }
 .drawer-brand b { font-size: 18px; letter-spacing: .03em; }
 .drawer-brand small { color: #7c3aed; font-weight: 700; }
-.drawer-head > button { width: 40px; height: 40px; border: 0; border-radius: 50%; background: #f3f4f6; font-size: 26px; cursor: pointer; }
+.drawer-head > button { width: 40px; height: 40px; border: 0; border-radius: 50%; background: #f3f4f6; font-size: 26px; cursor: pointer; transition: all 0.2s ease; }
+.drawer-head > button:hover { background: #e5e7eb; }
 .drawer-links { display: grid; gap: 8px; }
 .drawer-links button {
   width: 100%; padding: 14px 16px; display: flex; align-items: center; gap: 14px; border: 0; border-radius: 14px;
@@ -27,7 +29,8 @@
 .drawer-links b { font-size: 15px; }
 .drawer-support { margin-top: auto; padding: 18px; display: grid; gap: 5px; border-radius: 16px; color: #fff; background: linear-gradient(135deg, #6d28d9, #9333ea); }
 .drawer-support small { opacity: .8; }
-.drawer-support a { color: #fff; font-size: 13px; }
+.drawer-support a { color: #fff; font-size: 13px; text-decoration: none; transition: all 0.2s ease; }
+.drawer-support a:hover { opacity: 0.8; }
 .field-hint { display: block; margin-top: 6px; color: #6b7280; font-size: 12px; }
 #sellerApplicationForm input[name="tax_id"]:invalid:not(:placeholder-shown) { border-color: #dc2626; box-shadow: 0 0 0 3px rgba(220, 38, 38, .1); }
 @media (max-width: 520px) {
