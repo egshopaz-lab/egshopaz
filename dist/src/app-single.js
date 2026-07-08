@@ -1,4 +1,4 @@
-import * as supabase from "./supabase.js?v=20260707-7";
+﻿import * as supabase from "./supabase.js?v=20260707-7";
 
 const {
   addCartItem,
@@ -39,29 +39,29 @@ const categories = [
   ["📱", "Elektronika"],
   ["👗", "Qadin geyimleri"],
   ["👔", "Kisi geyimleri"],
-  ["👶", "Usaq ve korpe"],
+  ["👶", "Uşaq və körpə"],
   ["👟", "Ayaqqabi"],
-  ["💄", "Gozellik ve baxim"],
-  ["🏠", "Ev ve metbex"],
+  ["💄", "Gözəllik və baxım"],
+  ["🏠", "Ev və metbex"],
   ["🛏️", "Ev tekstili"],
   ["🚗", "Avtomobil"],
-  ["🔧", "Tikinti ve temir"],
-  ["🌳", "Bag ve heyet"],
-  ["⚽", "Idman ve istirahet"],
-  ["🐾", "Heyvan mehsullari"],
-  ["📚", "Kitablar ve ofis"],
-  ["🛒", "Erzaq mehsullari"],
+  ["🔧", "Tikinti və temir"],
+  ["🌳", "Bag və heyet"],
+  ["⚽", "Idman və istirahet"],
+  ["🐾", "Heyvan məhsulları"],
+  ["📚", "Kitablar və ofis"],
+  ["🛒", "Erzaq məhsulları"],
   ["💊", "Saglamliq"],
-  ["🎁", "Hediyye ve suvenir"],
-  ["💍", "Zergerlik ve saatlar"],
-  ["🎮", "Oyun ve hobbi"],
-  ["🧳", "Cantalar ve aksesuarlar"],
-  ["💼", "Ofis ve biznes"],
+  ["🎁", "Hədiyyə və suvenir"],
+  ["💍", "Zergerlik və saatlar"],
+  ["🎮", "Oyun və hobbi"],
+  ["🧳", "Cantalar və aksesuarlar"],
+  ["💼", "Ofis və biznes"],
   ["🏡", "Smart ev"],
-  ["🚲", "Velosiped ve skuter"],
-  ["🍳", "Metbex texnikasi"],
+  ["🚲", "Velosiped və skuter"],
+  ["🍳", "Mətbəx texnikası"],
   ["🧺", "Meiset texnikasi"],
-  ["📸", "Foto ve video"],
+  ["📸", "Foto və video"],
 ];
 
 const subCategories = [
@@ -71,9 +71,9 @@ const subCategories = [
   "Plansetler",
   "Stolustu komputerler",
   "Monitorlar",
-  "Klaviatura ve mauslar",
-  "Yaddas ve diskler",
-  "Printerler ve skanerler",
+  "Klaviatura və mauslar",
+  "Yaddas və diskler",
+  "Printerler və skanerler",
   "Televizorlar",
   "Audio sistemler",
   "Agilli saatlar",
@@ -83,22 +83,22 @@ const categoryWords = {
   Elektronika: ["telefon", "redmi", "skuter", "elektrik", "portable", "xiaomi"],
   "Qadin geyimleri": ["qadin", "geyim"],
   "Kisi geyimleri": ["kisi", "geyim"],
-  "Usaq ve korpe": ["usaq", "korpe"],
+  "Uşaq və körpə": ["uşaq", "körpə"],
   Ayaqqabi: ["ayaqqabi"],
-  "Gozellik ve baxim": ["etir", "gozellik", "baxim"],
-  "Ev ve metbex": ["ev", "yataq", "metbex", "kofe"],
+  "Gözəllik və baxım": ["ətir", "gözəllik", "baxım"],
+  "Ev və metbex": ["ev", "yataq", "metbex", "kofe"],
   "Ev tekstili": ["yataq", "tekstil"],
   Avtomobil: ["mopet", "skuter"],
-  "Velosiped ve skuter": ["skuter", "mopet"],
+  "Velosiped və skuter": ["skuter", "mopet"],
   Mebel: ["mebel", "italya"],
 };
 
 const fallbackProducts = [
-  { id: "31d03601-5ff1-4b36-8825-5884c00d3332", name: "Etir", price: 100, old: 110, image: "https://ibhmwwdrzgjgwfrvpjht.supabase.co/storage/v1/object/public/product-images/d39654de-946a-4352-b1f1-77b7facd2705/986c0fbc-169b-49a9-b6f1-f4a79a844db9.jpg", rating: "4.8", reviews: 12, brand: "Brend", category: "Gozellik ve baxim" },
-  { id: "118306a5-3867-42db-a025-170f52e786f7", name: "italya mebel", price: 1500, old: 1800, image: "https://ibhmwwdrzgjgwfrvpjht.supabase.co/storage/v1/object/public/product-images/d39654de-946a-4352-b1f1-77b7facd2705/cbb4919c-9264-42fb-88cb-3351e81d812c.jpg", rating: "5.0", reviews: 2, brand: "avilla", category: "Ev ve metbex" },
-  { id: "e6635adc-e394-485f-b999-a7ee263760cd", name: "Mopet", price: 1000, old: null, image: "https://ibhmwwdrzgjgwfrvpjht.supabase.co/storage/v1/object/public/product-images/d39654de-946a-4352-b1f1-77b7facd2705/721da7d9-71c3-43fb-9cc2-7e34fded753b.jpg", rating: "4.6", reviews: 7, brand: "Bmv", category: "Velosiped ve skuter" },
+  { id: "31d03601-5ff1-4b36-8825-5884c00d3332", name: "Ətir", price: 100, old: 110, image: "https://ibhmwwdrzgjgwfrvpjht.supabase.co/storage/v1/object/public/product-images/d39654de-946a-4352-b1f1-77b7facd2705/986c0fbc-169b-49a9-b6f1-f4a79a844db9.jpg", rating: "4.8", reviews: 12, brand: "Brend", category: "Gözəllik və baxım" },
+  { id: "118306a5-3867-42db-a025-170f52e786f7", name: "italya mebel", price: 1500, old: 1800, image: "https://ibhmwwdrzgjgwfrvpjht.supabase.co/storage/v1/object/public/product-images/d39654de-946a-4352-b1f1-77b7facd2705/cbb4919c-9264-42fb-88cb-3351e81d812c.jpg", rating: "5.0", reviews: 2, brand: "avilla", category: "Ev və metbex" },
+  { id: "e6635adc-e394-485f-b999-a7ee263760cd", name: "Mopet", price: 1000, old: null, image: "https://ibhmwwdrzgjgwfrvpjht.supabase.co/storage/v1/object/public/product-images/d39654de-946a-4352-b1f1-77b7facd2705/721da7d9-71c3-43fb-9cc2-7e34fded753b.jpg", rating: "4.6", reviews: 7, brand: "Bmv", category: "Velosiped və skuter" },
   { id: "9dfcd652-cfd9-4e1e-8496-8a11934f4fb2", name: "Xiaomi", price: 800, old: null, image: "https://ibhmwwdrzgjgwfrvpjht.supabase.co/storage/v1/object/public/product-images/d39654de-946a-4352-b1f1-77b7facd2705/b43b3238-5324-4b67-87e4-fa2ad6232ce7.jpg", rating: "4.9", reviews: 19, brand: "Redmi", category: "Elektronika" },
-  { id: "af318359-3b26-4080-ac5b-67c4518d3ac8", name: "kofe", price: 100, old: null, image: "https://ibhmwwdrzgjgwfrvpjht.supabase.co/storage/v1/object/public/product-images/d39654de-946a-4352-b1f1-77b7facd2705/d58b87e3-b1b5-4084-b21f-3545cc816552.jpg", rating: "4.5", reviews: 4, brand: "EG Shop", category: "Erzaq mehsullari" },
+  { id: "af318359-3b26-4080-ac5b-67c4518d3ac8", name: "kofe", price: 100, old: null, image: "https://ibhmwwdrzgjgwfrvpjht.supabase.co/storage/v1/object/public/product-images/d39654de-946a-4352-b1f1-77b7facd2705/d58b87e3-b1b5-4084-b21f-3545cc816552.jpg", rating: "4.5", reviews: 4, brand: "EG Shop", category: "Erzaq məhsulları" },
   { id: "69fbe1c2-af49-4b0e-a4f6-c6d4ec75fb57", name: "Portable", price: 30, old: null, image: "https://ibhmwwdrzgjgwfrvpjht.supabase.co/storage/v1/object/public/product-images/ab3f5c02-b3d9-461c-ba4a-f3b22c627bfb/3a362ccf-4a19-4f86-8e4e-333ff846e46c.jpg", rating: "4.2", reviews: 5, brand: "Audio", category: "Elektronika" },
 ];
 
@@ -122,7 +122,7 @@ function setCartCount(count) {
   document.querySelectorAll("#cartCount,#mobileCartCount").forEach((item) => {
     item.textContent = String(count);
     item.classList.toggle("has-items", Number(count) > 0);
-    item.setAttribute("aria-label", `${count} mehsul`);
+    item.setAttribute("aria-label", `${count} məhsul`);
   });
 }
 
@@ -204,7 +204,7 @@ function filteredProducts(query = "", category = "") {
 function inferCategory(product) {
   if (product.category) return product.category;
   const found = categories.find(([, name]) => productMatches(product, "", name));
-  return found?.[1] || "Diger";
+  return found?.[1] || "Digər";
 }
 
 function routeTo(path) {
@@ -230,19 +230,23 @@ function findProduct(id) {
 function pageTitle(path) {
   const titles = {
     "/catalog": "Kataloq",
-    "/discover": "Kesf et",
-    "/shops": "Magazalar",
-    "/compare": "Muqayise",
-    "/map": "Xerite",
+    "/discover": "Kəşf et",
+    "/shops": "Mağazalar",
+    "/compare": "Müqayisə",
+    "/map": "Xəritə",
     "/promotions": "Aksiyalar",
     "/bonus": "Bonuslar",
-    "/support": "Destek",
-    "/favorites": "Sevimliler",
-    "/cart": "Sebet",
-    "/download": "Mobil tetbiq",
-    "/auth": "Giris / Qeydiyyat",
-    "/seller": "Satici paneli",
-    "/contact": "Elaqe",
+    "/support": "Dəstək",
+    "/favorites": "Sevimlilər",
+    "/cart": "Səbət",
+    "/download": "Mobil tətbiq",
+    "/auth": "Giriş / Qeydiyyat",
+    "/giris-qeydiyyat": "Giriş / Qeydiyyat",
+    "/giriş-qeydiyyat": "Giriş / Qeydiyyat",
+    "/login": "Giriş",
+    "/register": "Qeydiyyat",
+    "/seller": "Satıcı paneli",
+    "/contact": "Əlaqə",
   };
   return titles[path] || "EG Shop";
 }
@@ -262,8 +266,8 @@ function updateSeo(path) {
   const product = path.startsWith("/product/") ? findProduct(path.split("/").pop()) : null;
   const title = product ? `${product.name} | EG Shop` : (path === "/" ? "EG Shop - Marketplace" : `${pageTitle(path)} | EG Shop`);
   const description = product
-    ? `${product.name} - ${money(product.price)}. EG Shop-da sebet, sifaris ve onlayn odenis.`
-    : "EG Shop marketplace: kateqoriyalar, axtaris, satici paneli, sebet, sifaris ve onlayn odenis.";
+    ? `${product.name} - ${money(product.price)}. EG Shop-da səbət, sifariş və onlayn ödəniş.`
+    : "EG Shop marketplace: kateqoriyalar, axtarış, satıcı paneli, səbət, sifariş və onlayn ödəniş.";
   document.title = title;
   document.querySelector("link[rel='canonical']")?.setAttribute("href", `https://egshop.az${window.location.pathname}`);
   setMeta("description", description);
@@ -280,48 +284,49 @@ function routePage(path) {
   if (path.startsWith("/product/")) return productDetailPage(path.split("/").pop());
   if (path === "/catalog") return catalogPage();
   if (path === "/discover") return discoverPage();
-  if (path === "/shops") return infoPage("Magazalar", "Saticilar ve brend magazalar", "Platformada aktiv magazalar, reytinqlər ve satici profilleri burada toplanacaq.", ["Tesdiqli satici rozeti", "Satici mehsullari", "Elaqe ve teslimat melumatlari"]);
+  if (path === "/shops") return infoPage("Mağazalar", "Satıcılar və brend mağazalar", "Platformada aktiv mağazalar, reytinqlər və satıcı profilleri burada toplanacaq.", ["Təsdiqli satıcı rozeti", "Satıcı məhsulları", "Əlaqə və təslimat məlumatları"]);
   if (path === "/compare") return comparePage();
-  if (path === "/map") return infoPage("Xerite", "Catdirilma ve PVZ noqte leri", "Musteri yaxin teshvil menteqesini secmek ve sifarisi xəritədə izləmək imkanina sahib olacaq.", ["PVZ menteqeleri", "Kuryer zonalari", "Canli status"]);
+  if (path === "/map") return infoPage("Xəritə", "Çatdırılma və PVZ noqte leri", "Müştəri yaxin teshvil menteqesini secmek və sifarişi xəritədə izləmək imkanina sahib olacaq.", ["PVZ menteqeleri", "Kuryer zonalari", "Canlı status"]);
   if (path === "/promotions") return promotionsPage();
-  if (path === "/bonus") return infoPage("Bonuslar", "Xal qazan, endirim kimi istifade et", "Her sifaris bonus balansina cevrilir. Bonus sistemi alicilari geri qaytarmaq ucun qurulur.", ["Sifaris bonusu", "Dostunu devet et", "VIP musteriler"]);
+  if (path === "/bonus") return infoPage("Bonuslar", "Xal qazan, endirim kimi istifadə et", "Hər sifariş bonus balansina cevrilir. Bonus sistemi alıcılari geri qaytarmaq üçün qurulur.", ["Sifariş bonusu", "Dostunu devet et", "VIP müştəriler"]);
   if (path === "/support") return supportPage();
-  if (path === "/auth") return authPage();
+  if (["/auth", "/giris-qeydiyyat", "/giriş-qeydiyyat", "/login", "/register"].includes(path)) return authPage(path);
   if (path === "/seller") return sellerDashboardPage();
   if (path === "/contact") return contactPage();
-  if (path === "/download") return infoPage("EG Shop tetbiqi", "Surətli alis-veris cibinde", "Mobil tetbiq bildirisleri, sebeti ve kampaniyalari bir yerde saxlayacaq.", ["Push bildirisler", "Tez sifaris", "Ozel kuponlar"]);
+  if (path === "/download") return infoPage("EG Shop tətbiqi", "Sürətli alış-veriş cibində", "Mobil tətbiq bildirişləri, səbəti və kampaniyaları bir yerdə saxlayacaq.", ["Push bildirişlər", "Tez sifariş", "Özəl kuponlar"]);
   return "";
 }
 
-function authPage() {
-  const mode = new URLSearchParams(window.location.search).get("mode") === "register" ? "register" : "login";
+function authPage(path = currentRoute()) {
+  const params = new URLSearchParams(window.location.search);
+  const mode = params.get("mode") === "register" || path === "/register" ? "register" : "login";
   const register = mode === "register";
   return `
     <section class="auth-page-shell">
       <div class="auth-brand-panel">
         <img src="/assets/logo.png" alt="EG Shop">
         <span>EG SHOP</span>
-        <h1>${register ? "Yeni hesab yaradin" : "Hesabiniza daxil olun"}</h1>
-        <p>Musteri, satici ve admin axinlari ucun tek EG Shop hesabi.</p>
-        <div class="auth-benefits"><b>Suretli sebet</b><b>Tehlukesiz odenis</b><b>Satici paneli</b></div>
+        <h1>${register ? "Yeni hesab yaradın" : "Hesabınıza daxil olun"}</h1>
+        <p>Müştəri, satıcı və admin axınları üçün tək EG Shop hesabı.</p>
+        <div class="auth-benefits"><b>Sürətli səbət</b><b>Təhlükəsiz ödəniş</b><b>Satıcı paneli</b></div>
       </div>
       <form id="authRouteForm" class="auth-page-card" data-mode="${mode}" novalidate>
         <div class="auth-tabs">
-          <button type="button" class="${!register ? "active" : ""}" data-route-auth-mode="login">Giris</button>
+          <button type="button" class="${!register ? "active" : ""}" data-route-auth-mode="login">Giriş</button>
           <button type="button" class="${register ? "active" : ""}" data-route-auth-mode="register">Qeydiyyat</button>
         </div>
         <div class="register-fields" ${register ? "" : "hidden"}>
-          <label>Ad ve soyad<input name="full_name" autocomplete="name" ${register ? "required" : ""}></label>
+          <label>Ad və soyad<input name="full_name" autocomplete="name" ${register ? "required" : ""}></label>
           <label>Telefon<input name="phone" autocomplete="tel" placeholder="+994 50 000 00 00" ${register ? "required" : ""}></label>
         </div>
-        <label>E-poct<input name="email" type="email" autocomplete="email" required></label>
-        <label>Sifre<span class="password-field"><input name="password" type="password" minlength="8" autocomplete="${register ? "new-password" : "current-password"}" required><button type="button" data-password-toggle>Goster</button></span></label>
+        <label>E-poçt<input name="email" type="email" autocomplete="email" required></label>
+        <label>Şifrə<span class="password-field"><input name="password" type="password" minlength="8" autocomplete="${register ? "new-password" : "current-password"}" required><button type="button" data-password-toggle>Göstər</button></span></label>
         <div class="register-fields" ${register ? "" : "hidden"}>
-          <label>Sifreni tekrarla<input name="password_confirm" type="password" minlength="8" ${register ? "required" : ""}></label>
-          <label class="terms-check"><input name="terms" type="checkbox"> <span>Istifade sertlerini qebul edirem.</span></label>
+          <label>Şifrəni təkrarla<input name="password_confirm" type="password" minlength="8" ${register ? "required" : ""}></label>
+          <label class="terms-check"><input name="terms" type="checkbox"> <span>İstifadə şərtlərini qəbul edirəm.</span></label>
         </div>
-        <button class="auth-link" type="button" data-forgot-password ${register ? "hidden" : ""}>Sifremi unutdum</button>
-        <button class="form-submit" type="submit">${register ? "Qeydiyyatdan kec" : "Daxil ol"}</button>
+        <button class="auth-link" type="button" data-forgot-password ${register ? "hidden" : ""}>Şifrəmi unutdum</button>
+        <button class="form-submit" type="submit">${register ? "Qeydiyyatdan keç" : "Daxil ol"}</button>
         <p class="form-message" id="authMessage"></p>
       </form>
     </section>`;
@@ -332,15 +337,15 @@ function sellerDashboardPage() {
   const sample = products.slice(0, 2);
   return `
     <section class="seller-dashboard-page">
-      <div class="seller-dashboard-top"><div><span>SATICI PANELI</span><h1>Magazam</h1><p>${email}</p></div><button type="button" class="form-submit" data-panel="seller">Mehsul idareetmesini ac</button></div>
-      <nav class="seller-dashboard-tabs"><button class="active">Dashboard</button><button>Mehsullar <i>${products.length}</i></button><button>Toplu yukleme</button><button>Sifarisler <i>2</i></button><button>Qaytarmalar</button><button>Bildirisler</button><button>Analitika</button></nav>
-      <div class="seller-metrics"><article><b>${products.length}</b><span>Aktiv mehsul</span></article><article><b>${money(products.reduce((sum, p) => sum + Number(p.price || 0), 0))}</b><span>Vitrin deyeri</span></article><article><b>2</b><span>Gozleyen sifaris</span></article><article><b>98%</b><span>Hazirliq seviyesi</span></article></div>
-      <section class="seller-orders-panel"><div class="seller-panel-heading"><h2>Sifarisler</h2><div><button>Bu gun</button><button>7 gun</button><button>30 gun</button></div></div>${sample.map((product, index) => `<article class="seller-order-row"><img src="${product.image}" alt=""><div><b>${product.name}</b><small>No ${2033446 + index} - ${index + 1} eded - Musteri: EG Shop</small><p>PVZ punkt teyin olunmayib</p></div><strong>${money(product.price)}</strong><button>Paketle</button><button>Gonderildi</button><button>Etiket cap et</button></article>`).join("")}</section>
+      <div class="seller-dashboard-top"><div><span>SATICI PANELI</span><h1>Mağazam</h1><p>${email}</p></div><button type="button" class="form-submit" data-panel="seller">Məhsul idarəetməsini ac</button></div>
+      <nav class="seller-dashboard-tabs"><button class="active">Dashboard</button><button>Məhsullar <i>${products.length}</i></button><button>Toplu yükləme</button><button>Sifarişler <i>2</i></button><button>Qaytarmalar</button><button>Bildirisler</button><button>Analitika</button></nav>
+      <div class="seller-metrics"><article><b>${products.length}</b><span>Aktiv məhsul</span></article><article><b>${money(products.reduce((sum, p) => sum + Number(p.price || 0), 0))}</b><span>Vitrin deyeri</span></article><article><b>2</b><span>Gozleyen sifariş</span></article><article><b>98%</b><span>Hazirliq seviyesi</span></article></div>
+      <section class="seller-orders-panel"><div class="seller-panel-heading"><h2>Sifarişler</h2><div><button>Bu gün</button><button>7 gün</button><button>30 gün</button></div></div>${sample.map((product, index) => `<article class="seller-order-row"><img src="${product.image}" alt=""><div><b>${product.name}</b><small>No ${2033446 + index} - ${index + 1} eded - Müştəri: EG Shop</small><p>PVZ punkt teyin olunmayib</p></div><strong>${money(product.price)}</strong><button>Paketle</button><button>Gonderildi</button><button>Etiket cap et</button></article>`).join("")}</section>
     </section>`;
 }
 
 function contactPage() {
-  return `<section class="contact-page"><h1>Elaqe</h1><div class="contact-card"><p><b>@</b> info@egshop.az</p><p><b>T</b> +994 50 000 00 00</p><p><b>M</b> Baki, Azerbaycan</p></div></section>`;
+  return `<section class="contact-page"><h1>Əlaqə</h1><div class="contact-card"><p><b>@</b> info@egshop.az</p><p><b>T</b> +994 50 000 00 00</p><p><b>M</b> Baki, Azərbaycan</p></div></section>`;
 }
 
 function catalogPage() {
@@ -349,16 +354,16 @@ function catalogPage() {
   const category = params.get("category") || "";
   const items = filteredProducts(query, category);
   return `
-    <section class="route-hero">
+    <section class="route-həro">
       <span>KATALOQ</span>
-      <h1>Butun kateqoriyalar ve mehsullar</h1>
-      <p>${category || query ? `${items.length} netice tapildi.` : "EG Shop-da elektronika, ev, moda, hediyye ve daha cox bolme tek ekranda toplanir."}</p>
+      <h1>Bütün kateqoriyalar və məhsullar</h1>
+      <p>${category || query ? `${items.length} nəticə tapildi.` : "EG Shop-da elektronika, ev, moda, hediyye və daha cox bölmə tək ekranda toplanir."}</p>
     </section>
     <section class="route-category-grid">
       ${categories.map(([icon, name]) => `<button type="button" class="${name === category ? "active" : ""}" data-category="${name}"><span>${icon}</span><b>${name}</b><small>${(categoryWords[name] || [name]).join(", ")}</small></button>`).join("")}
     </section>
     <section class="products-section route-products">
-      <div class="section-title"><h2>${category || query ? "Filtr neticeleri" : "Kataloq mehsullari"}</h2><button type="button" data-show-all>Hamisi ></button></div>
+      <div class="section-title"><h2>${category || query ? "Filtr nəticələri" : "Kataloq məhsulları"}</h2><button type="button" data-show-all>Hamısı ></button></div>
       <div class="product-grid">${productResults(items, false, query, category)}</div>
     </section>`;
 }
@@ -366,13 +371,13 @@ function catalogPage() {
 function discoverPage() {
   const discounted = products.filter((product) => product.old).concat(products).slice(0, 8);
   return `
-    <section class="route-hero discover">
+    <section class="route-həro discover">
       <span>KESF ET</span>
-      <h1>Trend, endirim ve uduslu secimler</h1>
-      <p>Alis-verisi daha maraqli etmek ucun populyar mehsullar, endirimler ve hefte hediyyeleri burada gosterilir.</p>
+      <h1>Trend, endirim və uduşlu secimler</h1>
+      <p>Alis-verisi daha maraqli etmek üçün populyar məhsullar, endirimler və hefte hədiyyələri burada gosterilir.</p>
     </section>
     <section class="lv-product-section lv-sale route-block">
-      <div class="lv-section-heading"><div><span class="lv-kicker">ENDIRIM</span><h2>Bugunun secimi</h2></div></div>
+      <div class="lv-section-heading"><div><span class="lv-kicker">ENDİRİM</span><h2>Bugünun secimi</h2></div></div>
       <div class="lv-products">${productList(discounted.slice(0, 4), true)}</div>
     </section>
     <section class="products-section route-products">
@@ -386,59 +391,59 @@ function productDetailPage(id) {
   const related = products.filter((item) => item.id !== product.id).slice(0, 4);
   return `
     <section class="product-detail-page">
-      <button class="route-back" type="button" data-route="/">‹ Ana sehife</button>
+      <button class="route-back" type="button" data-route="/">‹ Ana səhifə</button>
       <div class="detail-media"><img src="${product.image}" alt="${product.name}"></div>
       <div class="detail-copy">
         <span>${product.brand || "EG Shop"}</span>
         <h1>${product.name}</h1>
         <div class="detail-price"><strong>${money(product.price)}</strong>${product.old ? `<del>${money(product.old)}</del><em>-${discount(product)}%</em>` : ""}</div>
-        <p>Keyfiyyetli mehsul, rahat sebet, sevimliler ve sifaris axini ile EG Shop marketplace tecrubesi.</p>
+        <p>Keyfiyyətli məhsul, rahat səbət, sevimlilər və sifariş axını ilə EG Shop marketplace təcrübəsi.</p>
         <div class="detail-actions">
-          <button class="lv-cart" type="button" data-add="${product.id || ""}">Sebete at</button>
-          <button class="detail-favorite" type="button" data-favorite="${product.id || ""}">Sevimliye elave et</button>
+          <button class="lv-cart" type="button" data-add="${product.id || ""}">Səbətə at</button>
+          <button class="detail-favorite" type="button" data-favorite="${product.id || ""}">Sevimliyə əlavə et</button>
         </div>
         <ul>
-          <li>Catdirilma ve PVZ secimi desteklenir</li>
-          <li>Satici paneli ile mehsul idareetmesi</li>
-          <li>Təhlükəsiz hesab ve sifaris tarixcesi</li>
+          <li>Çatdırılma və PVZ secimi dəstəklenir</li>
+          <li>Satıcı paneli ilə məhsul idarəetməsi</li>
+          <li>Təhlükəsiz hesab və sifariş tarixcesi</li>
         </ul>
       </div>
     </section>
     <section class="products-section route-products">
-      <div class="section-title"><h2>Oxsar mehsullar</h2></div>
+      <div class="section-title"><h2>Oxsar məhsullar</h2></div>
       <div class="product-grid">${productList(related)}</div>
     </section>`;
 }
 
 function promotionsPage() {
   return `
-    <section class="route-hero promo">
+    <section class="route-həro promo">
       <span>AKSIYALAR</span>
-      <h1>Endirimler, kuponlar ve uduslar</h1>
+      <h1>Endirimler, kuponlar və uduşlar</h1>
       <p>Hefte sonu endirimleri, uduşlu məhsullar və xüsusi kampaniyalar üçün ayrılmış bölmə.</p>
     </section>
     <section class="promo-grid">
-      <article><b>70% endirim</b><p>Secilmis kolleksiyalarda boyuk endirim bloklari.</p></article>
-      <article><b>Uduşlu sifaris</b><p>Her tamamlanan sifaris hefte hediyyesinde istirak edir.</p></article>
-      <article><b>Yeni satici bonusu</b><p>Yeni magazalar ucun komissiya ve reklam destekleri.</p></article>
+      <article><b>70% endirim</b><p>Seçilmiş kolleksiyalarda böyük endirim bloklari.</p></article>
+      <article><b>Uduşlu sifariş</b><p>Hər tamamlanan sifariş hefte hediyyesinde istirak edir.</p></article>
+      <article><b>Yeni satıcı bonusu</b><p>Yeni mağazalar üçün komissiya və reklam dəstəkleri.</p></article>
     </section>`;
 }
 
 function comparePage() {
   return `
-    <section class="route-hero">
+    <section class="route-həro">
       <span>MUQAYISE</span>
-      <h1>Mehsullari yan-yana yoxla</h1>
-      <p>Qiymet, endirim, reytinq ve brend melumatlarini bir ekranda muqayise et.</p>
+      <h1>Məhsullari yan-yana yoxla</h1>
+      <p>Qiymət, endirim, reytinq və brend məlumatlarıni bir ekranda müqayisə et.</p>
     </section>
     <section class="compare-grid">
-      ${products.slice(0, 3).map((product) => `<article>${productCard(product, true)}<dl><dt>Qiymet</dt><dd>${money(product.price)}</dd><dt>Reytinq</dt><dd>${product.rating || "5.0"}</dd><dt>Brend</dt><dd>${product.brand || "EG Shop"}</dd></dl></article>`).join("")}
+      ${products.slice(0, 3).map((product) => `<article>${productCard(product, true)}<dl><dt>Qiymət</dt><dd>${money(product.price)}</dd><dt>Reytinq</dt><dd>${product.rating || "5.0"}</dd><dt>Brend</dt><dd>${product.brand || "EG Shop"}</dd></dl></article>`).join("")}
     </section>`;
 }
 
 function supportPage() {
   return `
-    <section class="route-hero support">
+    <section class="route-həro support">
       <span>DESTEK</span>
       <h1>Alıcı, satıcı və PVZ dəstəyi</h1>
       <p>Sifariş, ödəniş, qaytarma və satıcı müraciətləri üçün mərkəz.</p>
@@ -453,18 +458,18 @@ function supportPage() {
 
 function infoPage(kicker, title, text, items) {
   return `
-    <section class="route-hero">
+    <section class="route-həro">
       <span>${kicker}</span>
       <h1>${title}</h1>
       <p>${text}</p>
     </section>
-    <section class="info-list">${items.map((item) => `<article><b>${item}</b><p>Bu modul marketplace inkişaf planına daxil edilib və əsas alis-veris axını ilə birləşdirilir.</p></article>`).join("")}</section>`;
+    <section class="info-list">${items.map((item) => `<article><b>${item}</b><p>Bu modul marketplace inkişaf planına daxil edilib və əsas alış-veriş axını ilə birləşdirilir.</p></article>`).join("")}</section>`;
 }
 
 function productCard(product, highlighted = false) {
   const percent = discount(product);
   return `
-    <article class="${highlighted ? "lv-card" : "product-card"}" data-product-id="${product.id || ""}" tabindex="0" role="link" aria-label="${product.name} mehsuluna bax">
+    <article class="${highlighted ? "lv-card" : "product-card"}" data-product-id="${product.id || ""}" tabindex="0" role="link" aria-label="${product.name} məhsuluna bax">
       <div class="${highlighted ? "lv-card-media" : "product-image"}">
         ${highlighted && percent ? `<span class="lv-discount">-${percent}%</span>` : ""}
         ${highlighted ? `<button class="lv-heart" type="button" data-favorite="${product.id || ""}" aria-label="Sevimli">♡</button>` : `<button class="heart" type="button" data-favorite="${product.id || ""}" aria-label="Sevimli">♡</button>`}
@@ -478,8 +483,8 @@ function productCard(product, highlighted = false) {
         ${highlighted ? `<small>${product.brand || ""}</small>` : ""}
         <h3>${product.name}</h3>
         <div class="rating"><span>*</span> ${product.rating || "5.0"} · ${product.reviews || 0}</div>
-        <button class="${highlighted ? "lv-detail" : "detail-button"}" type="button" data-route="/product/${product.id || ""}">Detalli bax</button>
-        <button class="${highlighted ? "lv-cart" : "cart-button"}" type="button" data-add="${product.id || ""}">Sebete at</button>
+        <button class="${highlighted ? "lv-detail" : "detail-button"}" type="button" data-route="/product/${product.id || ""}">Detallı bax</button>
+        <button class="${highlighted ? "lv-cart" : "cart-button"}" type="button" data-add="${product.id || ""}">Səbətə at</button>
       </div>
     </article>
   `;
@@ -487,7 +492,7 @@ function productCard(product, highlighted = false) {
 
 function emptyProductsText(query = "", category = "") {
   const detail = [category, query].filter(Boolean).join(" / ");
-  return `<div class="empty-products"><b>Mehsul tapilmadi</b><p>${detail ? `${detail} ucun` : "Bu bolmede"} netice yoxdur. Basqa soz ve ya kateqoriya yoxlayin.</p></div>`;
+  return `<div class="empty-products"><b>Məhsul tapilmadi</b><p>${detail ? `${detail} ucun` : "Bu bölməde"} nəticə yoxdur. Basqa soz və ya kateqoriya yoxlayin.</p></div>`;
 }
 
 function productResults(items, highlighted = false, query = "", category = "") {
@@ -495,28 +500,28 @@ function productResults(items, highlighted = false, query = "", category = "") {
 }
 
 function renderApp() {
-  const userLabel = currentUser() ? "Hesab" : "Giris";
+  const userLabel = currentUser() ? "Hesab" : "Giriş";
   document.querySelector("#app").innerHTML = `
-    <aside class="market-sidebar" aria-label="Esas menyu">
+    <aside class="market-sidebar" aria-label="Əsas menyu">
       <a class="side-brand" href="/" data-route="/">
         <img src="/assets/logo.png" alt="EG Shop">
-        <span><b>EG Shop</b><small>market</small></span>
+        <span><b>EG Shop</b><small>marketplace</small></span>
       </a>
       <p>Esas menyu</p>
       <nav>
-        <button type="button" data-route="/"><span>H</span>Ana sehife</button>
-        <button type="button" data-route="/catalog"><span>K</span>Kataloq</button>
-        <button type="button" data-route="/shops"><span>M</span>Magazalar</button>
-        <button type="button" data-route="/discover"><span>D</span>Kesf et</button>
-        <button type="button" data-route="/compare"><span>C</span>Muqayise</button>
-        <button type="button" data-route="/map"><span>X</span>Xerite</button>
-        <button type="button" data-route="/promotions"><span>A</span>Aksiyalar</button>
-        <button type="button" data-route="/bonus"><span>B</span>Bonuslar</button>
-        <button type="button" data-route="/support"><span>?</span>Destek</button>
+        <button type="button" data-route="/"><span>⌂</span>Ana səhifə</button>
+        <button type="button" data-route="/catalog"><span>▦</span>Kataloq</button>
+        <button type="button" data-route="/shops"><span>⌘</span>Mağazalar</button>
+        <button type="button" data-route="/discover"><span>◎</span>Kəşf et</button>
+        <button type="button" data-route="/compare"><span>⇄</span>Müqayisə</button>
+        <button type="button" data-route="/map"><span>⌖</span>Xəritə</button>
+        <button type="button" data-route="/promotions"><span>%</span>Aksiyalar</button>
+        <button type="button" data-route="/bonus"><span>★</span>Bonuslar</button>
+        <button type="button" data-route="/support"><span>?</span>Dəstək</button>
       </nav>
       <div class="side-help">
         <b>Marketplace</b>
-        <small>Satici, alici ve PVZ axinlari tek yerde.</small>
+        <small>Satıcı, alıcı və PVZ axınları tək yerdə.</small>
       </div>
     </aside>
 
@@ -528,15 +533,15 @@ function renderApp() {
         <div class="clock"><b id="clock">00:00</b><small id="date">2026-07-07</small></div>
         <label class="search">
           <span>Q</span>
-          <input id="searchInput" type="search" placeholder="Mehsul, marka ve ya kateqoriya axtar...">
+          <input id="searchInput" type="search" placeholder="Məhsul, marka və ya kateqoriya axtar...">
           <button type="button" aria-label="Axtaris">O</button>
         </label>
-        <nav class="header-actions" aria-label="Istifadeci menyusu">
+        <nav class="header-actions" aria-label="İstifadəci menyusu">
           <button type="button" data-language><span>AZ</span><b>AZ</b></button>
-          <button type="button" data-action="discover"><span>D</span><b>Kesf et</b></button>
-          <button type="button" data-action="favorites"><span>F</span><b>Sevimli</b></button>
-          <button type="button" class="basket-action" data-action="cart"><span>C</span><b>Sebet</b><i id="cartCount">0</i></button>
-          <button type="button" data-route="/auth"><span>U</span><b>${userLabel}</b></button>
+          <button type="button" data-action="discover"><span>◎</span><b>Kəşf et</b></button>
+          <button type="button" data-action="favorites"><span>♡</span><b>Sevimlilər</b></button>
+          <button type="button" class="basket-action" data-action="cart"><span>🛒</span><b>Səbət</b><i id="cartCount">0</i></button>
+          <button type="button" data-route="/auth"><span>⌾</span><b>${userLabel}</b></button>
         </nav>
       </div>
     </header>
@@ -544,25 +549,25 @@ function renderApp() {
     <main id="top">
       <section class="market-hero">
         <div>
-          <span>EG Shop - Azerbaycanin onlayn marketi</span>
-          <h1>Alis-veris, magazalar ve catdirilma tek platformada</h1>
-          <p>Mehsul axtarisi, satici paneli, PVZ, sebet ve bonus axinlari mobilde de rahat istifade ucun yeniden yigildi.</p>
+          <span>EG Shop - Azərbaycanın onlayn marketi</span>
+          <h1>Alis-veris, mağazalar və çatdırılma tək platformada</h1>
+          <p>Məhsul axtarışı, satıcı paneli, PVZ, səbət və bonus axınları mobildə də rahat istifadə üçün yenidən yığıldı.</p>
         </div>
-        <div class="hero-stat"><b>${products.length}</b><small>aktiv mehsul</small></div>
+        <div class="həro-stat"><b>${products.length}</b><small>aktiv məhsul</small></div>
       </section>
 
       <div class="quick-links role-links">
-        <button type="button" data-route="/seller">Satici girisi</button>
-        <button type="button" data-action="pvz">PVZ girisi</button>
+        <button type="button" data-route="/seller">Satıcı girişi</button>
+        <button type="button" data-action="pvz">PVZ girişi</button>
         <button type="button" data-panel="admin">Admin</button>
-        <button type="button" class="seller" data-route="/auth?mode=register">Satici ol</button>
+        <button type="button" class="seller" data-route="/auth?mode=register">Satıcı ol</button>
       </div>
 
       <section class="lv-category-area">
         <div class="lv-scroll lv-categories">
           ${categories.map(([icon, name], index) => `<button type="button" class="${index === 0 ? "active" : ""}" data-category="${name}"><span>${icon}</span>${name}</button>`).join("")}
         </div>
-        <div class="lv-section-heading lv-subheading"><h2>One cixan kateqoriyalar</h2><button type="button" data-show-all>Hamisi ></button></div>
+        <div class="lv-section-heading lv-subheading"><h2>Önə çıxan kateqoriyalar</h2><button type="button" data-show-all>Hamısı ></button></div>
         <div class="lv-scroll lv-subcategories">
           ${subCategories.map((name) => `<button type="button" data-subcategory="${name}"><span>+</span>${name}</button>`).join("")}
         </div>
@@ -576,33 +581,33 @@ function renderApp() {
       </section>
 
       <section class="lv-product-section lv-win">
-        <div class="lv-section-heading"><div><span class="lv-kicker">HEDIYYE</span><h2>Uduslu mehsullar</h2></div><button type="button" data-show-all>Hamisi ></button></div>
+        <div class="lv-section-heading"><div><span class="lv-kicker">HƏDİYYƏ</span><h2>Uduslu məhsullar</h2></div><button type="button" data-show-all>Hamısı ></button></div>
         <div class="lv-products">${products.slice(0, 1).map((product) => productCard(product, true)).join("")}</div>
       </section>
 
       <section class="lv-product-section lv-sale">
-        <div class="lv-section-heading"><div><span class="lv-kicker">ENDIRIM</span><h2>Endirimli qiymetler</h2></div><button type="button" data-show-all>Hamisi ></button></div>
+        <div class="lv-section-heading"><div><span class="lv-kicker">ENDİRİM</span><h2>Endirimli qiymətlər</h2></div><button type="button" data-show-all>Hamısı ></button></div>
         <div class="lv-products">${products.slice(0, 3).map((product) => productCard(product, true)).join("")}</div>
       </section>
 
       <section class="products-section">
-        <div class="section-title"><h2>Sizin ucun</h2><button type="button" data-show-all>Hamisi ></button></div>
+        <div class="section-title"><h2>Sizin ucun</h2><button type="button" data-show-all>Hamısı ></button></div>
         <div class="product-grid" id="productGrid">${products.map((product) => productCard(product, false)).join("")}</div>
       </section>
 
       <section class="gift-banner" data-route="/promotions">
-        <span>UDUS</span>
-        <div><small>Her sifaris bir sansdir</small><h2>Heftelik hediyyeler qazan</h2></div>
-        <button type="button" data-route="/promotions">Etrafli bax ></button>
+        <span>UDUŞ</span>
+        <div><small>Hər sifariş bir sansdir</small><h2>Həftəlik hədiyyələr qazan</h2></div>
+        <button type="button" data-route="/promotions">Ətraflı bax ></button>
       </section>
     </main>
 
     <nav class="mobile-nav" aria-label="Mobil menyu">
-      <button type="button" data-mobile="home"><span>H</span>Ana sehife</button>
-      <button type="button" data-mobile="catalog"><span>K</span>Kataloq</button>
-      <button type="button" data-mobile="cart"><span>S</span>Sebet<i id="mobileCartCount">0</i></button>
-      <button type="button" data-mobile="favorites"><span>F</span>Sevimli</button>
-      <button type="button" data-mobile="account"><span>U</span>${userLabel}</button>
+      <button type="button" data-mobile="home"><span>⌂</span>Ana səhifə</button>
+      <button type="button" data-mobile="catalog"><span>▦</span>Kataloq</button>
+      <button type="button" data-mobile="cart"><span>S</span>Səbət<i id="mobileCartCount">0</i></button>
+      <button type="button" data-mobile="favorites"><span>♡</span>Sevimlilər</button>
+      <button type="button" data-mobile="account"><span>⌾</span>${userLabel}</button>
     </nav>
 
     <dialog class="account-dialog" id="accountDialog">
@@ -615,7 +620,7 @@ function renderApp() {
       <div id="panelContent"></div>
     </dialog>
 
-    <div class="toast" id="toast">Hazirdir</div>
+    <div class="toast" id="toast">Hazırdır</div>
     </div>
   `;
 }
@@ -684,7 +689,7 @@ function bindRoutedControls(root = document) {
       const input = button.closest("label")?.querySelector("input");
       if (!input) return;
       input.type = input.type === "password" ? "text" : "password";
-      button.textContent = input.type === "password" ? "Goster" : "Gizlet";
+      button.textContent = input.type === "password" ? "Göstər" : "Gizlət";
     });
   });
   root.querySelector("#authRouteForm")?.addEventListener("submit", handleAuth);
@@ -694,7 +699,7 @@ function bindRoutedControls(root = document) {
     try {
       await resetPassword(form.elements.email.value);
       message.className = "form-message success";
-      message.textContent = "Sifre yenileme linki e-poctunuza gonderildi.";
+      message.textContent = "Şifrə yeniləmə linki e-poçtunuza göndərildi.";
     } catch (error) {
       message.textContent = error.message;
     }
@@ -732,7 +737,7 @@ function bindRoutedControls(root = document) {
       try {
         await addCartItem(button.dataset.add);
         await syncCartCount();
-        notify("Mehsul sebete elave edildi");
+        notify("Məhsul səbətə əlavə edildi");
       } catch (error) {
         notify(error.message);
       } finally {
@@ -750,7 +755,7 @@ function bindRoutedControls(root = document) {
       try {
         const added = await toggleFavorite(button.dataset.favorite);
         button.textContent = added ? "♡" : "♧";
-        notify(added ? "Sevimlilere elave edildi" : "Sevimlilerden silindi");
+        notify(added ? "Sevimlilərə əlavə edildi" : "Sevimlilərdən silindi");
       } catch (error) {
         notify(error.message);
       }
@@ -762,7 +767,7 @@ function addFooter() {
   if (document.querySelector(".site-footer")) return;
   const footer = document.createElement("footer");
   footer.className = "site-footer";
-  footer.innerHTML = '<b>EG SHOP</b><nav><a href="/about.html">Haqqimizda</a><a href="/contact.html">Elaqe</a><a href="/privacy.html">Mexfilik siyaseti</a></nav><small>© 2026 EG Shop</small>';
+  footer.innerHTML = '<b>EG SHOP</b><nav><a href="/about.html">Haqqımızda</a><a href="/contact.html">Əlaqə</a><a href="/privacy.html">Məxfilik siyasəti</a></nav><small>© 2026 EG Shop</small>';
   document.querySelector("main")?.after(footer);
 }
 
@@ -790,17 +795,17 @@ function createDrawer() {
         <button type="button" data-drawer-close>x</button>
       </div>
       <nav class="drawer-links">
-        <button type="button" data-drawer-target="#top"><span>H</span><b>Ana sehife</b></button>
-        <button type="button" data-route="/catalog"><span>K</span><b>Kataloq</b></button>
-        <button type="button" data-drawer-target=".products-section"><span>M</span><b>Mehsullar</b></button>
-        <button type="button" data-route="/shops"><span>S</span><b>Magazalar</b></button>
-        <button type="button" data-route="/compare"><span>C</span><b>Muqayise</b></button>
-        <button type="button" data-route="/promotions"><span>A</span><b>Aksiyalar</b></button>
-        <button type="button" data-route="/bonus"><span>B</span><b>Bonuslar</b></button>
-        <button type="button" data-route="/support"><span>D</span><b>Destek</b></button>
-        <button type="button" data-drawer-seller><span>S</span><b>Satici ol</b></button>
+        <button type="button" data-drawer-target="#top"><span>⌂</span><b>Ana səhifə</b></button>
+        <button type="button" data-route="/catalog"><span>▦</span><b>Kataloq</b></button>
+        <button type="button" data-drawer-target=".products-section"><span>⌘</span><b>Məhsullar</b></button>
+        <button type="button" data-route="/shops"><span>S</span><b>Mağazalar</b></button>
+        <button type="button" data-route="/compare"><span>⇄</span><b>Müqayisə</b></button>
+        <button type="button" data-route="/promotions"><span>%</span><b>Aksiyalar</b></button>
+        <button type="button" data-route="/bonus"><span>★</span><b>Bonuslar</b></button>
+        <button type="button" data-route="/support"><span>?</span><b>Dəstək</b></button>
+        <button type="button" data-drawer-seller><span>S</span><b>Satıcı ol</b></button>
       </nav>
-      <div class="drawer-support"><small>Destek</small><b>Her gun yaninizdayiq</b><a href="mailto:info@egshop.az">info@egshop.az</a></div>
+      <div class="drawer-support"><small>Dəstək</small><b>Hər gün yanınızdayıq</b><a href="mailto:info@egshop.az">info@egshop.az</a></div>
     </aside>`;
   document.body.append(backdrop);
   bindRouteInteractions(backdrop);
@@ -837,7 +842,7 @@ function filterProducts(label) {
     return;
   }
   let visible = applyProductFilter(document.querySelector("#searchInput")?.value || "", label);
-  notify(visible ? `${label}: ${visible} mehsul tapildi` : `${label} ucun hele mehsul yoxdur`);
+  notify(visible ? `${label}: ${visible} məhsul tapildi` : `${label} üçün hele məhsul yoxdur`);
   document.querySelector(".products-section")?.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
@@ -874,7 +879,7 @@ function showInfo(title, html) {
 
 async function callAdvanced(payload) {
   const token = session()?.access_token;
-  if (!token) throw new Error("Sifaris ucun yeniden giris edin.");
+  if (!token) throw new Error("Sifariş üçün yenidən giriş edin.");
   const response = await fetch(`${SUPABASE_URL}/functions/v1/epoint-advanced`, {
     method: "POST",
     headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
@@ -887,7 +892,7 @@ async function callAdvanced(payload) {
 
 async function startPayment(address, phone, method) {
   const token = session()?.access_token;
-  if (!token) throw new Error("Sifaris ucun yeniden giris edin.");
+  if (!token) throw new Error("Sifariş üçün yenidən giriş edin.");
   let result;
   if (method === "card") {
     const response = await fetch(`${SUPABASE_URL}/functions/v1/epoint-create`, {
@@ -896,7 +901,7 @@ async function startPayment(address, phone, method) {
       body: JSON.stringify({ address, phone }),
     });
     result = await response.json().catch(() => null);
-    if (!response.ok) throw new Error(result?.message || "Odenis basladilmadi.");
+    if (!response.ok) throw new Error(result?.message || "Ödəniş basladilmadi.");
   } else if (method.startsWith("saved:")) {
     result = await callAdvanced({ action: "saved-card-pay", card_id: method.slice(6), address, phone });
   } else if (method.startsWith("wallet:")) {
@@ -906,14 +911,14 @@ async function startPayment(address, phone, method) {
     result = await callAdvanced({ action: actions[method], address, phone });
   }
   const destination = result?.redirect_url || result?.widget_url;
-  if (!destination) throw new Error(result?.message || "Odenis sehifesi yaradilamdi.");
+  if (!destination) throw new Error(result?.message || "Ödəniş sehifesi yaradilamdi.");
   window.location.assign(destination);
 }
 
 async function openFavorites() {
   try {
     const favorites = await getFavorites();
-    showInfo("Sevimliler", favorites.length ? `<div class="drawer-products">${favorites.map((item) => drawerProduct(item.products)).join("")}</div>` : "<p>Sevimli mehsulunuz yoxdur.</p>");
+    showInfo("Sevimlilər", favorites.length ? `<div class="drawer-products">${favorites.map((item) => drawerProduct(item.products)).join("")}</div>` : "<p>Sevimli məhsulunuz yoxdur.</p>");
   } catch (error) {
     notify(error.message);
   }
@@ -926,12 +931,12 @@ function drawerProduct(product, extra = "") {
 function renderCheckoutForm(items, total) {
   return `
     <div class="drawer-products">${items.map((item) => drawerProduct(item.products, `<button type="button" data-remove-cart="${item.id}">Sil</button>`)).join("")}</div>
-    <div class="cart-total"><span>Cemi</span><b>${money(total)}</b></div>
+    <div class="cart-total"><span>Cəmi</span><b>${money(total)}</b></div>
     <form id="checkoutForm" class="product-form">
-      <p class="flow-hint">Sifaris tesdiqlenende sistem mehsullari saticilara baglayir ve Epoint odenis sehifesine yonlendirir.</p>
-      <label>Catdirilma unvani<input name="address" required minlength="8" placeholder="Seher, kuce, bina, menzil"></label>
+      <p class="flow-hint">Sifariş təsdiqlenende sistem məhsulları satıcılara baglayir və Epoint ödəniş sehifesine yonlendirir.</p>
+      <label>Çatdırılma ünvani<input name="address" required minlength="8" placeholder="Şəhər, küçə, bina, mənzil"></label>
       <label>Telefon<input name="phone" required inputmode="tel" placeholder="+994 50 000 00 00"></label>
-      <label>Odenis usulu
+      <label>Ödəniş usulu
         <select name="payment_method">
           <option value="card">Bank karti</option>
           <option value="split">Marketplace split</option>
@@ -939,8 +944,8 @@ function renderCheckoutForm(items, total) {
           <option value="widget">Apple Pay / Google Pay</option>
         </select>
       </label>
-      <label>Catdirilma qeydi<textarea name="note" rows="3" placeholder="Kuryer ucun qeyd varsa yazin"></textarea></label>
-      <label class="terms-check"><input name="terms" type="checkbox" required><span>Sifaris ve odenis sertlerini qebul edirem</span></label>
+      <label>Çatdırılma qeydi<textarea name="note" rows="3" placeholder="Kuryer üçün qeyd varsa yazin"></textarea></label>
+      <label class="terms-check"><input name="terms" type="checkbox" required><span>Sifariş və ödəniş şərtlərini qəbul edirem</span></label>
       <button type="button" class="form-secondary" data-register-card>Karti yadda saxla</button>
       <button class="form-submit" type="submit">Kartla ode</button>
     </form>`;
@@ -964,9 +969,9 @@ async function hydratePaymentOptions(form) {
 async function openCart() {
   try {
     const items = await getCart();
-    if (!items.length) return showInfo("Sebet", "<p>Sebetiniz bosdur.</p>");
+    if (!items.length) return showInfo("Səbət", "<p>Səbətiniz boşdur.</p>");
     const total = items.reduce((sum, item) => sum + Number(item.products.price) * item.quantity, 0);
-    showInfo("Sebet", renderCheckoutForm(items, total));
+    showInfo("Səbət", renderCheckoutForm(items, total));
     document.querySelectorAll("[data-remove-cart]").forEach((button) => button.addEventListener("click", async () => {
       await removeCartItem(button.dataset.removeCart);
       await openCart();
@@ -989,43 +994,43 @@ async function openCart() {
 
 function openSellerApplication() {
   if (!currentUser()) return openAccountDialog();
-  showInfo("Satici ol", `
-    <p>Magazanizi EG Shop platformasinda acmaq ucun muraciet gonderin.</p>
+  showInfo("Satıcı ol", `
+    <p>Mağazanizi EG Shop platformasinda acmaq üçün müraciət göndərin.</p>
     <form id="sellerApplicationForm" class="product-form">
-      <p class="flow-hint">Muraciet admin terefinden tesdiqlenenden sonra mehsul yukleme paneli acilacaq.</p>
-      <label>Magaza adi<input name="store_name" required placeholder="Meselen: EG Elektronika"></label>
+      <p class="flow-hint">Müraciət admin terefinden təsdiqlenenden sonra məhsul yükləme paneli acilacaq.</p>
+      <label>Mağaza adi<input name="store_name" required placeholder="Meselen: EG Elektronika"></label>
       <label>Telefon<input name="phone" required placeholder="+994 50 000 00 00"></label>
       <label>Kateqoriya
         <select name="category" required>
           <option value="">Secin</option>
           <option>Elektronika</option>
-          <option>Geyim ve aksesuar</option>
-          <option>Ev ve metbex</option>
-          <option>Gozellik ve baxim</option>
-          <option>Market ve gundelik</option>
-          <option>Diger</option>
+          <option>Geyim və aksesuar</option>
+          <option>Ev və metbex</option>
+          <option>Gözəllik və baxım</option>
+          <option>Market və gündelik</option>
+          <option>Digər</option>
         </select>
       </label>
-      <label>Seher<input name="city" required placeholder="Baki"></label>
-      <label>Unvan<input name="address" required placeholder="Magaza/ofis unvani"></label>
+      <label>Şəhər<input name="city" required placeholder="Baki"></label>
+      <label>Ünvan<input name="address" required placeholder="Mağaza/ofis ünvani"></label>
       <label>VOEN<input name="tax_id" required inputmode="numeric" pattern="[0-9]{10}" placeholder="10 reqemli VOEN"></label>
-      <label>Odenis hesabi<input name="payout_account" required placeholder="IBAN ve ya kart hesabi"></label>
-      <label>Catdirilma imkani
+      <label>Ödəniş hesabi<input name="payout_account" required placeholder="IBAN və ya kart hesabi"></label>
+      <label>Çatdırılma imkani
         <select name="delivery_type" required>
           <option>Oz kuryerim var</option>
-          <option>Platforma catdirilmasi isteyirem</option>
-          <option>Magazadan goturme</option>
+          <option>Platforma çatdırılmasi isteyirem</option>
+          <option>Mağazadan goturme</option>
         </select>
       </label>
-      <label>Qeyd<textarea name="note" rows="4" placeholder="Satacaginiz mehsullar, brendler ve is modeliniz haqqinda qisa melumat"></textarea></label>
-      <label class="terms-check"><input name="terms" type="checkbox" required><span>Satici qaydalarini qebul edirem</span></label>
-      <button class="form-submit" type="submit">Muraciet gonder</button>
+      <label>Qeyd<textarea name="note" rows="4" placeholder="Satacaginiz məhsullar, brendler və is modeliniz haqqinda qisa məlumat"></textarea></label>
+      <label class="terms-check"><input name="terms" type="checkbox" required><span>Satıcı qaydalarini qəbul edirem</span></label>
+      <button class="form-submit" type="submit">Müraciət göndər</button>
     </form>`);
   document.querySelector("#sellerApplicationForm")?.addEventListener("submit", async (event) => {
     event.preventDefault();
     try {
       await createSellerApplication(Object.fromEntries(new FormData(event.currentTarget)));
-      notify("Muraciet qebul edildi");
+      notify("Müraciət qəbul edildi");
       document.querySelector("#panelDialog")?.close();
     } catch (error) {
       notify(error.message);
@@ -1043,36 +1048,36 @@ async function openPanel(type) {
     const profile = await getProfile();
     const allowed = type === "admin" ? profile?.role === "admin" : ["seller", "admin"].includes(profile?.role);
     if (!allowed) {
-      content.innerHTML = `<span class="dialog-kicker">Giris mehduddur</span><h2>${type === "admin" ? "Admin" : "Satici"} paneli</h2><p>Bu hesab ucun uygun rol teyin edilmeyib.</p>`;
+      content.innerHTML = `<span class="dialog-kicker">Giriş məhduddur</span><h2>${type === "admin" ? "Admin" : "Satıcı"} paneli</h2><p>Bu hesab üçün uyğun rol təyin edilməyib.</p>`;
       return;
     }
     if (type === "admin") {
       const admin = await getAdminData();
       content.innerHTML = `
         <span class="dialog-kicker">Admin paneli</span>
-        <h2>Platforma idareetmesi</h2>
+        <h2>Platforma idarəetməsi</h2>
         <div class="panel-stats">
-          <div><b>${admin.profiles.length}</b><span>Istifadeci</span></div>
-          <div><b>${admin.products.length}</b><span>Mehsul</span></div>
-          <div><b>${admin.orders.length}</b><span>Sifaris</span></div>
-          <div><b>${admin.applications.filter((item) => item.status === "pending").length}</b><span>Gozleyen satici</span></div>
+          <div><b>${admin.profiles.length}</b><span>İstifadəci</span></div>
+          <div><b>${admin.products.length}</b><span>Məhsul</span></div>
+          <div><b>${admin.orders.length}</b><span>Sifariş</span></div>
+          <div><b>${admin.applications.filter((item) => item.status === "pending").length}</b><span>Gozleyen satıcı</span></div>
         </div>
-        <h3>Satici muracietleri</h3>
+        <h3>Satıcı müraciətleri</h3>
         <div class="management-list">
-          ${admin.applications.length ? admin.applications.map((item) => `<div><span><b>${item.store_name}</b><small>${item.phone} · ${item.status}</small></span>${item.status === "pending" ? `<span><button type="button" data-review="${item.id}" data-approve="true">Tesdiq</button><button type="button" data-review="${item.id}" data-approve="false">Redd</button></span>` : ""}</div>`).join("") : "<p>Muraciet yoxdur.</p>"}
+          ${admin.applications.length ? admin.applications.map((item) => `<div><span><b>${item.store_name}</b><small>${item.phone} · ${item.status}</small></span>${item.status === "pending" ? `<span><button type="button" data-review="${item.id}" data-approve="true">Təsdiq</button><button type="button" data-review="${item.id}" data-approve="false">Redd</button></span>` : ""}</div>`).join("") : "<p>Müraciət yoxdur.</p>"}
         </div>
-        <h3>Sifarisler</h3>
+        <h3>Sifarişler</h3>
         <div class="management-list">
-          ${admin.orders.length ? admin.orders.map((order) => `<div><span><b>${money(order.total)}</b><small>${new Date(order.created_at).toLocaleDateString("az-AZ")}</small></span><select data-order="${order.id}">${["pending", "confirmed", "shipped", "delivered", "cancelled"].map((status) => `<option ${status === order.status ? "selected" : ""}>${status}</option>`).join("")}</select></div>`).join("") : "<p>Sifaris yoxdur.</p>"}
+          ${admin.orders.length ? admin.orders.map((order) => `<div><span><b>${money(order.total)}</b><small>${new Date(order.created_at).toLocaleDateString("az-AZ")}</small></span><select data-order="${order.id}">${["pending", "confirmed", "shipped", "delivered", "cancelled"].map((status) => `<option ${status === order.status ? "selected" : ""}>${status}</option>`).join("")}</select></div>`).join("") : "<p>Sifariş yoxdur.</p>"}
         </div>`;
       content.querySelectorAll("[data-review]").forEach((button) => button.addEventListener("click", async () => {
         await reviewSeller(button.dataset.review, button.dataset.approve === "true");
-        notify("Muraciet yenilendi");
+        notify("Müraciət yeniləndi");
         dialog.close();
       }));
       content.querySelectorAll("[data-order]").forEach((select) => select.addEventListener("change", async () => {
         await updateOrderStatus(select.dataset.order, select.value);
-        notify("Sifaris statusu yenilendi");
+        notify("Sifariş statusu yeniləndi");
       }));
       return;
     }
@@ -1084,58 +1089,58 @@ async function openPanel(type) {
     const activeProducts = sellerProducts.filter((item) => item.active !== false).length;
     const sellerRevenue = sellerOrders.reduce((sum, item) => sum + Number(item.price || 0) * Number(item.quantity || 1), 0);
     content.innerHTML = `
-      <span class="dialog-kicker">Satici paneli</span>
-      <h2>Magaza idareetmesi</h2>
+      <span class="dialog-kicker">Satıcı paneli</span>
+      <h2>Mağaza idarəetməsi</h2>
       <div class="panel-stats">
-        <div><b>${sellerProducts.length}</b><span>Mehsul</span></div>
+        <div><b>${sellerProducts.length}</b><span>Məhsul</span></div>
         <div><b>${activeProducts}</b><span>Aktiv vitrin</span></div>
         <div><b>${sellerProducts.reduce((sum, item) => sum + Number(item.stock || 0), 0)}</b><span>Stok</span></div>
         <div><b>${money(sellerRevenue)}</b><span>Satis dovriyyesi</span></div>
       </div>
       <div class="seller-panel-grid">
         <section>
-          <h3>Yeni mehsul yukle</h3>
+          <h3>Yeni məhsul yüklə</h3>
       <form id="productForm" class="product-form">
-        <p class="flow-hint">Mehsulu sekil fayli ile yukleyin ve ya hazir sekil URL-i daxil edin.</p>
-        <label>Mehsul adi<input name="name" required></label>
+        <p class="flow-hint">Məhsulu sekil fayli ilə yükləyin və ya hazir sekil URL-i daxil edin.</p>
+        <label>Məhsul adi<input name="name" required></label>
         <label>Kateqoriya
           <select name="category" required>
             ${categories.map((item) => `<option>${item[1]}</option>`).join("")}
           </select>
         </label>
-        <label>Qiymet<input name="price" type="number" min="0" step="0.01" required></label>
-        <label>Kohne qiymet<input name="old_price" type="number" min="0" step="0.01" placeholder="Endirim varsa"></label>
+        <label>Qiymət<input name="price" type="number" min="0" step="0.01" required></label>
+        <label>Kohne qiymət<input name="old_price" type="number" min="0" step="0.01" placeholder="Endirim varsa"></label>
         <label>Stok<input name="stock" type="number" min="0" required></label>
         <label>Brend<input name="brand" placeholder="Samsung, Apple, Zara..."></label>
-        <label>Tesvir<textarea name="description" rows="3" placeholder="Mehsul haqqinda qisa melumat"></textarea></label>
-        <label>Mehsul sekli<input name="image_file" type="file" accept="image/*"></label>
+        <label>Tesvir<textarea name="description" rows="3" placeholder="Məhsul haqqinda qisa məlumat"></textarea></label>
+        <label>Məhsul sekli<input name="image_file" type="file" accept="image/*"></label>
         <label>Shekil URL<input name="image_url" type="url"></label>
-        <label class="terms-check"><input name="active" type="checkbox" checked><span>Mehsul vitrinde aktiv gorunsun</span></label>
-        <button class="form-submit" type="submit">Mehsul elave et</button>
+        <label class="terms-check"><input name="active" type="checkbox" checked><span>Məhsul vitrinde aktiv gorunsun</span></label>
+        <button class="form-submit" type="submit">Məhsul əlavə et</button>
       </form>
         </section>
         <section>
-          <h3>Satici profili</h3>
+          <h3>Satıcı profili</h3>
           <form id="sellerProfileForm" class="product-form compact-form">
-            <p class="flow-hint">Bu melumatlar admin yoxlamasi, musteri etibari ve payout ucun istifade olunur.</p>
-            <label>Magaza adi<input name="store_name" value="${sellerApplication?.store_name || ""}" required></label>
+            <p class="flow-hint">Bu məlumatlar admin yoxlamasi, müştəri etibari və payout üçün istifadə olunur.</p>
+            <label>Mağaza adi<input name="store_name" value="${sellerApplication?.store_name || ""}" required></label>
             <label>Telefon<input name="phone" value="${sellerApplication?.phone || ""}" required></label>
-            <label>Seher<input name="city" value="${sellerApplication?.city || ""}" placeholder="Baki"></label>
-            <label>Unvan<input name="address" value="${sellerApplication?.address || ""}" placeholder="Magaza/ofis unvani"></label>
-            <label>Odenis hesabi<input name="payout_account" value="${sellerApplication?.payout_account || ""}" placeholder="IBAN ve ya kart hesabi"></label>
-            <label>Magaza qeydi<textarea name="note" rows="3">${sellerApplication?.note || ""}</textarea></label>
-            <button class="form-secondary" type="submit">Profili yenile</button>
+            <label>Şəhər<input name="city" value="${sellerApplication?.city || ""}" placeholder="Baki"></label>
+            <label>Ünvan<input name="address" value="${sellerApplication?.address || ""}" placeholder="Mağaza/ofis ünvani"></label>
+            <label>Ödəniş hesabi<input name="payout_account" value="${sellerApplication?.payout_account || ""}" placeholder="IBAN və ya kart hesabi"></label>
+            <label>Mağaza qeydi<textarea name="note" rows="3">${sellerApplication?.note || ""}</textarea></label>
+            <button class="form-secondary" type="submit">Profili yenilə</button>
           </form>
-          <h3>Mehsullarim</h3>
+          <h3>Məhsullarim</h3>
           <div class="management-list seller-products-list">
-            ${sellerProducts.length ? sellerProducts.slice(0, 8).map((item) => `<div><span><b>${item.name}</b><small>${money(item.price)} - stok ${item.stock || 0} - ${item.active === false ? "passiv" : "aktiv"}</small></span><img src="${item.image_url || "/assets/product-1.jpg"}" alt=""></div>`).join("") : "<p>Hele mehsul yuklenmeyib.</p>"}
+            ${sellerProducts.length ? sellerProducts.slice(0, 8).map((item) => `<div><span><b>${item.name}</b><small>${money(item.price)} - stok ${item.stock || 0} - ${item.active === false ? "passiv" : "aktiv"}</small></span><img src="${item.image_url || "/assets/product-1.jpg"}" alt=""></div>`).join("") : "<p>Hele məhsul yüklənməyib.</p>"}
           </div>
-          <h3>Sifarislerim</h3>
+          <h3>Sifarişlerim</h3>
           <div class="management-list">
-            ${sellerOrders.length ? sellerOrders.slice(0, 8).map((item) => `<div><span><b>${item.product_name || item.products?.name || "Mehsul"}</b><small>${item.quantity || 1} eded - ${money(Number(item.price || 0) * Number(item.quantity || 1))} - ${item.orders?.status || "pending"}</small></span></div>`).join("") : "<p>Bu satici ucun hele sifaris yoxdur.</p>"}
+            ${sellerOrders.length ? sellerOrders.slice(0, 8).map((item) => `<div><span><b>${item.product_name || item.products?.name || "Məhsul"}</b><small>${item.quantity || 1} eded - ${money(Number(item.price || 0) * Number(item.quantity || 1))} - ${item.orders?.status || "pending"}</small></span></div>`).join("") : "<p>Bu satıcı üçün hele sifariş yoxdur.</p>"}
           </div>
-          <h3>Odenis hesabi</h3>
-          <p class="flow-hint">Kart odemeleri Epoint uzerinden qebul olunur. Satici balans ve payout bolmesi novbeti merhelede bank hesabina avtomatik cixaris ucun genislendirile biler.</p>
+          <h3>Ödəniş hesabi</h3>
+          <p class="flow-hint">Kart ödənişləri Epoint uzerinden qəbul olunur. Satıcı balans və payout bölməsi növbəti merhelede bank hesabina avtomatik cixaris üçün genişləndirilə biler.</p>
         </section>
       </div>`;
     content.querySelector("#sellerProfileForm")?.addEventListener("submit", async (event) => {
@@ -1145,19 +1150,19 @@ async function openPanel(type) {
       submit.textContent = "Yenilenir...";
       try {
         await updateSellerApplication(Object.fromEntries(new FormData(event.currentTarget)));
-        notify("Satici profili yenilendi");
+        notify("Satıcı profili yeniləndi");
       } catch (error) {
         notify(error.message);
       } finally {
         submit.disabled = false;
-        submit.textContent = "Profili yenile";
+        submit.textContent = "Profili yenilə";
       }
     });
     content.querySelector("#productForm")?.addEventListener("submit", async (event) => {
       event.preventDefault();
       const submit = event.currentTarget.querySelector(".form-submit");
       submit.disabled = true;
-      submit.textContent = "Mehsul yuklenir...";
+      submit.textContent = "Məhsul yüklənir...";
       try {
         const data = Object.fromEntries(new FormData(event.currentTarget));
         const imageFile = event.currentTarget.elements.image_file?.files?.[0];
@@ -1173,14 +1178,14 @@ async function openPanel(type) {
           image_url: uploadedImage || String(data.image_url || "").trim() || null,
           active: Boolean(data.active),
         });
-        notify("Mehsul elave edildi");
+        notify("Məhsul əlavə edildi");
         dialog.close();
         await bootstrap();
       } catch (error) {
         notify(error.message);
       } finally {
         submit.disabled = false;
-        submit.textContent = "Mehsul elave et";
+        submit.textContent = "Məhsul əlavə et";
       }
     });
   } catch (error) {
@@ -1198,8 +1203,8 @@ function openAccountDialog() {
       <span class="dialog-kicker">Hesabim</span>
       <h2>${user.email}</h2>
       <p>EG Shop hesabiniz aktivdir.</p>
-      <button class="form-secondary" type="button" id="ordersButton">Sifarislerim</button>
-      <button class="form-submit" type="button" id="logoutButton">Cixis et</button>`;
+      <button class="form-secondary" type="button" id="ordersButton">Sifarişlerim</button>
+      <button class="form-submit" type="button" id="logoutButton">Çıxış et</button>`;
     content.querySelector("#ordersButton")?.addEventListener("click", showOrders);
     content.querySelector("#logoutButton")?.addEventListener("click", async () => {
       await signOut();
@@ -1208,26 +1213,26 @@ function openAccountDialog() {
   } else {
     content.innerHTML = `
       <span class="dialog-kicker">EG Shop</span>
-      <h2 id="authTitle">Hesabiniza daxil olun</h2>
+      <h2 id="authTitle">Hesabınıza daxil olun</h2>
       <div class="auth-tabs" role="tablist">
-        <button type="button" class="active" data-auth-mode="login">Giris</button>
+        <button type="button" class="active" data-auth-mode="login">Giriş</button>
         <button type="button" data-auth-mode="register">Qeydiyyat</button>
       </div>
       <form id="authForm" data-mode="login" novalidate>
         <div class="register-fields" hidden>
-          <label>Ad ve soyad<input name="full_name" autocomplete="name" maxlength="100"></label>
+          <label>Ad və soyad<input name="full_name" autocomplete="name" maxlength="100"></label>
           <label>Telefon<input name="phone" type="tel" autocomplete="tel" placeholder="+994 50 000 00 00"></label>
         </div>
-        <label>E-poct<input name="email" type="email" autocomplete="email" required></label>
-        <label>Sifre
-          <span class="password-field"><input name="password" type="password" minlength="8" autocomplete="current-password" required><button type="button" data-password-toggle>Goster</button></span>
+        <label>E-poçt<input name="email" type="email" autocomplete="email" required></label>
+        <label>Şifrə
+          <span class="password-field"><input name="password" type="password" minlength="8" autocomplete="current-password" required><button type="button" data-password-toggle>Göstər</button></span>
         </label>
         <div class="register-fields" hidden>
-          <label>Sifreni tekrarla<input name="password_confirm" type="password" minlength="8" autocomplete="new-password"></label>
-          <label class="terms-check"><input name="terms" type="checkbox"> <span>Istifade sertlerini qebul edirem.</span></label>
+          <label>Şifrəni təkrarla<input name="password_confirm" type="password" minlength="8" autocomplete="new-password"></label>
+          <label class="terms-check"><input name="terms" type="checkbox"> <span>İstifadə şərtlərini qəbul edirem.</span></label>
         </div>
-        <button class="auth-link" type="button" data-forgot-password>Sifreni unutdum</button>
-        <button class="form-submit" type="submit">Giris et</button>
+        <button class="auth-link" type="button" data-forgot-password>Şifrəni unutdum</button>
+        <button class="form-submit" type="submit">Daxil ol</button>
         <p class="form-message" id="authMessage"></p>
       </form>`;
     const authForm = content.querySelector("#authForm");
@@ -1236,8 +1241,8 @@ function openAccountDialog() {
       authForm.dataset.mode = button.dataset.authMode;
       content.querySelectorAll("[data-auth-mode]").forEach((item) => item.classList.toggle("active", item === button));
       content.querySelectorAll(".register-fields").forEach((item) => { item.hidden = !register; });
-      content.querySelector("#authTitle").textContent = register ? "Yeni hesab yaradin" : "Hesabiniza daxil olun";
-      authForm.querySelector(".form-submit").textContent = register ? "Qeydiyyatdan kec" : "Giris et";
+      content.querySelector("#authTitle").textContent = register ? "Yeni hesab yaradın" : "Hesabınıza daxil olun";
+      authForm.querySelector(".form-submit").textContent = register ? "Qeydiyyatdan keç" : "Daxil ol";
       authForm.elements.full_name.required = register;
       authForm.elements.phone.required = register;
       authForm.elements.password_confirm.required = register;
@@ -1247,14 +1252,14 @@ function openAccountDialog() {
     content.querySelector("[data-password-toggle]").addEventListener("click", (event) => {
       const input = authForm.elements.password;
       input.type = input.type === "password" ? "text" : "password";
-      event.currentTarget.textContent = input.type === "password" ? "Goster" : "Gizlet";
+      event.currentTarget.textContent = input.type === "password" ? "Göstər" : "Gizlət";
     });
     content.querySelector("[data-forgot-password]").addEventListener("click", async () => {
       const message = content.querySelector("#authMessage");
       try {
         await resetPassword(authForm.elements.email.value);
         message.className = "form-message success";
-        message.textContent = "Sifre yenileme linki e-poctunuza gonderildi.";
+        message.textContent = "Şifrə yeniləmə linki e-poçtunuza göndərildi.";
       } catch (error) {
         message.textContent = error.message;
       }
@@ -1277,18 +1282,18 @@ async function handleAuth(event) {
   submit.disabled = true;
   try {
     if (mode === "register") {
-      if (form.get("password") !== form.get("password_confirm")) throw new Error("Sifreler eyni deyil.");
-      if (!form.get("terms")) throw new Error("Istifade sertlerini qebul edin.");
+      if (form.get("password") !== form.get("password_confirm")) throw new Error("Şifrələr eyni deyil.");
+      if (!form.get("terms")) throw new Error("İstifadə şərtlərini qəbul edin.");
       await signUp(form.get("email"), form.get("password"), form.get("full_name"), form.get("phone"));
       message.className = "form-message success";
-      message.textContent = "Qeydiyyat tamamlandi. E-poctunuzu tesdiqleyin.";
+      message.textContent = "Qeydiyyat tamamlandı. E-poçtunuzu təsdiqləyin.";
       const resend = document.createElement("button");
       resend.type = "button";
       resend.className = "auth-link";
-      resend.textContent = "Tesdiq mektubunu yeniden gonder";
+      resend.textContent = "Təsdiq məktubunu yenidən göndər";
       resend.addEventListener("click", async () => {
         await resendConfirmation(form.get("email"));
-        message.textContent = "Tesdiq mektubu yeniden gonderildi.";
+        message.textContent = "Təsdiq məktubu yenidən göndərildi.";
       });
       message.after(resend);
     } else {
@@ -1306,11 +1311,11 @@ async function showOrders() {
   const panel = document.querySelector("#panelDialog");
   const content = document.querySelector("#panelContent");
   document.querySelector("#accountDialog")?.close();
-  content.innerHTML = "<h2>Sifarislerim</h2>";
+  content.innerHTML = "<h2>Sifarişlerim</h2>";
   try {
     const orders = await getOrders();
     if (!orders.length) {
-      content.innerHTML += "<p>Hele sifarisiniz yoxdur.</p>";
+      content.innerHTML += "<p>Hele sifarişiniz yoxdur.</p>";
     } else {
       content.innerHTML += orders.map((order) => `<div class="drawer-product"><span><b>${money(order.total)} · ${order.status}</b><small>${new Date(order.created_at).toLocaleString("az-AZ")}</small></span></div>`).join("");
     }
@@ -1342,8 +1347,8 @@ function bindCoreInteractions() {
     document.querySelectorAll("[data-category]").forEach((item) => item.classList.remove("active"));
     document.querySelector(".products-section")?.scrollIntoView({ behavior: "smooth", block: "start" });
   }));
-  document.querySelector("[data-language]")?.addEventListener("click", () => showInfo("Dil secimi", "<p>Hazirda sayt Azerbaycan dilindedir. Rus ve ingilis dili sonra elave olunacaq.</p>"));
-  document.querySelector("[data-action='campaign']")?.addEventListener("click", () => showInfo("Kampaniya", "<p>Aktiv kampaniya dovrunde tamamlanan her sifaris heftelik udusda istirak edir.</p>"));
+  document.querySelector("[data-language]")?.addEventListener("click", () => showInfo("Dil seçimi", "<p>Hazırda sayt Azərbaycan dilindədir. Rus və ingilis dili sonra əlavə olunacaq.</p>"));
+  document.querySelector("[data-action='campaign']")?.addEventListener("click", () => showInfo("Kampaniya", "<p>Aktiv kampaniya dovrunde tamamlanan hər sifariş heftelik uduşda istirak edir.</p>"));
   const searchInput = document.querySelector("#searchInput");
   searchInput?.addEventListener("input", (event) => {
     applyProductFilter(event.target.value);
@@ -1359,7 +1364,7 @@ function bindCoreInteractions() {
     try {
       await addCartItem(button.dataset.add);
       await syncCartCount();
-      notify("Mehsul sebete elave edildi");
+      notify("Məhsul səbətə əlavə edildi");
     } catch (error) {
       notify(error.message);
     } finally {
@@ -1373,7 +1378,7 @@ function bindCoreInteractions() {
     try {
       const added = await toggleFavorite(button.dataset.favorite);
       button.textContent = added ? "♥" : "♡";
-      notify(added ? "Sevimlilere elave edildi" : "Sevimlilerden silindi");
+      notify(added ? "Sevimlilərə əlavə edildi" : "Sevimlilərdən silindi");
     } catch (error) {
       notify(error.message);
     }
@@ -1421,11 +1426,11 @@ function handleRecovery() {
   const content = document.querySelector("#accountContent");
   content.innerHTML = `
     <span class="dialog-kicker">Hesab tehlukesizliyi</span>
-    <h2>Yeni sifre yaradin</h2>
+    <h2>Yeni şifrə yaradın</h2>
     <form id="passwordUpdateForm">
-      <label>Yeni sifre<input name="password" type="password" minlength="8" autocomplete="new-password" required></label>
-      <label>Sifreni tekrarla<input name="confirm" type="password" minlength="8" autocomplete="new-password" required></label>
-      <button class="form-submit">Sifreni yenile</button>
+      <label>Yeni şifrə<input name="password" type="password" minlength="8" autocomplete="new-password" required></label>
+      <label>Şifrəni təkrarla<input name="confirm" type="password" minlength="8" autocomplete="new-password" required></label>
+      <button class="form-submit">Şifrəni yenilə</button>
       <p class="form-message"></p>
     </form>`;
   content.querySelector("form").addEventListener("submit", async (event) => {
@@ -1433,11 +1438,11 @@ function handleRecovery() {
     const message = event.currentTarget.querySelector(".form-message");
     try {
       if (event.currentTarget.elements.password.value !== event.currentTarget.elements.confirm.value) {
-        throw new Error("Sifreler eyni deyil.");
+        throw new Error("Şifrələr eyni deyil.");
       }
       await updatePassword(event.currentTarget.elements.password.value);
       message.className = "form-message success";
-      message.textContent = "Sifreniz yenilendi.";
+      message.textContent = "Şifrəniz yeniləndi.";
     } catch (error) {
       message.textContent = error.message;
     }
@@ -1461,7 +1466,7 @@ function handlePaymentForm() {
         event.target.elements.payment_method?.value || "card",
       );
     } catch (error) {
-      notify(error.message || "Odenis basladilmadi.");
+      notify(error.message || "Ödəniş basladilmadi.");
       if (button) {
         button.disabled = false;
         button.textContent = "Kartla ode";
@@ -1476,7 +1481,7 @@ function handlePaymentResult() {
   if (!payment) return;
   history.replaceState({}, "", `${url.pathname}${url.hash}`);
   setTimeout(() => {
-    notify(payment === "success" ? "Odenis qebul edildi. Sifaris statusu yenilenir." : "Odenis tamamlanmadi.");
+    notify(payment === "success" ? "Ödəniş qəbul edildi. Sifariş statusu yenilənir." : "Ödəniş tamamlanmadı.");
   }, 400);
 }
 
@@ -1515,3 +1520,7 @@ async function bootstrap() {
 handlePaymentForm();
 window.addEventListener("popstate", applyRouteView);
 bootstrap();
+
+
+
+
