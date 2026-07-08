@@ -1027,6 +1027,97 @@ main {
   font-size: 24px;
 }
 
+.account-action-panel {
+  margin-top: 18px;
+  display: grid;
+  gap: 14px;
+}
+
+.account-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.account-form-grid .wide,
+.account-form-grid .form-submit {
+  grid-column: 1 / -1;
+}
+
+.account-form-grid label {
+  display: grid;
+  gap: 8px;
+  color: #30364a;
+  font-size: 14px;
+  font-weight: 850;
+}
+
+.account-form-grid input,
+.account-form-grid textarea,
+.account-form-grid select {
+  width: 100%;
+  min-height: 48px;
+  padding: 0 14px;
+  border: 1px solid #dfe3ed;
+  border-radius: 12px;
+  color: #161827;
+  background: #f9fafc;
+  font: inherit;
+}
+
+.account-form-grid textarea {
+  padding-top: 12px;
+  resize: vertical;
+}
+
+.account-mini-list {
+  display: grid;
+  gap: 10px;
+}
+
+.account-mini-list article,
+.payment-method-card {
+  padding: 15px;
+  display: grid;
+  gap: 10px;
+  border: 1px solid #e8ebf2;
+  border-radius: 14px;
+  background: #ffffff;
+}
+
+.payment-method-card {
+  grid-template-columns: 42px 1fr;
+  align-items: center;
+}
+
+.payment-method-card span {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  color: #7b2ee7;
+  background: #f4edff;
+  font-weight: 950;
+}
+
+.account-mini-list b,
+.payment-method-card b {
+  color: #252b3b;
+}
+
+.account-mini-list small,
+.payment-method-card small {
+  color: #737b8c;
+  line-height: 1.45;
+}
+
+.account-empty.compact {
+  min-height: 68px;
+  margin-top: 0;
+  padding: 14px;
+}
+
 .route-category-grid {
   gap: 12px;
 }
@@ -1504,6 +1595,10 @@ main {
 
   .account-stat-grid article {
     min-height: 126px;
+  }
+
+  .account-form-grid {
+    grid-template-columns: 1fr;
   }
 }
 
