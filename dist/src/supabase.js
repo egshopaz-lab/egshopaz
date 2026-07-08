@@ -236,7 +236,7 @@ export async function updateOrderStatus(orderId, status) { return request(`/rest
 export async function getSellerDashboardData() {
   const user = currentUser();
   if (!user) throw new Error("Satıcı paneli üçün giriş edin.");
-  const [sellerProducts, sellerOrders, store, coupons, campaigns, wallet, notifications, messages, reviews] = await Promise.all([
+  const [sellerProducts, sellerOrders, store, coupons, campaigns, wallet, notifications, messages, reviews, ads, boosts, adStats, adPayments] = await Promise.all([
     getSellerProducts().catch(() => []),
     getSellerOrders().catch(() => []),
     request(`/rest/v1/seller_store_settings?seller_id=eq.${user.id}&select=*&limit=1`).catch(() => []),
@@ -246,8 +246,12 @@ export async function getSellerDashboardData() {
     request(`/rest/v1/seller_notifications?seller_id=eq.${user.id}&select=*&order=created_at.desc`).catch(() => []),
     request(`/rest/v1/seller_messages?seller_id=eq.${user.id}&select=*,profiles!seller_messages_customer_id_fkey(full_name)&order=created_at.desc`).catch(() => []),
     request(`/rest/v1/product_reviews?seller_id=eq.${user.id}&select=*,products(name,image_url)&order=created_at.desc`).catch(() => []),
+    request(`/rest/v1/seller_ads?seller_id=eq.${user.id}&select=*,products(name,image_url,price)&order=created_at.desc`).catch(() => []),
+    request(`/rest/v1/seller_product_boosts?seller_id=eq.${user.id}&select=*,products(name,image_url,price)&order=created_at.desc`).catch(() => []),
+    request(`/rest/v1/seller_ad_stats?seller_id=eq.${user.id}&select=*&order=stat_date.desc`).catch(() => []),
+    request(`/rest/v1/seller_ad_payments?seller_id=eq.${user.id}&select=*&order=created_at.desc`).catch(() => []),
   ]);
-  return { sellerProducts, sellerOrders, store: store[0] || null, coupons, campaigns, wallet, notifications, messages, reviews };
+  return { sellerProducts, sellerOrders, store: store[0] || null, coupons, campaigns, wallet, notifications, messages, reviews, ads, boosts, adStats, adPayments };
 }
 
 export async function upsertStoreSettings(settings) {
@@ -270,6 +274,36 @@ export async function createCampaign(campaign) {
   const user = currentUser();
   if (!user) throw new Error("Kampaniya ucun giris edin.");
   return request("/rest/v1/seller_campaigns", { method: "POST", prefer: "return=representation", body: JSON.stringify({ ...campaign, seller_id: user.id }) });
+}
+
+export async function createSponsoredAd(ad) {
+  const user = currentUser();
+  if (!user) throw new Error("Reklam ucun giris edin.");
+  return request("/rest/v1/seller_ads", {
+    method: "POST",
+    prefer: "return=representation",
+    body: JSON.stringify({ ...ad, seller_id: user.id, status: ad.status || "pending" }),
+  });
+}
+
+export async function createProductBoost(boost) {
+  const user = currentUser();
+  if (!user) throw new Error("Boost ucun giris edin.");
+  return request("/rest/v1/seller_product_boosts", {
+    method: "POST",
+    prefer: "return=representation",
+    body: JSON.stringify({ ...boost, seller_id: user.id, status: boost.status || "pending" }),
+  });
+}
+
+export async function createAdPayment(payment) {
+  const user = currentUser();
+  if (!user) throw new Error("Reklam odenisi ucun giris edin.");
+  return request("/rest/v1/seller_ad_payments", {
+    method: "POST",
+    prefer: "return=representation",
+    body: JSON.stringify({ ...payment, seller_id: user.id, status: payment.status || "pending" }),
+  });
 }
 
 export async function createWalletRequest(amount, payoutAccount) {
