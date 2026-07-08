@@ -179,6 +179,16 @@ export async function createProduct(product) {
   if (!user) throw new Error("Mehsul yuklemek ucun giris edin.");
   return request("/rest/v1/products", { method: "POST", prefer: "return=representation", body: JSON.stringify({ ...product, seller_id: user.id }) });
 }
+export async function updateProduct(productId, product) {
+  const user = currentUser();
+  if (!user) throw new Error("Mehsulu yenilemek ucun giris edin.");
+  return request(`/rest/v1/products?id=eq.${productId}&seller_id=eq.${user.id}`, { method: "PATCH", prefer: "return=representation", body: JSON.stringify(product) });
+}
+export async function deleteProduct(productId) {
+  const user = currentUser();
+  if (!user) throw new Error("Mehsulu silmek ucun giris edin.");
+  return request(`/rest/v1/products?id=eq.${productId}&seller_id=eq.${user.id}`, { method: "DELETE" });
+}
 export async function getSellerProducts() {
   const user = currentUser();
   return request(`/rest/v1/products?seller_id=eq.${user.id}&select=*&order=created_at.desc`);
@@ -222,6 +232,69 @@ export async function getAdminData() {
 }
 export async function reviewSeller(applicationId, approve) { return request("/rest/v1/rpc/admin_review_seller", { method: "POST", body: JSON.stringify({ _application_id: applicationId, _approve: approve }) }); }
 export async function updateOrderStatus(orderId, status) { return request(`/rest/v1/orders?id=eq.${orderId}`, { method: "PATCH", body: JSON.stringify({ status }) }); }
+
+export async function getSellerDashboardData() {
+  const user = currentUser();
+  if (!user) throw new Error("Satıcı paneli üçün giriş edin.");
+  const [sellerProducts, sellerOrders, store, coupons, campaigns, wallet, notifications, messages, reviews] = await Promise.all([
+    getSellerProducts().catch(() => []),
+    getSellerOrders().catch(() => []),
+    request(`/rest/v1/seller_store_settings?seller_id=eq.${user.id}&select=*&limit=1`).catch(() => []),
+    request(`/rest/v1/seller_coupons?seller_id=eq.${user.id}&select=*&order=created_at.desc`).catch(() => []),
+    request(`/rest/v1/seller_campaigns?seller_id=eq.${user.id}&select=*&order=created_at.desc`).catch(() => []),
+    request(`/rest/v1/seller_wallet_transactions?seller_id=eq.${user.id}&select=*&order=created_at.desc`).catch(() => []),
+    request(`/rest/v1/seller_notifications?seller_id=eq.${user.id}&select=*&order=created_at.desc`).catch(() => []),
+    request(`/rest/v1/seller_messages?seller_id=eq.${user.id}&select=*,profiles!seller_messages_customer_id_fkey(full_name)&order=created_at.desc`).catch(() => []),
+    request(`/rest/v1/product_reviews?seller_id=eq.${user.id}&select=*,products(name,image_url)&order=created_at.desc`).catch(() => []),
+  ]);
+  return { sellerProducts, sellerOrders, store: store[0] || null, coupons, campaigns, wallet, notifications, messages, reviews };
+}
+
+export async function upsertStoreSettings(settings) {
+  const user = currentUser();
+  if (!user) throw new Error("Magaza ayarlari ucun giris edin.");
+  return request("/rest/v1/seller_store_settings?on_conflict=seller_id", {
+    method: "POST",
+    prefer: "resolution=merge-duplicates,return=representation",
+    body: JSON.stringify({ ...settings, seller_id: user.id }),
+  });
+}
+
+export async function createCoupon(coupon) {
+  const user = currentUser();
+  if (!user) throw new Error("Kupon ucun giris edin.");
+  return request("/rest/v1/seller_coupons", { method: "POST", prefer: "return=representation", body: JSON.stringify({ ...coupon, seller_id: user.id }) });
+}
+
+export async function createCampaign(campaign) {
+  const user = currentUser();
+  if (!user) throw new Error("Kampaniya ucun giris edin.");
+  return request("/rest/v1/seller_campaigns", { method: "POST", prefer: "return=representation", body: JSON.stringify({ ...campaign, seller_id: user.id }) });
+}
+
+export async function createWalletRequest(amount, payoutAccount) {
+  const user = currentUser();
+  if (!user) throw new Error("Withdraw ucun giris edin.");
+  return request("/rest/v1/seller_wallet_transactions", {
+    method: "POST",
+    prefer: "return=representation",
+    body: JSON.stringify({ seller_id: user.id, amount: -Math.abs(Number(amount || 0)), kind: "withdraw", status: "pending", note: payoutAccount || "" }),
+  });
+}
+
+export async function sendSellerMessage(body, customerId = null, attachmentUrl = null) {
+  const user = currentUser();
+  if (!user) throw new Error("Mesaj ucun giris edin.");
+  return request("/rest/v1/seller_messages", {
+    method: "POST",
+    prefer: "return=representation",
+    body: JSON.stringify({ seller_id: user.id, sender_id: user.id, customer_id: customerId, body, attachment_url: attachmentUrl }),
+  });
+}
+
+export async function replyReview(reviewId, reply) {
+  return request(`/rest/v1/product_reviews?id=eq.${reviewId}`, { method: "PATCH", prefer: "return=representation", body: JSON.stringify({ reply }) });
+}
 
 export function captureAuthRedirect() {
   const hash = new URLSearchParams(window.location.hash.replace(/^#/, ""));
