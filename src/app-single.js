@@ -965,20 +965,16 @@ function renderCheckoutForm(items, total) {
     <div class="drawer-products">${items.map((item) => drawerProduct(item.products, `<button type="button" data-remove-cart="${item.id}">Sil</button>`)).join("")}</div>
     <div class="cart-total"><span>Cəmi</span><b>${money(total)}</b></div>
     <form id="checkoutForm" class="product-form">
-      <p class="flow-hint">Sifariş təsdiqlənəndə sistem məhsulları satıcılara bağlayır və Epoint ödəniş səhifəsine yönləndirir.</p>
+      <p class="flow-hint">Sifariş təsdiqlənəndə sistem məhsulları satıcılara bağlayır və Epoint ödəniş səhifəsinə yönləndirir.</p>
       <label>Çatdırılma ünvanı<input name="address" required minlength="8" placeholder="Şəhər, küçə, bina, mənzil"></label>
       <label>Telefon<input name="phone" required inputmode="tel" placeholder="+994 50 000 00 00"></label>
       <label>Ödəniş üsulu
         <select name="payment_method">
           <option value="card">Bank kartı</option>
-          <option value="split">Marketplace split</option>
-          <option value="preauth">Preauth</option>
-          <option value="widget">Apple Pay / Google Pay</option>
         </select>
       </label>
       <label>Çatdırılma qeydi<textarea name="note" rows="3" placeholder="Kuryer üçün qeyd varsa yazin"></textarea></label>
       <label class="terms-check"><input name="terms" type="checkbox" required><span>Sifariş və ödəniş şərtlərini qəbul edirəm</span></label>
-      <button type="button" class="form-secondary" data-register-card>Kartı yadda saxla</button>
       <button class="form-submit" type="submit">Kartla ödə</button>
     </form>`;
 }
@@ -1009,16 +1005,6 @@ async function openCart() {
       await openCart();
       syncCartCount();
     }));
-    document.querySelector("[data-register-card]")?.addEventListener("click", async () => {
-      try {
-        const result = await callAdvanced({ action: "register-card" });
-        if (!result.redirect_url) throw new Error("Kart qeydiyyatı açılmadı.");
-        window.location.assign(result.redirect_url);
-      } catch (error) {
-        notify(error.message);
-      }
-    });
-    await hydratePaymentOptions(document.querySelector("#checkoutForm"));
   } catch (error) {
     notify(error.message);
   }
@@ -1327,8 +1313,8 @@ async function handleAuth(event) {
       const result = await signIn(form.get("email"), form.get("password"));
       if (!result?.access_token) throw new Error("Giriş alınmadı. E-poçt və şifrəni yenidən yoxlayın.");
       message.className = "form-message success";
-      message.textContent = "Giriş uğurludur. Hesab açılır...";
-      setTimeout(() => window.location.reload(), 700);
+      message.textContent = "Giriş uğurludur. Ana səhifə açılır...";
+      setTimeout(() => window.location.assign("/"), 700);
     }
   } catch (error) {
     message.className = "form-message";
