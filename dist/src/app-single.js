@@ -3,9 +3,13 @@
 const {
   addCartItem,
   captureAuthRedirect,
+  createCampaign,
+  createCoupon,
   createProduct,
+  createWalletRequest,
   createSellerApplication,
   currentUser,
+  deleteProduct,
   getAdminData,
   getCart,
   getFavorites,
@@ -13,6 +17,7 @@ const {
   getProducts,
   getProfile,
   getSellerApplication,
+  getSellerDashboardData,
   getSellerProducts,
   getSellerOrders,
   initializeAuth,
@@ -20,13 +25,17 @@ const {
   resendConfirmation,
   resetPassword,
   reviewSeller,
+  replyReview,
+  sendSellerMessage,
   signIn,
   signOut,
   signUp,
   toggleFavorite,
   updateOrderStatus,
   updatePassword,
+  updateProduct,
   updateSellerApplication,
+  upsertStoreSettings,
   uploadProductImage,
 } = supabase;
 
@@ -523,11 +532,11 @@ function sellerAnalyticsView(items, totalRevenue) {
 }
 
 function sellerFinanceView(totalRevenue) {
-  return `<div class="seller-kpi-grid finance"><article><small>Cari balans</small><b>${money(totalRevenue * .72)}</b><span>çıxarışa hazır</span></article><article><small>Gözləyən balans</small><b>${money(totalRevenue * .18)}</b><span>təsdiqdə</span></article><article><small>Çıxarılan balans</small><b>${money(totalRevenue * .42)}</b><span>bu ay</span></article><article><small>Komissiyalar</small><b>${money(totalRevenue * .08)}</b><span>platforma payı</span></article></div><div class="seller-card"><div class="seller-card-head"><h2>Withdraw sorğusu</h2></div><form class="seller-form-grid" data-seller-save><label>Məbləğ<input type="number" min="1" placeholder="100"></label><label>IBAN / Kart<input placeholder="AZ..."></label><button class="form-submit wide">Sorğu göndər</button></form></div><div class="seller-card"><h2>Tranzaksiya tarixçəsi</h2>${["Payout", "Komissiya", "Sifariş ödənişi"].map((x, i) => `<div class="seller-table-row"><span>${x}</span><small>${new Date().toLocaleDateString("az-AZ")}</small><b>${money((i + 1) * 42)}</b></div>`).join("")}</div>`;
+  return `<div class="seller-kpi-grid finance"><article><small>Cari balans</small><b>${money(totalRevenue * .72)}</b><span>çıxarışa hazır</span></article><article><small>Gözləyən balans</small><b>${money(totalRevenue * .18)}</b><span>təsdiqdə</span></article><article><small>Çıxarılan balans</small><b>${money(totalRevenue * .42)}</b><span>bu ay</span></article><article><small>Komissiyalar</small><b>${money(totalRevenue * .08)}</b><span>platforma payı</span></article></div><div class="seller-card"><div class="seller-card-head"><h2>Withdraw sorğusu</h2></div><form class="seller-form-grid" data-seller-save><label>Məbləğ<input name="amount" type="number" min="1" placeholder="100"></label><label>IBAN / Kart<input name="payout_account" placeholder="AZ..."></label><button class="form-submit wide">Sorğu göndər</button></form></div><div class="seller-card"><h2>Tranzaksiya tarixçəsi</h2>${["Payout", "Komissiya", "Sifariş ödənişi"].map((x, i) => `<div class="seller-table-row"><span>${x}</span><small>${new Date().toLocaleDateString("az-AZ")}</small><b>${money((i + 1) * 42)}</b></div>`).join("")}</div>`;
 }
 
 function sellerCouponsView() {
-  return `<div class="seller-card"><div class="seller-card-head"><h2>Kupon yarat</h2></div><form class="seller-form-grid" data-seller-save><label>Kupon kodu<input value="EGSHOP10"></label><label>Endirim tipi<select><option>Faiz endirimi</option><option>Sabit məbləğ endirimi</option></select></label><label>Dəyər<input type="number" value="10"></label><label>İstifadə limiti<input type="number" value="100"></label><label>Bitmə tarixi<input type="date"></label><button class="form-submit">Kuponu aktiv et</button></form></div>`;
+  return `<div class="seller-card"><div class="seller-card-head"><h2>Kupon yarat</h2></div><form class="seller-form-grid" data-seller-save><label>Kupon kodu<input name="code" value="EGSHOP10"></label><label>Endirim tipi<select name="discount_type"><option>Faiz endirimi</option><option>Sabit məbləğ endirimi</option></select></label><label>Dəyər<input name="discount_value" type="number" value="10"></label><label>İstifadə limiti<input name="usage_limit" type="number" value="100"></label><label>Bitmə tarixi<input name="expires_at" type="date"></label><button class="form-submit">Kuponu aktiv et</button></form></div>`;
 }
 
 function sellerCampaignsView() {
@@ -543,11 +552,11 @@ function sellerNotificationsView() {
 }
 
 function sellerMessagesView() {
-  return `<div class="seller-messages"><aside>${["Elshad", "Aysel", "Murad"].map((name, i) => `<button class="${i === 0 ? "active" : ""}" type="button"><b>${name}</b><small>${i + 1} oxunmamış mesaj</small></button>`).join("")}</aside><section><div class="seller-chat"><p>Salam, sifarişim nə vaxt göndəriləcək?</p><p class="me">Salam, sifariş bu gün hazırlanır.</p></div><form data-seller-save><input placeholder="Mesaj yaz"><button class="form-submit">Göndər</button><button type="button" class="form-secondary">Fayl</button></form></section></div>`;
+  return `<div class="seller-messages"><aside>${["Elshad", "Aysel", "Murad"].map((name, i) => `<button class="${i === 0 ? "active" : ""}" type="button"><b>${name}</b><small>${i + 1} oxunmamış mesaj</small></button>`).join("")}</aside><section><div class="seller-chat"><p>Salam, sifarişim nə vaxt göndəriləcək?</p><p class="me">Salam, sifariş bu gün hazırlanır.</p></div><form data-seller-save><input name="message" placeholder="Mesaj yaz"><button class="form-submit">Göndər</button><button type="button" class="form-secondary">Fayl</button></form></section></div>`;
 }
 
 function sellerSettingsView(storeName, email) {
-  return `<div class="seller-card"><div class="seller-card-head"><h2>Mağaza ayarları</h2></div><form class="seller-form-grid" data-seller-save><label>Loqo<input type="file" accept="image/*"></label><label>Banner<input type="file" accept="image/*"></label><label>Mağaza adı<input value="${storeName}"></label><label>Email<input value="${email}"></label><label>Telefon<input placeholder="+994 50 000 00 00"></label><label>Ünvan<input placeholder="Bakı"></label><label class="wide">Təsvir<textarea rows="3">EG Shop marketplace mağazası</textarea></label><label>Instagram<input placeholder="@egshop"></label><label>İş saatları<input value="09:00 - 18:00"></label><label class="wide">Çatdırılma məlumatı<textarea rows="3"></textarea></label><label class="wide">Qaytarma siyasəti<textarea rows="3"></textarea></label><button class="form-submit wide">Ayarları saxla</button></form></div>`;
+  return `<div class="seller-card"><div class="seller-card-head"><h2>Mağaza ayarları</h2></div><form class="seller-form-grid" data-seller-save><label>Loqo<input type="file" accept="image/*"></label><label>Banner<input type="file" accept="image/*"></label><label>Mağaza adı<input name="store_name" value="${storeName}"></label><label>Email<input name="email" value="${email}"></label><label>Telefon<input name="phone" placeholder="+994 50 000 00 00"></label><label>Ünvan<input name="address" placeholder="Bakı"></label><label class="wide">Təsvir<textarea name="description" rows="3">EG Shop marketplace mağazası</textarea></label><label>Instagram<input name="instagram" placeholder="@egshop"></label><label>İş saatları<input name="working_hours" value="09:00 - 18:00"></label><label class="wide">Çatdırılma məlumatı<textarea name="delivery_info" rows="3"></textarea></label><label class="wide">Qaytarma siyasəti<textarea name="return_policy" rows="3"></textarea></label><button class="form-submit wide">Ayarları saxla</button></form></div>`;
 }
 
 function sellerProfileView(email) {
@@ -563,7 +572,7 @@ function sellerMiniProduct(product) {
 }
 
 function sellerProductRows(items) {
-  return items.map((p) => `<div class="seller-table-row"><img src="${p.image}" alt=""><span><b>${p.name}</b><small>SKU-${String(p.id || "").slice(0, 6)} · ${p.category || "Kateqoriya"}</small></span><b>${money(p.price)}</b><small>Stok ${p.stock || 12}</small><button type="button" data-seller-save>Redaktə et</button><button type="button" data-seller-toggle>Aktiv</button><button type="button" data-seller-delete>Sil</button></div>`).join("");
+  return items.map((p) => `<div class="seller-table-row" data-seller-product-id="${p.id || ""}" data-seller-active="${p.active === false ? "false" : "true"}"><img src="${p.image}" alt=""><span><b>${p.name}</b><small>${p.sku || `SKU-${String(p.id || "").slice(0, 6)}`} · ${p.category || "Kateqoriya"}</small></span><b>${money(p.price)}</b><small>Stok ${p.stock || 12}</small><button type="button" data-seller-edit>Redaktə et</button><button type="button" data-seller-toggle>${p.active === false ? "Passiv" : "Aktiv"}</button><button type="button" data-seller-delete>Sil</button></div>`).join("");
 }
 
 function sellerOrderRows(items, detailed = false) {
@@ -1046,23 +1055,122 @@ function bindSellerDashboard(root = document) {
       row.hidden = value && !normalizeText(row.textContent).includes(value);
     });
   }));
-  shell.querySelectorAll("[data-seller-save],.seller-form-grid").forEach((item) => {
+  shell.querySelectorAll("[data-seller-save]").forEach((item) => {
     const eventName = item.tagName === "FORM" ? "submit" : "click";
     item.addEventListener(eventName, (event) => {
       event.preventDefault();
       notify("Məlumat saxlanıldı");
     });
   });
+  shell.querySelectorAll(".seller-form-grid, .seller-messages form").forEach((form) => {
+    form.addEventListener("submit", (event) => submitSellerForm(event, shell));
+  });
   shell.querySelectorAll("[data-seller-draft]").forEach((button) => button.addEventListener("click", () => notify("Draft saxlanıldı")));
-  shell.querySelectorAll("[data-seller-toggle]").forEach((button) => button.addEventListener("click", () => {
-    button.textContent = button.textContent === "Aktiv" ? "Passiv" : "Aktiv";
-    notify(`Məhsul ${button.textContent.toLowerCase()} edildi`);
+  shell.querySelectorAll("[data-seller-toggle]").forEach((button) => button.addEventListener("click", async () => {
+    const row = button.closest("[data-seller-product-id]");
+    const productId = row?.dataset.sellerProductId;
+    if (!productId) return notify("Məhsul ID tapılmadı");
+    const nextActive = button.textContent !== "Aktiv";
+    try {
+      await updateProduct(productId, { active: nextActive });
+      button.textContent = nextActive ? "Aktiv" : "Passiv";
+      row.dataset.sellerActive = String(nextActive);
+      notify(`Məhsul ${nextActive ? "aktiv" : "passiv"} edildi`);
+    } catch (error) {
+      notify(error.message);
+    }
   }));
-  shell.querySelectorAll("[data-seller-delete]").forEach((button) => button.addEventListener("click", () => {
+  shell.querySelectorAll("[data-seller-delete]").forEach((button) => button.addEventListener("click", async () => {
     if (!confirm("Silmək istədiyinizə əminsiniz?")) return;
-    button.closest(".seller-table-row,.seller-review")?.remove();
-    notify("Silindi");
+    const row = button.closest("[data-seller-product-id]");
+    const productId = row?.dataset.sellerProductId;
+    try {
+      if (productId) await deleteProduct(productId);
+      button.closest(".seller-table-row,.seller-review")?.remove();
+      notify("Silindi");
+    } catch (error) {
+      notify(error.message);
+    }
   }));
+}
+
+async function submitSellerForm(event, shell) {
+  event.preventDefault();
+  const form = event.currentTarget;
+  const view = form.closest("[data-seller-view]")?.dataset.sellerView || "";
+  const data = Object.fromEntries(new FormData(form));
+  const submit = form.querySelector(".form-submit");
+  if (submit) submit.disabled = true;
+  try {
+    if (view === "products") {
+      const images = form.elements.images?.files || [];
+      const uploaded = [];
+      for (const file of Array.from(images).slice(0, 6)) uploaded.push(await uploadProductImage(file));
+      await createProduct({
+        name: String(data.name || "").trim(),
+        sku: String(data.sku || "").trim() || null,
+        barcode: String(data.barcode || "").trim() || null,
+        brand: String(data.brand || "").trim() || null,
+        subcategory: String(data.subcategory || "").trim() || null,
+        category: String(data.category || "").trim() || null,
+        price: Number(data.price || 0),
+        old_price: data.sale_price ? Number(data.sale_price) : null,
+        stock: Number(data.stock || 0),
+        tags: String(data.tags || "").split(",").map((item) => item.trim()).filter(Boolean),
+        seo_title: String(data.seo_title || "").trim() || null,
+        seo_description: String(data.seo_description || "").trim() || null,
+        variant_options: parseVariants(data.variants),
+        gallery_urls: uploaded.filter(Boolean),
+        image_url: uploaded[0] || null,
+        active: true,
+        draft: false,
+      });
+    } else if (view === "finance") {
+      await createWalletRequest(data.amount, data.payout_account || data["IBAN / Kart"]);
+    } else if (view === "coupons") {
+      await createCoupon({
+        code: String(data.code || "EGSHOP10").trim().toUpperCase(),
+        discount_type: String(data.discount_type || "").includes("Sabit") ? "fixed" : "percent",
+        discount_value: Number(data.discount_value || data.value || 10),
+        usage_limit: data.usage_limit ? Number(data.usage_limit) : null,
+        expires_at: data.expires_at || null,
+        active: true,
+      });
+    } else if (view === "settings") {
+      await upsertStoreSettings({
+        store_name: data.store_name || data["Mağaza adı"] || "EG Shop mağazası",
+        email: data.email || null,
+        phone: data.phone || null,
+        address: data.address || null,
+        description: data.description || null,
+        socials: { instagram: data.instagram || "" },
+        working_hours: data.working_hours || null,
+        delivery_info: data.delivery_info || null,
+        return_policy: data.return_policy || null,
+      });
+    } else if (view === "messages") {
+      await sendSellerMessage(data.message || data.body || form.querySelector("input")?.value || "");
+    } else if (view === "campaigns") {
+      await createCampaign({ title: data.title || "Yeni kampaniya", description: data.description || "", discount_percent: Number(data.discount_percent || 10), active: true });
+    } else {
+      notify("Məlumat saxlanıldı");
+      return;
+    }
+    notify("Məlumat Supabase-də saxlanıldı");
+    form.reset();
+  } catch (error) {
+    notify(error.message);
+  } finally {
+    if (submit) submit.disabled = false;
+  }
+}
+
+function parseVariants(value) {
+  return String(value || "").split(";").reduce((acc, group) => {
+    const [key, raw] = group.split(":");
+    if (key && raw) acc[key.trim()] = raw.split(",").map((item) => item.trim()).filter(Boolean);
+    return acc;
+  }, {});
 }
 
 function addFooter() {
@@ -1919,6 +2027,7 @@ async function bootstrap() {
 handlePaymentForm();
 window.addEventListener("popstate", applyRouteView);
 bootstrap();
+
 
 
 
