@@ -1,0 +1,105 @@
+@charset "UTF-8";
+:focus-visible {
+  outline: 3px solid rgba(255, 194, 28, .95);
+  outline-offset: 3px;
+}
+
+.header-inner {
+  width: min(1240px, calc(100% - 32px));
+  min-height: 82px;
+  height: auto;
+  gap: 16px;
+}
+
+.logo img { width: 60px; height: 60px; }
+.logo span { font-size: 23px; }
+.search { height: 48px; }
+.search:focus-within {
+  background: rgba(255,255,255,.24);
+  border-color: #fff;
+  box-shadow: 0 0 0 3px rgba(255,255,255,.16);
+}
+
+main { width: min(1180px, calc(100% - 32px)); }
+.category-strip,
+.sub-categories {
+  scrollbar-width: none;
+  scroll-snap-type: x proximity;
+  overscroll-behavior-inline: contain;
+}
+.category-strip::-webkit-scrollbar,
+.sub-categories::-webkit-scrollbar,
+.quick-links::-webkit-scrollbar { display: none; }
+.category,
+.sub-categories button,
+.quick-links button { scroll-snap-align: start; }
+
+.product-image {
+  border-radius: 12px;
+  transition: transform .2s ease, box-shadow .2s ease;
+}
+.product-card:hover .product-image {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 28px rgba(31, 20, 38, .12);
+}
+
+@media (max-width: 900px) {
+  .header-inner { min-height: 0; }
+}
+
+@media (max-width: 620px) {
+  main { width: calc(100% - 20px); }
+  .site-header { position: sticky; }
+  .header-inner {
+    width: calc(100% - 24px);
+    padding: 8px 0 10px;
+    display: grid;
+    grid-template-columns: 40px minmax(0, 1fr);
+    gap: 8px;
+  }
+  .menu-button {
+    display: block;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+  }
+  .logo { gap: 7px; }
+  .logo img { width: 42px; height: 42px; }
+  .logo span { font-size: 18px; }
+  .search {
+    grid-column: 1 / -1;
+    width: 100%;
+    min-width: 0;
+    height: 44px;
+    flex: none;
+  }
+  .quick-links {
+    gap: 7px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .quick-links button {
+    flex: 0 0 auto;
+    min-height: 34px;
+  }
+  .category-strip {
+    margin-inline: -10px;
+    padding: 10px 10px 14px;
+    border-inline: 0;
+    border-radius: 0;
+  }
+  .category,
+  .sub-categories button { min-height: 42px; }
+  .section-title h2 { font-size: 18px; }
+  .product-card:hover .product-image {
+    transform: none;
+    box-shadow: none;
+  }
+  .price-row {
+    align-items: center;
+    justify-content: space-between;
+    gap: 4px;
+  }
+  .price-row strong { font-size: 17px; }
+  .product-info h3 { font-size: 13px; }
+}

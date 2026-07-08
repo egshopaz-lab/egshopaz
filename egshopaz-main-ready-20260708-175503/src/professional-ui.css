@@ -1,0 +1,42 @@
+@charset "UTF-8";
+.drawer-open { overflow: hidden; }
+.drawer-backdrop {
+  position: fixed; inset: 0; z-index: 1000; display: grid; grid-template-columns: minmax(280px, 380px) 1fr;
+  background: rgba(15, 23, 42, .52); opacity: 0; visibility: hidden; transition: opacity .22s ease, visibility .22s ease;
+  backdrop-filter: blur(3px);
+}
+.drawer-backdrop.open { opacity: 1; visibility: visible; }
+.main-drawer {
+  min-height: 100%; padding: 22px; display: flex; flex-direction: column; gap: 28px;
+  background: #fff; box-shadow: 18px 0 55px rgba(15, 23, 42, .18); transform: translateX(-102%); transition: transform .25s ease;
+}
+.drawer-backdrop.open .main-drawer { transform: translateX(0); }
+.drawer-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.drawer-brand { display: flex; align-items: center; gap: 12px; color: #111827; text-decoration: none; }
+.drawer-brand img { width: 48px; height: 48px; border-radius: 14px; object-fit: cover; }
+.drawer-brand span { display: grid; gap: 2px; }
+.drawer-brand b { font-size: 18px; letter-spacing: .03em; }
+.drawer-brand small { color: #7c3aed; font-weight: 700; }
+.drawer-head > button { width: 40px; height: 40px; border: 0; border-radius: 50%; background: #f3f4f6; font-size: 26px; cursor: pointer; transition: all 0.2s ease; }
+.drawer-head > button:hover { background: #e5e7eb; }
+.drawer-links { display: grid; gap: 8px; }
+.drawer-links button {
+  width: 100%; padding: 14px 16px; display: flex; align-items: center; gap: 14px; border: 0; border-radius: 14px;
+  color: #253047; background: transparent; text-align: left; cursor: pointer; transition: background .15s ease, transform .15s ease;
+}
+.drawer-links button:hover { background: #f5f3ff; color: #6d28d9; transform: translateX(3px); }
+.drawer-links span { width: 30px; font-size: 21px; text-align: center; }
+.drawer-links b { font-size: 15px; }
+.drawer-support { margin-top: auto; padding: 18px; display: grid; gap: 5px; border-radius: 16px; color: #fff; background: linear-gradient(135deg, #6d28d9, #9333ea); }
+.drawer-support small { opacity: .8; }
+.drawer-support a { color: #fff; font-size: 13px; text-decoration: none; transition: all 0.2s ease; }
+.drawer-support a:hover { opacity: 0.8; }
+.field-hint { display: block; margin-top: 6px; color: #6b7280; font-size: 12px; }
+#sellerApplicationForm input[name="tax_id"]:invalid:not(:placeholder-shown) { border-color: #dc2626; box-shadow: 0 0 0 3px rgba(220, 38, 38, .1); }
+@media (max-width: 520px) {
+  .drawer-backdrop { grid-template-columns: minmax(280px, 88vw) 1fr; }
+  .main-drawer { padding: 18px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .drawer-backdrop, .main-drawer { transition: none; }
+}
