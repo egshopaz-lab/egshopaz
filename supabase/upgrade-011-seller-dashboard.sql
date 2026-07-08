@@ -11,7 +11,11 @@ alter table public.products
   add column if not exists seo_description text,
   add column if not exists draft boolean not null default false,
   add column if not exists variant_options jsonb not null default '{}'::jsonb,
-  add column if not exists gallery_urls text[] not null default '{}';
+  add column if not exists gallery_urls text[] not null default '{}',
+  add column if not exists is_sponsored boolean not null default false,
+  add column if not exists ad_ends_at timestamptz,
+  add column if not exists is_boosted boolean not null default false,
+  add column if not exists boost_ends_at timestamptz;
 
 create table if not exists public.seller_store_settings (
   seller_id uuid primary key references public.profiles(id) on delete cascade,
@@ -98,6 +102,63 @@ create table if not exists public.product_reviews (
   created_at timestamptz not null default now()
 );
 
+create table if not exists public.seller_ads (
+  id uuid primary key default gen_random_uuid(),
+  seller_id uuid not null references public.profiles(id) on delete cascade,
+  product_id uuid references public.products(id) on delete cascade,
+  duration_days integer not null check (duration_days in (1, 3, 7, 15, 30)),
+  amount numeric(12,2) not null check (amount >= 0),
+  payment_method text not null default 'balance' check (payment_method in ('balance','card')),
+  status text not null default 'pending' check (status in ('pending','active','expired','rejected')),
+  starts_at timestamptz not null default now(),
+  ends_at timestamptz not null,
+  rejection_reason text,
+  created_at timestamptz not null default now()
+);
+
+create table if not exists public.seller_product_boosts (
+  id uuid primary key default gen_random_uuid(),
+  seller_id uuid not null references public.profiles(id) on delete cascade,
+  product_id uuid references public.products(id) on delete cascade,
+  duration_days integer not null check (duration_days in (1, 3, 7, 15, 30)),
+  amount numeric(12,2) not null check (amount >= 0),
+  payment_method text not null default 'balance' check (payment_method in ('balance','card')),
+  status text not null default 'pending' check (status in ('pending','active','expired','rejected')),
+  starts_at timestamptz not null default now(),
+  ends_at timestamptz not null,
+  created_at timestamptz not null default now()
+);
+
+create table if not exists public.seller_ad_stats (
+  id uuid primary key default gen_random_uuid(),
+  seller_id uuid not null references public.profiles(id) on delete cascade,
+  product_id uuid references public.products(id) on delete cascade,
+  ad_id uuid references public.seller_ads(id) on delete cascade,
+  boost_id uuid references public.seller_product_boosts(id) on delete cascade,
+  stat_date date not null default current_date,
+  impressions integer not null default 0 check (impressions >= 0),
+  clicks integer not null default 0 check (clicks >= 0),
+  sales_count integer not null default 0 check (sales_count >= 0),
+  ad_spend numeric(12,2) not null default 0 check (ad_spend >= 0),
+  ad_revenue numeric(12,2) not null default 0 check (ad_revenue >= 0),
+  created_at timestamptz not null default now(),
+  unique(seller_id, product_id, ad_id, boost_id, stat_date)
+);
+
+create table if not exists public.seller_ad_payments (
+  id uuid primary key default gen_random_uuid(),
+  seller_id uuid not null references public.profiles(id) on delete cascade,
+  product_id uuid references public.products(id) on delete set null,
+  kind text not null check (kind in ('sponsored','boost')),
+  amount numeric(12,2) not null check (amount >= 0),
+  payment_method text not null default 'balance' check (payment_method in ('balance','card')),
+  status text not null default 'pending' check (status in ('pending','paid','failed','refunded','refund_pending')),
+  invoice_number text,
+  refund_status text default 'none' check (refund_status in ('none','requested','approved','rejected','paid')),
+  paid_at timestamptz,
+  created_at timestamptz not null default now()
+);
+
 alter table public.seller_store_settings enable row level security;
 alter table public.seller_coupons enable row level security;
 alter table public.seller_campaigns enable row level security;
@@ -105,6 +166,10 @@ alter table public.seller_wallet_transactions enable row level security;
 alter table public.seller_notifications enable row level security;
 alter table public.seller_messages enable row level security;
 alter table public.product_reviews enable row level security;
+alter table public.seller_ads enable row level security;
+alter table public.seller_product_boosts enable row level security;
+alter table public.seller_ad_stats enable row level security;
+alter table public.seller_ad_payments enable row level security;
 
 drop policy if exists "seller store own read" on public.seller_store_settings;
 create policy "seller store own read" on public.seller_store_settings for select using (seller_id = auth.uid() or public.is_admin());
@@ -141,13 +206,30 @@ create policy "reviews customer create" on public.product_reviews for insert wit
 drop policy if exists "reviews owner delete" on public.product_reviews;
 create policy "reviews owner delete" on public.product_reviews for delete using (seller_id = auth.uid() or customer_id = auth.uid() or public.is_admin());
 
+drop policy if exists "seller ads own" on public.seller_ads;
+create policy "seller ads own" on public.seller_ads for all using (seller_id = auth.uid() or public.is_admin()) with check (seller_id = auth.uid() or public.is_admin());
+
+drop policy if exists "seller boosts own" on public.seller_product_boosts;
+create policy "seller boosts own" on public.seller_product_boosts for all using (seller_id = auth.uid() or public.is_admin()) with check (seller_id = auth.uid() or public.is_admin());
+
+drop policy if exists "seller ad stats own" on public.seller_ad_stats;
+create policy "seller ad stats own" on public.seller_ad_stats for all using (seller_id = auth.uid() or public.is_admin()) with check (seller_id = auth.uid() or public.is_admin());
+
+drop policy if exists "seller ad payments own" on public.seller_ad_payments;
+create policy "seller ad payments own" on public.seller_ad_payments for all using (seller_id = auth.uid() or public.is_admin()) with check (seller_id = auth.uid() or public.is_admin());
+
 create index if not exists products_seller_idx on public.products(seller_id);
 create index if not exists orders_status_idx on public.orders(status);
 create index if not exists order_items_seller_idx on public.order_items(seller_id);
 create index if not exists seller_messages_seller_idx on public.seller_messages(seller_id, created_at desc);
 create index if not exists seller_notifications_seller_idx on public.seller_notifications(seller_id, created_at desc);
+create index if not exists seller_ads_seller_idx on public.seller_ads(seller_id, status, ends_at desc);
+create index if not exists seller_boosts_seller_idx on public.seller_product_boosts(seller_id, status, ends_at desc);
+create index if not exists seller_ad_stats_seller_idx on public.seller_ad_stats(seller_id, stat_date desc);
+create index if not exists seller_ad_payments_seller_idx on public.seller_ad_payments(seller_id, created_at desc);
 
 grant select, insert, update, delete on public.seller_store_settings, public.seller_coupons,
   public.seller_campaigns, public.seller_notifications, public.seller_messages,
-  public.product_reviews to authenticated;
+  public.product_reviews, public.seller_ads, public.seller_product_boosts,
+  public.seller_ad_stats, public.seller_ad_payments to authenticated;
 grant select, insert on public.seller_wallet_transactions to authenticated;
