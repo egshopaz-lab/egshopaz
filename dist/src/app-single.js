@@ -497,10 +497,34 @@ function productResults(items, highlighted = false, query = "", category = "") {
 function renderApp() {
   const userLabel = currentUser() ? "Hesab" : "Giris";
   document.querySelector("#app").innerHTML = `
+    <aside class="market-sidebar" aria-label="Esas menyu">
+      <a class="side-brand" href="/" data-route="/">
+        <img src="/assets/logo.png" alt="EG Shop">
+        <span><b>EG Shop</b><small>market</small></span>
+      </a>
+      <p>Esas menyu</p>
+      <nav>
+        <button type="button" data-route="/"><span>H</span>Ana sehife</button>
+        <button type="button" data-route="/catalog"><span>K</span>Kataloq</button>
+        <button type="button" data-route="/shops"><span>M</span>Magazalar</button>
+        <button type="button" data-route="/discover"><span>D</span>Kesf et</button>
+        <button type="button" data-route="/compare"><span>C</span>Muqayise</button>
+        <button type="button" data-route="/map"><span>X</span>Xerite</button>
+        <button type="button" data-route="/promotions"><span>A</span>Aksiyalar</button>
+        <button type="button" data-route="/bonus"><span>B</span>Bonuslar</button>
+        <button type="button" data-route="/support"><span>?</span>Destek</button>
+      </nav>
+      <div class="side-help">
+        <b>Marketplace</b>
+        <small>Satici, alici ve PVZ axinlari tek yerde.</small>
+      </div>
+    </aside>
+
+    <div class="market-shell">
     <header class="site-header">
       <div class="header-inner">
         <button class="icon-button menu-button" aria-label="Menyu">=</button>
-        <a class="logo" href="#top"><img src="/assets/logo.png" alt="EG Shop"><span>EG SHOP</span></a>
+        <a class="logo" href="/" data-route="/"><img src="/assets/logo.png" alt="EG Shop"><span>EG SHOP</span></a>
         <div class="clock"><b id="clock">00:00</b><small id="date">2026-07-07</small></div>
         <label class="search">
           <span>Q</span>
@@ -518,7 +542,16 @@ function renderApp() {
     </header>
 
     <main id="top">
-      <div class="quick-links">
+      <section class="market-hero">
+        <div>
+          <span>EG Shop - Azerbaycanin onlayn marketi</span>
+          <h1>Alis-veris, magazalar ve catdirilma tek platformada</h1>
+          <p>Mehsul axtarisi, satici paneli, PVZ, sebet ve bonus axinlari mobilde de rahat istifade ucun yeniden yigildi.</p>
+        </div>
+        <div class="hero-stat"><b>${products.length}</b><small>aktiv mehsul</small></div>
+      </section>
+
+      <div class="quick-links role-links">
         <button type="button" data-route="/seller">Satici girisi</button>
         <button type="button" data-action="pvz">PVZ girisi</button>
         <button type="button" data-panel="admin">Admin</button>
@@ -553,7 +586,7 @@ function renderApp() {
       </section>
 
       <section class="products-section">
-        <div class="section-title"><h2>Trend mehsullar</h2><button type="button" data-show-all>Hamisi ></button></div>
+        <div class="section-title"><h2>Sizin ucun</h2><button type="button" data-show-all>Hamisi ></button></div>
         <div class="product-grid" id="productGrid">${products.map((product) => productCard(product, false)).join("")}</div>
       </section>
 
@@ -583,6 +616,7 @@ function renderApp() {
     </dialog>
 
     <div class="toast" id="toast">Hazirdir</div>
+    </div>
   `;
 }
 
