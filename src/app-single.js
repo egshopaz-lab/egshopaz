@@ -332,6 +332,26 @@ function authPage(path = currentRoute()) {
     </section>`;
 }
 
+function setAuthMode(form, mode) {
+  const register = mode === "register";
+  form.dataset.mode = mode;
+  form.querySelectorAll("[data-route-auth-mode],[data-auth-mode]").forEach((button) => {
+    button.classList.toggle("active", (button.dataset.routeAuthMode || button.dataset.authMode) === mode);
+  });
+  form.querySelectorAll(".register-fields").forEach((item) => { item.hidden = !register; });
+  const title = form.closest(".auth-page-shell")?.querySelector(".auth-brand-panel h1") || document.querySelector("#authTitle");
+  if (title) title.textContent = register ? "Yeni hesab yaradın" : "Hesabınıza daxil olun";
+  const submit = form.querySelector(".form-submit");
+  if (submit) submit.textContent = register ? "Qeydiyyatdan keç" : "Daxil ol";
+  const forgot = form.querySelector("[data-forgot-password]");
+  if (forgot) forgot.hidden = register;
+  if (form.elements.full_name) form.elements.full_name.required = register;
+  if (form.elements.phone) form.elements.phone.required = register;
+  if (form.elements.password_confirm) form.elements.password_confirm.required = register;
+  const message = form.querySelector(".form-message");
+  if (message) message.textContent = "";
+}
+
 function sellerDashboardPage() {
   const email = currentUser()?.email || "seller@egshop.az";
   const sample = products.slice(0, 2);
@@ -680,7 +700,10 @@ function bindRoutedControls(root = document) {
   root.querySelectorAll("[data-route-auth-mode]").forEach((button) => {
     if (button.dataset.controlBound) return;
     button.dataset.controlBound = "true";
-    button.addEventListener("click", () => routeTo(`/auth?mode=${button.dataset.routeAuthMode}`));
+    button.addEventListener("click", () => {
+      const form = button.closest("#authRouteForm,#authForm");
+      if (form) setAuthMode(form, button.dataset.routeAuthMode);
+    });
   });
   root.querySelectorAll("[data-password-toggle]").forEach((button) => {
     if (button.dataset.controlBound) return;
@@ -1246,17 +1269,7 @@ function openAccountDialog() {
       </form>`;
     const authForm = content.querySelector("#authForm");
     content.querySelectorAll("[data-auth-mode]").forEach((button) => button.addEventListener("click", () => {
-      const register = button.dataset.authMode === "register";
-      authForm.dataset.mode = button.dataset.authMode;
-      content.querySelectorAll("[data-auth-mode]").forEach((item) => item.classList.toggle("active", item === button));
-      content.querySelectorAll(".register-fields").forEach((item) => { item.hidden = !register; });
-      content.querySelector("#authTitle").textContent = register ? "Yeni hesab yaradın" : "Hesabınıza daxil olun";
-      authForm.querySelector(".form-submit").textContent = register ? "Qeydiyyatdan keç" : "Daxil ol";
-      authForm.elements.full_name.required = register;
-      authForm.elements.phone.required = register;
-      authForm.elements.password_confirm.required = register;
-      content.querySelector("[data-forgot-password]").hidden = register;
-      content.querySelector("#authMessage").textContent = "";
+      setAuthMode(authForm, button.dataset.authMode);
     }));
     content.querySelector("[data-password-toggle]").addEventListener("click", (event) => {
       const input = authForm.elements.password;
@@ -1311,11 +1324,15 @@ async function handleAuth(event) {
       });
       message.after(resend);
     } else {
-      await signIn(form.get("email"), form.get("password"));
-      window.location.reload();
+      const result = await signIn(form.get("email"), form.get("password"));
+      if (!result?.access_token) throw new Error("Giriş alınmadı. E-poçt və şifrəni yenidən yoxlayın.");
+      message.className = "form-message success";
+      message.textContent = "Giriş uğurludur. Hesab açılır...";
+      setTimeout(() => window.location.reload(), 700);
     }
   } catch (error) {
-    message.textContent = error.message;
+    message.className = "form-message";
+    message.textContent = error?.message || "Giriş alınmadı. E-poçt və şifrəni yenidən yoxlayın.";
   } finally {
     submit.disabled = false;
   }
