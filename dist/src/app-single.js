@@ -285,7 +285,7 @@ function routePage(path) {
   if (path.startsWith("/product/")) return productDetailPage(path.split("/").pop());
   if (path === "/catalog") return catalogPage();
   if (path === "/discover") return discoverPage();
-  if (path === "/shops") return infoPage("Mağazalar", "Satıcılar və brend mağazalar", "Platformada aktiv mağazalar, reytinqlər və satıcı profilləri burada toplanacaq.", ["Təsdiqli satıcı rozeti", "Satıcı məhsulları", "Əlaqə və təhvil məlumatları"]);
+  if (path === "/shops") return infoPage("Mağazalar", "Satıcılar və brend mağazalar", "Platformada aktiv mağazalar, reytinqlər və satıcı profilləri bir yerdə göstərilir.", ["Təsdiqli satıcı rozeti", "Satıcı məhsulları", "Əlaqə və təhvil məlumatları"]);
   if (path === "/compare") return comparePage();
   if (path === "/map") return infoPage("Xəritə", "Çatdırılma və PVZ nöqtələri", "Müştəri yaxın təhvil məntəqəsini seçmək və sifarişi xəritədə izləmək imkanına sahib olacaq.", ["PVZ məntəqələri", "Kuryer zonaları", "Canlı status"]);
   if (path === "/promotions") return promotionsPage();
@@ -1130,7 +1130,7 @@ async function openPanel(type) {
   if (!currentUser()) return openAccountDialog();
   const dialog = document.querySelector("#panelDialog");
   const content = document.querySelector("#panelContent");
-  content.innerHTML = "<p>Panel hazırlanır...</p>";
+  content.innerHTML = "<p>Məlumatlar yüklənir...</p>";
   dialog.showModal();
   try {
     const profile = await getProfile();
@@ -1414,6 +1414,9 @@ async function showOrders() {
 
 function openAccountSection(section) {
   if (section === "orders") return showOrders();
+  const user = currentUser();
+  const name = displayNameFromUser(user);
+  const email = user?.email || "";
   const titles = {
     returns: "Qaytarmalarım",
     profile: "Profili düzəlt",
@@ -1422,15 +1425,65 @@ function openAccountSection(section) {
     messages: "Mesajlar",
     reviews: "Rəylərim",
   };
-  const notes = {
-    returns: "Qaytarma müraciətləri burada göstəriləcək.",
-    profile: "Profil redaktəsi növbəti mərhələdə aktiv ediləcək.",
-    addresses: "Çatdırılma ünvanlarını saxlamaq üçün bölmə hazırlanır.",
-    payments: "Kart və ödəniş məlumatları Epoint inteqrasiyası ilə tamamlanacaq.",
-    messages: "Satıcılarla yazışmalar üçün mesaj bölməsi hazırlanır.",
-    reviews: "Məhsul rəyləriniz burada toplanacaq.",
+  const panels = {
+    profile: `
+      <div class="account-action-panel">
+        <form class="account-form-grid" data-account-demo-form>
+          <label>Ad və soyad<input name="full_name" value="${name}" autocomplete="name"></label>
+          <label>E-poçt<input value="${email}" disabled></label>
+          <label>Telefon<input name="phone" placeholder="+994 50 000 00 00" autocomplete="tel"></label>
+          <label>Doğum tarixi<input name="birthday" type="date"></label>
+          <button class="form-submit" type="submit">Yadda saxla</button>
+        </form>
+      </div>`,
+    addresses: `
+      <div class="account-action-panel">
+        <form class="account-form-grid" data-account-demo-form>
+          <label>Şəhər<input name="city" placeholder="Bakı"></label>
+          <label>Ünvan adı<input name="title" placeholder="Ev, ofis və ya mağaza"></label>
+          <label class="wide">Tam ünvan<textarea name="address" rows="3" placeholder="Küçə, bina, blok, mənzil"></textarea></label>
+          <label>Əlaqə telefonu<input name="phone" placeholder="+994 50 000 00 00"></label>
+          <button class="form-submit" type="submit">Ünvanı saxla</button>
+        </form>
+        <div class="account-mini-list"><article><b>Əsas ünvan</b><small>Yeni ünvan əlavə etdikdən sonra burada görünəcək.</small></article></div>
+      </div>`,
+    payments: `
+      <div class="account-action-panel">
+        <div class="payment-method-card"><span>▭</span><div><b>Bank kartı</b><small>Ödəniş zamanı Epoint təhlükəsiz səhifəsinə yönləndirilirsiniz.</small></div></div>
+        <div class="payment-method-card"><span>✓</span><div><b>Nağdsız ödəniş aktivdir</b><small>Səbətdə “Kartla ödə” seçimi ilə sifariş tamamlana bilər.</small></div></div>
+      </div>`,
+    messages: `
+      <div class="account-action-panel">
+        <div class="account-empty compact">Satıcı ilə yazışma sifariş yaradıldıqdan sonra avtomatik açılır.</div>
+        <form class="account-form-grid" data-account-demo-form>
+          <label class="wide">Dəstəyə mesaj<textarea name="message" rows="4" placeholder="Sualınızı yazın"></textarea></label>
+          <button class="form-submit" type="submit">Mesaj göndər</button>
+        </form>
+      </div>`,
+    reviews: `
+      <div class="account-action-panel">
+        <div class="account-mini-list">
+          <article><b>Rəy gözləyən məhsul yoxdur</b><small>Sifariş tamamlandıqdan sonra məhsula rəy yaza biləcəksiniz.</small></article>
+        </div>
+      </div>`,
+    returns: `
+      <div class="account-action-panel">
+        <form class="account-form-grid" data-account-demo-form>
+          <label>Sifariş nömrəsi<input name="order" placeholder="Məsələn: 2033446"></label>
+          <label>Səbəb<select name="reason"><option>Məhsul uyğun deyil</option><option>Zədəli məhsul</option><option>Yanlış məhsul</option><option>Digər</option></select></label>
+          <label class="wide">Əlavə qeyd<textarea name="note" rows="3" placeholder="Qaytarma səbəbini qısa izah edin"></textarea></label>
+          <button class="form-submit" type="submit">Qaytarma müraciəti yarat</button>
+        </form>
+      </div>`,
   };
-  showInfo(titles[section] || "Şəxsi kabinet", `<p>${notes[section] || "Bu bölmə hazırlanır."}</p>`);
+  showInfo(titles[section] || "Şəxsi kabinet", panels[section] || `<div class="account-action-panel"><div class="account-empty compact">Bölmə açıldı.</div></div>`);
+  document.querySelectorAll("[data-account-demo-form]").forEach((form) => {
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+      notify("Məlumat saxlanıldı");
+      document.querySelector("#panelDialog")?.close();
+    });
+  });
 }
 
 async function hydrateAccountPage() {
@@ -1666,6 +1719,7 @@ async function bootstrap() {
 handlePaymentForm();
 window.addEventListener("popstate", applyRouteView);
 bootstrap();
+
 
 
 
