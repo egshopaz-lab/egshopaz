@@ -1,3 +1,4 @@
+@charset "UTF-8";
 :focus-visible {
   outline: 3px solid rgba(255, 194, 28, .95);
   outline-offset: 3px;
