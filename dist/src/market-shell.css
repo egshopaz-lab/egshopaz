@@ -1652,6 +1652,10 @@ main {
   font-weight: 900;
 }
 
+.seller-kpi-grid.ads article {
+  background: linear-gradient(135deg, rgba(111, 36, 223, .09), var(--seller-surface) 68%);
+}
+
 .seller-card {
   padding: 16px;
 }
@@ -1688,6 +1692,15 @@ main {
   font-weight: 850;
 }
 
+.seller-pill {
+  padding: 8px 10px;
+  border-radius: 999px;
+  background: var(--seller-soft);
+  color: var(--seller-muted);
+  font-size: 12px;
+  font-weight: 900;
+}
+
 .seller-chart-grid,
 .seller-two-col {
   display: grid;
@@ -1707,6 +1720,10 @@ main {
   min-height: 18px;
   border-radius: 10px 10px 4px 4px;
   background: linear-gradient(180deg, #8f49ff, #ec5572);
+}
+
+.seller-bars.ads i {
+  background: linear-gradient(180deg, #2f80ed, #7b2ff7 58%, #f25f8c);
 }
 
 .seller-bars.large {
@@ -1778,6 +1795,44 @@ main {
 .seller-table-row {
   grid-template-columns: 54px minmax(180px, 1fr) auto auto auto auto auto;
   min-width: 780px;
+}
+
+.seller-table-row.ad-row {
+  grid-template-columns: 54px minmax(180px, 1fr) auto auto auto;
+}
+
+.seller-table-row.ad-row em {
+  justify-self: end;
+  padding: 7px 10px;
+  border-radius: 999px;
+  color: #6f24df;
+  background: var(--seller-soft);
+  font-style: normal;
+  font-weight: 900;
+}
+
+.seller-table-row.ad-payment {
+  grid-template-columns: minmax(180px, 1fr) auto auto;
+}
+
+.seller-ad-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.seller-ad-metrics article {
+  min-height: 76px;
+  padding: 12px;
+  border: 1px solid var(--seller-line);
+  border-radius: 14px;
+  background: var(--seller-bg);
+}
+
+.seller-ad-metrics b,
+.seller-ad-metrics small {
+  display: block;
 }
 
 .seller-section[data-seller-view="orders"] .seller-table-row,
@@ -2161,6 +2216,10 @@ main {
 
   .account-form-grid {
     grid-template-columns: 1fr;
+  }
+
+  .seller-ad-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .seller-pro-dashboard,
