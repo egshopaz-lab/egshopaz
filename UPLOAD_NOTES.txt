@@ -1,13 +1,12 @@
-﻿EG Shop Lovable-inspired update
+﻿EG Shop auth polish update
 
-Bu paket egshopaz.lovable.app saytinin axinindan ilhamlanaraq hazirlanib, amma kopya deyil.
-Deyisen esas fayllar:
-- index.html: market-shell.css qosuldu
-- src/app-single.js: sidebar, market hero, rol linkleri, yeni shell strukturu
-- src/market-shell.css: yeni marketplace UI qati
-- dist/: build olunmus hazir versiya
+Bu versiyada login/qeydiyyat sehifesindeki kobud browser default elementleri cilalandi:
+- auth tabs
+- inputlar
+- sifre goster duymesi
+- sifremi unutdum duymesi
+- submit duymeleri
+- terms checkbox
 
-Deploy qaydasi:
-1. GitHub main-e bu paketin icindeki fayllari kok dizine yukle.
-2. Hetzner serverde main branch-e kec, pull et, npm run build calisdir.
-3. sudo systemctl reload nginx
+Esas deyisen fayl: src/market-shell.css
+Build: dist/ yenilendi
