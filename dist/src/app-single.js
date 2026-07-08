@@ -692,7 +692,15 @@ function bindRoutedControls(root = document) {
       button.textContent = input.type === "password" ? "Göstər" : "Gizlət";
     });
   });
-  root.querySelector("#authRouteForm")?.addEventListener("submit", handleAuth);
+  const authRouteForm = root.querySelector("#authRouteForm");
+  if (authRouteForm && !authRouteForm.dataset.controlBound) {
+    authRouteForm.dataset.controlBound = "true";
+    authRouteForm.addEventListener("submit", handleAuth);
+    authRouteForm.querySelector(".form-submit")?.addEventListener("click", (event) => {
+      event.preventDefault();
+      authRouteForm.requestSubmit();
+    });
+  }
   root.querySelector("[data-forgot-password]")?.addEventListener("click", async () => {
     const form = root.querySelector("#authRouteForm");
     const message = root.querySelector("#authMessage");
@@ -1265,6 +1273,10 @@ function openAccountDialog() {
       }
     });
     authForm.addEventListener("submit", handleAuth);
+    authForm.querySelector(".form-submit")?.addEventListener("click", (event) => {
+      event.preventDefault();
+      authForm.requestSubmit();
+    });
   }
   dialog.showModal();
 }
@@ -1274,7 +1286,7 @@ async function handleAuth(event) {
   const target = event.currentTarget;
   const form = new FormData(target);
   const mode = target.dataset.mode;
-  const message = document.querySelector("#authMessage");
+  const message = target.querySelector(".form-message") || document.querySelector("#authMessage");
   const submit = target.querySelector(".form-submit");
   if (!target.reportValidity()) return;
   message.className = "form-message";
