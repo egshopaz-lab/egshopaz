@@ -245,6 +245,7 @@ function pageTitle(path) {
     "/giriş-qeydiyyat": "Giriş / Qeydiyyat",
     "/login": "Giriş",
     "/register": "Qeydiyyat",
+    "/account": "Şəxsi kabinet",
     "/seller": "Satıcı paneli",
     "/contact": "Əlaqə",
   };
@@ -290,11 +291,69 @@ function routePage(path) {
   if (path === "/promotions") return promotionsPage();
   if (path === "/bonus") return infoPage("Bonuslar", "Xal qazan, endirim kimi istifadə et", "Hər sifariş bonus balansına çevrilir. Bonus sistemi alıcıları geri qaytarmaq üçün qurulur.", ["Sifariş bonusu", "Dostunu dəvət et", "VIP müştərilər"]);
   if (path === "/support") return supportPage();
+  if (path === "/account") return accountPage();
   if (["/auth", "/giris-qeydiyyat", "/giriş-qeydiyyat", "/login", "/register"].includes(path)) return authPage(path);
   if (path === "/seller") return sellerDashboardPage();
   if (path === "/contact") return contactPage();
   if (path === "/download") return infoPage("EG Shop tətbiqi", "Sürətli alış-veriş cibində", "Mobil tətbiq bildirişləri, səbəti və kampaniyaları bir yerdə saxlayacaq.", ["Push bildirişlər", "Tez sifariş", "Özəl kuponlar"]);
   return "";
+}
+
+function displayNameFromUser(user) {
+  const metaName = user?.user_metadata?.full_name || user?.user_metadata?.name;
+  if (metaName) return metaName;
+  const email = user?.email || "";
+  return email ? email.split("@")[0].replace(/[._-]+/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase()) : "EG Shop müştərisi";
+}
+
+function accountPage() {
+  const user = currentUser();
+  if (!user) return authPage("/auth");
+  const name = displayNameFromUser(user);
+  const initial = (name.trim()[0] || "E").toUpperCase();
+  const email = user.email || "";
+  return `
+    <section class="account-page">
+      <div class="account-tabs">
+        <button class="active" type="button"><span>♙</span>Şəxsi kabinet</button>
+        <button type="button" data-account-section="orders"><span>▧</span>Sifarişlərim</button>
+        <button type="button" data-account-section="returns"><span>↩</span>Qaytarmalarım</button>
+        <button type="button" data-action="favorites"><span>♡</span>Sevimlilər</button>
+        <button type="button" data-action="cart"><span>🛒</span>Səbət</button>
+      </div>
+
+      <div class="account-profile-card">
+        <div class="account-avatar">${initial}</div>
+        <div>
+          <h1>${name}</h1>
+          <p>${email}</p>
+        </div>
+        <div class="account-profile-actions">
+          <button type="button" data-account-section="profile">Profili düzəlt</button>
+          <button type="button" data-account-logout>Çıxış</button>
+        </div>
+      </div>
+
+      <div class="account-stat-grid">
+        <article><span>▧</span><b id="accountOrderCount">0</b><small>Sifarişlərim</small></article>
+        <article><span>♡</span><b id="accountFavoriteCount">0</b><small>Sevimlilər</small></article>
+        <article><span>🛒</span><b id="accountCartCount">0</b><small>Səbət</small></article>
+        <article><span>♢</span><b>0</b><small>Bildirişlər</small></article>
+      </div>
+
+      <section class="account-panel-card">
+        <div class="account-panel-heading"><h2>Son sifarişlər</h2><button type="button" data-account-section="orders">Hamısı</button></div>
+        <div id="accountRecentOrders" class="account-empty">Hələ sifariş yoxdur.</div>
+      </section>
+
+      <section class="account-menu-card">
+        <button type="button" data-account-section="orders"><span>▧</span><b>Sifarişlərim</b><small>Sifariş statusu və izləmə</small><i>›</i></button>
+        <button type="button" data-account-section="addresses"><span>⌖</span><b>Ünvanlarım</b><small>Çatdırılma məlumatları</small><i>›</i></button>
+        <button type="button" data-account-section="payments"><span>▭</span><b>Ödəniş üsulları</b><small>Ödəniş məlumatları</small><i>›</i></button>
+        <button type="button" data-account-section="messages"><span>○</span><b>Mesajlar</b><small>Satıcılarla yazışmalar</small><i>›</i></button>
+        <button type="button" data-account-section="reviews"><span>☆</span><b>Rəylərim</b><small>Məhsul rəyləri</small><i>›</i></button>
+      </section>
+    </section>`;
 }
 
 function authPage(path = currentRoute()) {
@@ -521,6 +580,7 @@ function productResults(items, highlighted = false, query = "", category = "") {
 
 function renderApp() {
   const userLabel = currentUser() ? "Hesab" : "Giriş";
+  const accountRoute = currentUser() ? "/account" : "/auth";
   document.querySelector("#app").innerHTML = `
     <aside class="market-sidebar" aria-label="Əsas menyu">
       <a class="side-brand" href="/" data-route="/">
@@ -561,7 +621,7 @@ function renderApp() {
           <button type="button" data-action="discover"><span>◎</span><b>Kəşf et</b></button>
           <button type="button" data-action="favorites"><span>♡</span><b>Sevimlilər</b></button>
           <button type="button" class="basket-action" data-action="cart"><span>🛒</span><b>Səbət</b><i id="cartCount">0</i></button>
-          <button type="button" data-route="/auth"><span>⌾</span><b>${userLabel}</b></button>
+          <button type="button" data-route="${accountRoute}"><span>⌾</span><b>${userLabel}</b></button>
         </nav>
       </div>
     </header>
@@ -759,6 +819,15 @@ function bindRoutedControls(root = document) {
       root.querySelectorAll(".product-card[hidden],.lv-card[hidden]").forEach((card) => { card.hidden = false; });
     });
   });
+  root.querySelectorAll("[data-account-section]").forEach((button) => {
+    if (button.dataset.controlBound) return;
+    button.dataset.controlBound = "true";
+    button.addEventListener("click", () => openAccountSection(button.dataset.accountSection));
+  });
+  root.querySelector("[data-account-logout]")?.addEventListener("click", async () => {
+    await signOut();
+    window.location.assign("/");
+  });
   root.querySelectorAll("[data-add]").forEach((button) => {
     if (button.dataset.controlBound) return;
     button.dataset.controlBound = "true";
@@ -793,6 +862,7 @@ function bindRoutedControls(root = document) {
       }
     });
   });
+  if (root.querySelector(".account-page")) hydrateAccountPage();
 }
 
 function addFooter() {
@@ -1342,6 +1412,51 @@ async function showOrders() {
   panel.showModal();
 }
 
+function openAccountSection(section) {
+  if (section === "orders") return showOrders();
+  const titles = {
+    returns: "Qaytarmalarım",
+    profile: "Profili düzəlt",
+    addresses: "Ünvanlarım",
+    payments: "Ödəniş üsulları",
+    messages: "Mesajlar",
+    reviews: "Rəylərim",
+  };
+  const notes = {
+    returns: "Qaytarma müraciətləri burada göstəriləcək.",
+    profile: "Profil redaktəsi növbəti mərhələdə aktiv ediləcək.",
+    addresses: "Çatdırılma ünvanlarını saxlamaq üçün bölmə hazırlanır.",
+    payments: "Kart və ödəniş məlumatları Epoint inteqrasiyası ilə tamamlanacaq.",
+    messages: "Satıcılarla yazışmalar üçün mesaj bölməsi hazırlanır.",
+    reviews: "Məhsul rəyləriniz burada toplanacaq.",
+  };
+  showInfo(titles[section] || "Şəxsi kabinet", `<p>${notes[section] || "Bu bölmə hazırlanır."}</p>`);
+}
+
+async function hydrateAccountPage() {
+  if (!currentUser()) return;
+  try {
+    const [orders, favorites, cart] = await Promise.all([
+      getOrders().catch(() => []),
+      getFavorites().catch(() => []),
+      getCart().catch(() => []),
+    ]);
+    const orderCount = document.querySelector("#accountOrderCount");
+    const favoriteCount = document.querySelector("#accountFavoriteCount");
+    const cartCount = document.querySelector("#accountCartCount");
+    if (orderCount) orderCount.textContent = String(orders.length);
+    if (favoriteCount) favoriteCount.textContent = String(favorites.length);
+    if (cartCount) cartCount.textContent = String(cart.reduce((sum, item) => sum + Number(item.quantity || 0), 0));
+    const recent = document.querySelector("#accountRecentOrders");
+    if (recent && orders.length) {
+      recent.className = "account-recent-list";
+      recent.innerHTML = orders.slice(0, 3).map((order) => `<article><span><b>${money(order.total)}</b><small>${new Date(order.created_at).toLocaleDateString("az-AZ")} · ${order.status || "pending"}</small></span><i>›</i></article>`).join("");
+    }
+  } catch (error) {
+    notify(error.message);
+  }
+}
+
 function bindCoreInteractions() {
   bindRouteInteractions();
   bindProductCards();
@@ -1420,7 +1535,7 @@ function bindCoreInteractions() {
     if (action === "catalog") routeTo("/catalog");
     if (action === "cart") openCart();
     if (action === "favorites") openFavorites();
-    if (action === "account") routeTo("/auth");
+    if (action === "account") routeTo(currentUser() ? "/account" : "/auth");
   }));
   document.addEventListener("keydown", (event) => { if (event.key === "Escape") closeDrawer(); });
 }
