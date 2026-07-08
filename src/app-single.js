@@ -326,7 +326,7 @@ function authPage(path = currentRoute()) {
           <label class="terms-check"><input name="terms" type="checkbox"> <span>İstifadə şərtlərini qəbul edirəm.</span></label>
         </div>
         <button class="auth-link" type="button" data-forgot-password ${register ? "hidden" : ""}>Şifrəmi unutdum</button>
-        <button class="form-submit" type="submit">${register ? "Qeydiyyatdan keç" : "Daxil ol"}</button>
+        <button class="form-submit" type="button" data-auth-submit>${register ? "Qeydiyyatdan keç" : "Daxil ol"}</button>
         <p class="form-message" id="authMessage"></p>
       </form>
     </section>`;
@@ -698,7 +698,8 @@ function bindRoutedControls(root = document) {
     authRouteForm.addEventListener("submit", handleAuth);
     authRouteForm.querySelector(".form-submit")?.addEventListener("click", (event) => {
       event.preventDefault();
-      authRouteForm.requestSubmit();
+      event.stopPropagation();
+      handleAuth({ preventDefault() {}, currentTarget: authRouteForm });
     });
   }
   root.querySelector("[data-forgot-password]")?.addEventListener("click", async () => {
@@ -1240,7 +1241,7 @@ function openAccountDialog() {
           <label class="terms-check"><input name="terms" type="checkbox"> <span>İstifadə şərtlərini qəbul edirəm.</span></label>
         </div>
         <button class="auth-link" type="button" data-forgot-password>Şifrəni unutdum</button>
-        <button class="form-submit" type="submit">Daxil ol</button>
+        <button class="form-submit" type="button" data-auth-submit>Daxil ol</button>
         <p class="form-message" id="authMessage"></p>
       </form>`;
     const authForm = content.querySelector("#authForm");
@@ -1275,7 +1276,8 @@ function openAccountDialog() {
     authForm.addEventListener("submit", handleAuth);
     authForm.querySelector(".form-submit")?.addEventListener("click", (event) => {
       event.preventDefault();
-      authForm.requestSubmit();
+      event.stopPropagation();
+      handleAuth({ preventDefault() {}, currentTarget: authForm });
     });
   }
   dialog.showModal();
@@ -1340,6 +1342,20 @@ async function showOrders() {
 function bindCoreInteractions() {
   bindRouteInteractions();
   bindProductCards();
+  if (!document.body.dataset.authDelegateBound) {
+    document.body.dataset.authDelegateBound = "true";
+    document.addEventListener("click", (event) => {
+      const submit = event.target.closest("[data-auth-submit]");
+      const form = submit?.closest("#authRouteForm,#authForm");
+      if (!form) return;
+      event.preventDefault();
+      handleAuth({ preventDefault() {}, currentTarget: form });
+    });
+    document.addEventListener("submit", (event) => {
+      if (!event.target.matches("#authRouteForm,#authForm")) return;
+      handleAuth(event);
+    });
+  }
   document.querySelector(".menu-button")?.addEventListener("click", openDrawer);
   document.querySelectorAll("[data-close]").forEach((button) => {
     button.addEventListener("click", () => document.querySelector(`#${button.dataset.close}`)?.close());
