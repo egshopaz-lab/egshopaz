@@ -128,6 +128,11 @@ body[data-route="destek"] .market-sidebar [data-route="/support"] {
   font-weight: 900;
 }
 
+.lv-categories button span,
+.route-category-grid button span {
+  display: none;
+}
+
 .side-help {
   margin-top: auto;
   padding: 13px;
