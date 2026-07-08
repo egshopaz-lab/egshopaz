@@ -412,15 +412,166 @@ function setAuthMode(form, mode) {
 }
 
 function sellerDashboardPage() {
-  const email = currentUser()?.email || "seller@egshop.az";
-  const sample = products.slice(0, 2);
+  const user = currentUser();
+  const email = user?.email || "seller@egshop.az";
+  const storeName = "EG Shop Satıcı";
+  const sellerProducts = products.slice(0, 8);
+  const totalRevenue = sellerProducts.reduce((sum, product) => sum + Number(product.price || 0) * (Number(product.reviews || 1) + 1), 0);
+  const nav = [
+    ["dashboard", "Dashboard", "▣"], ["products", "Məhsullar", "▦"], ["categories", "Kateqoriyalar", "▤"],
+    ["orders", "Sifarişlər", "▧"], ["customers", "Müştərilər", "◎"], ["analytics", "Analitika", "◌"],
+    ["finance", "Maliyyə / Wallet", "▰"], ["coupons", "Kuponlar", "%"], ["campaigns", "Endirim kampaniyaları", "↯"],
+    ["reviews", "Rəylər", "☆"], ["notifications", "Bildirişlər", "♢"], ["messages", "Mesajlar", "○"],
+    ["settings", "Mağaza ayarları", "⚙"], ["profile", "Profil", "♙"], ["security", "Təhlükəsizlik", "盾"], ["logout", "Çıxış", "↪"],
+  ];
   return `
-    <section class="seller-dashboard-page">
-      <div class="seller-dashboard-top"><div><span>SATICI PANELİ</span><h1>Mağazam</h1><p>${email}</p></div><button type="button" class="form-submit" data-panel="seller">Məhsul idarəetməsini aç</button></div>
-      <nav class="seller-dashboard-tabs"><button class="active">Dashboard</button><button>Məhsullar <i>${products.length}</i></button><button>Toplu yükləmə</button><button>Sifarişlər <i>2</i></button><button>Qaytarmalar</button><button>Bildirişlər</button><button>Analitika</button></nav>
-      <div class="seller-metrics"><article><b>${products.length}</b><span>Aktiv məhsul</span></article><article><b>${money(products.reduce((sum, p) => sum + Number(p.price || 0), 0))}</b><span>Vitrin dəyəri</span></article><article><b>2</b><span>Gözləyən sifariş</span></article><article><b>98%</b><span>Hazırlıq səviyyəsi</span></article></div>
-      <section class="seller-orders-panel"><div class="seller-panel-heading"><h2>Sifarişlər</h2><div><button>Bu gün</button><button>7 gün</button><button>30 gün</button></div></div>${sample.map((product, index) => `<article class="seller-order-row"><img src="${product.image}" alt=""><div><b>${product.name}</b><small>No ${2033446 + index} - ${index + 1} ədəd - Müştəri: EG Shop</small><p>PVZ punkt təyin olunmayıb</p></div><strong>${money(product.price)}</strong><button>Paketlə</button><button>Göndərildi</button><button>Etiket çap et</button></article>`).join("")}</section>
+    <section class="seller-pro-dashboard" data-theme="light">
+      <aside class="seller-pro-sidebar">
+        <div class="seller-pro-brand"><img src="/assets/logo.png" alt="EG Shop"><span><b>${storeName}</b><small>${email}</small></span></div>
+        <nav>${nav.map(([id, label, icon]) => `<button type="button" class="${id === "dashboard" ? "active" : ""}" data-seller-section="${id}"><span>${icon}</span>${label}</button>`).join("")}</nav>
+      </aside>
+      <div class="seller-pro-main">
+        <header class="seller-pro-header">
+          <button type="button" class="seller-icon-btn" data-seller-collapse>☰</button>
+          <div><small>Satıcı paneli</small><h1 id="sellerPageTitle">Dashboard</h1></div>
+          <label class="seller-pro-search"><span>⌕</span><input data-seller-search placeholder="Məhsul, sifariş, müştəri axtar"></label>
+          <button type="button" class="seller-icon-btn" data-seller-theme>☾</button>
+          <button type="button" class="seller-icon-btn" data-seller-section="notifications">♢</button>
+          <button type="button" class="seller-profile-chip" data-seller-section="profile"><span>${email[0]?.toUpperCase() || "S"}</span><b>${email}</b></button>
+        </header>
+        <div class="seller-breadcrumb"><span>EG Shop</span><i>›</i><b id="sellerBreadcrumb">Dashboard</b></div>
+        <div class="seller-state-row"><div class="seller-skeleton"></div><div class="seller-empty">Məlumat yoxdur.</div><div class="seller-error">Məlumat yüklənmədi. Yenidən yoxlayın.</div></div>
+        <main class="seller-pro-content">
+          <section class="seller-section active" data-seller-view="dashboard">${sellerDashboardView(sellerProducts, totalRevenue)}</section>
+          <section class="seller-section" data-seller-view="products">${sellerProductsView(sellerProducts)}</section>
+          <section class="seller-section" data-seller-view="categories">${sellerCategoriesView()}</section>
+          <section class="seller-section" data-seller-view="orders">${sellerOrdersView(sellerProducts)}</section>
+          <section class="seller-section" data-seller-view="customers">${sellerCustomersView()}</section>
+          <section class="seller-section" data-seller-view="analytics">${sellerAnalyticsView(sellerProducts, totalRevenue)}</section>
+          <section class="seller-section" data-seller-view="finance">${sellerFinanceView(totalRevenue)}</section>
+          <section class="seller-section" data-seller-view="coupons">${sellerCouponsView()}</section>
+          <section class="seller-section" data-seller-view="campaigns">${sellerCampaignsView()}</section>
+          <section class="seller-section" data-seller-view="reviews">${sellerReviewsView(sellerProducts)}</section>
+          <section class="seller-section" data-seller-view="notifications">${sellerNotificationsView()}</section>
+          <section class="seller-section" data-seller-view="messages">${sellerMessagesView()}</section>
+          <section class="seller-section" data-seller-view="settings">${sellerSettingsView(storeName, email)}</section>
+          <section class="seller-section" data-seller-view="profile">${sellerProfileView(email)}</section>
+          <section class="seller-section" data-seller-view="security">${sellerSecurityView()}</section>
+        </main>
+      </div>
     </section>`;
+}
+
+function sellerDashboardView(items, totalRevenue) {
+  const pending = 2;
+  const completed = Math.max(1, Math.round(items.length / 2));
+  return `
+    <div class="seller-kpi-grid">
+      ${[
+        ["Ümumi satış", money(totalRevenue), "+12%"], ["Bugünkü satış", money(totalRevenue / 18), "+4%"],
+        ["Bu ayın gəliri", money(totalRevenue / 3), "+18%"], ["Gözləyən sifarişlər", pending, "nəzarət"],
+        ["Tamamlanan sifarişlər", completed, "stabil"], ["Məhsul sayı", items.length, "aktiv"],
+        ["Müştəri sayı", 24, "+6"], ["Wallet balansı", money(totalRevenue * .72), "hazır"],
+      ].map(([label, value, note]) => `<article><small>${label}</small><b>${value}</b><span>${note}</span></article>`).join("")}
+    </div>
+    <div class="seller-chart-grid">
+      <article class="seller-card"><div class="seller-card-head"><h2>Satış qrafiki</h2><select><option>Gündəlik</option><option>Həftəlik</option><option>Aylıq</option></select></div><div class="seller-bars">${[35,55,42,68,80,58,92].map((h) => `<i style="height:${h}%"></i>`).join("")}</div></article>
+      <article class="seller-card"><div class="seller-card-head"><h2>Gəlir qrafiki</h2><button type="button" data-seller-section="analytics">Detallı</button></div><div class="seller-line-chart"><span></span></div></article>
+    </div>
+    <div class="seller-two-col">
+      <article class="seller-card"><div class="seller-card-head"><h2>Son sifarişlər</h2><button type="button" data-seller-section="orders">Hamısı</button></div>${sellerOrderRows(items.slice(0, 4))}</article>
+      <article class="seller-card"><div class="seller-card-head"><h2>Ən çox satılan məhsullar</h2><button type="button" data-seller-section="products">Məhsullar</button></div>${items.slice(0, 4).map((p) => sellerMiniProduct(p)).join("")}</article>
+    </div>
+    <article class="seller-card"><div class="seller-card-head"><h2>Son bildirişlər</h2></div>${sellerNotificationsList()}</article>`;
+}
+
+function sellerProductsView(items) {
+  return `
+    <div class="seller-card">
+      <div class="seller-card-head"><h2>Məhsul əlavə et</h2><button type="button" data-panel="seller">Geniş məhsul paneli</button></div>
+      <form class="seller-form-grid" data-seller-save>
+        <label>Məhsul adı<input name="name" required placeholder="Məhsul adı"></label><label>SKU<input name="sku" placeholder="SKU-001"></label>
+        <label>Barkod<input name="barcode" placeholder="476..."></label><label>Brend<input name="brand" placeholder="Samsung, Zara..."></label>
+        <label>Kateqoriya<select name="category">${categories.slice(0, 10).map((item) => `<option>${item[1]}</option>`).join("")}</select></label><label>Alt kateqoriya<input name="subcategory" placeholder="Alt kateqoriya"></label>
+        <label>Qiymət<input name="price" type="number" min="0" step="0.01"></label><label>Endirim qiyməti<input name="sale_price" type="number" min="0" step="0.01"></label>
+        <label>Stok<input name="stock" type="number" min="0"></label><label>Variantlar<input name="variants" placeholder="Rəng: qara, ağ; Ölçü: M, L"></label>
+        <label>Etiketlər<input name="tags" placeholder="trend, yeni, premium"></label><label>SEO başlıq<input name="seo_title"></label>
+        <label class="wide">SEO təsvir<textarea name="seo_description" rows="3"></textarea></label>
+        <label class="wide">Çoxlu şəkil yüklə<input name="images" type="file" accept="image/*" multiple></label>
+        <div class="seller-form-actions"><button class="form-secondary" type="button" data-seller-draft>Draft saxla</button><button class="form-submit" type="submit">Məhsulu yayımla</button></div>
+      </form>
+    </div>
+    <div class="seller-card"><div class="seller-card-head"><h2>Məhsullar</h2><div><input class="seller-table-filter" data-table-filter placeholder="Axtarış"><button type="button">Filter</button></div></div><div class="seller-table">${sellerProductRows(items)}</div><div class="seller-pagination"><button>‹</button><b>1</b><button>›</button></div></div>`;
+}
+
+function sellerCategoriesView() {
+  return `<div class="seller-card"><div class="seller-card-head"><h2>Kateqoriyalar</h2><button type="button" data-seller-save>Yeni kateqoriya</button></div><div class="seller-category-grid">${categories.slice(0, 12).map(([icon, name]) => `<article><span>${icon}</span><b>${name}</b><small>Alt kateqoriya və komissiya idarəsi</small><button type="button" data-seller-save>Redaktə et</button></article>`).join("")}</div></div>`;
+}
+
+function sellerOrdersView(items) {
+  const tabs = ["Pending", "Confirmed", "Processing", "Ready to Ship", "Shipped", "Delivered", "Returned", "Refunded", "Cancelled"];
+  return `<div class="seller-card"><div class="seller-card-head"><h2>Sifarişlər</h2><input class="seller-table-filter" data-table-filter placeholder="Sifariş axtar"></div><div class="seller-status-tabs">${tabs.map((tab, i) => `<button class="${i === 0 ? "active" : ""}" type="button">${tab}</button>`).join("")}</div><div class="seller-table">${sellerOrderRows(items, true)}</div></div>`;
+}
+
+function sellerCustomersView() {
+  const customers = ["Elshad Namazov", "Aysel Məmmədova", "Nigar Aliyeva", "Murad Həsənli"];
+  return `<div class="seller-card"><div class="seller-card-head"><h2>Müştərilər</h2><input class="seller-table-filter" data-table-filter placeholder="Müştəri axtar"></div><div class="seller-table">${customers.map((name, index) => `<div class="seller-table-row"><span class="seller-avatar">${name[0]}</span><span><b>${name}</b><small>${index + 1} sifariş · son sifariş ${index + 2} gün əvvəl</small></span><b>${money((index + 1) * 120)}</b><button type="button" data-seller-save>Profil</button></div>`).join("")}</div></div>`;
+}
+
+function sellerAnalyticsView(items, totalRevenue) {
+  return `<div class="seller-chart-grid"><article class="seller-card"><div class="seller-card-head"><h2>Satış statistikası</h2><select><option>Gündəlik</option><option>Həftəlik</option><option>Aylıq</option><option>İllik</option></select></div><div class="seller-bars large">${[30,64,45,78,55,88,70,94,62,80,75,90].map((h) => `<i style="height:${h}%"></i>`).join("")}</div></article><article class="seller-card"><h2>Kateqoriyalar üzrə satış</h2><div class="seller-donut"><b>${money(totalRevenue)}</b><span></span></div></article></div><div class="seller-card"><div class="seller-card-head"><h2>Ən çox satılan məhsullar</h2></div>${items.slice(0, 6).map((p) => sellerMiniProduct(p)).join("")}</div>`;
+}
+
+function sellerFinanceView(totalRevenue) {
+  return `<div class="seller-kpi-grid finance"><article><small>Cari balans</small><b>${money(totalRevenue * .72)}</b><span>çıxarışa hazır</span></article><article><small>Gözləyən balans</small><b>${money(totalRevenue * .18)}</b><span>təsdiqdə</span></article><article><small>Çıxarılan balans</small><b>${money(totalRevenue * .42)}</b><span>bu ay</span></article><article><small>Komissiyalar</small><b>${money(totalRevenue * .08)}</b><span>platforma payı</span></article></div><div class="seller-card"><div class="seller-card-head"><h2>Withdraw sorğusu</h2></div><form class="seller-form-grid" data-seller-save><label>Məbləğ<input type="number" min="1" placeholder="100"></label><label>IBAN / Kart<input placeholder="AZ..."></label><button class="form-submit wide">Sorğu göndər</button></form></div><div class="seller-card"><h2>Tranzaksiya tarixçəsi</h2>${["Payout", "Komissiya", "Sifariş ödənişi"].map((x, i) => `<div class="seller-table-row"><span>${x}</span><small>${new Date().toLocaleDateString("az-AZ")}</small><b>${money((i + 1) * 42)}</b></div>`).join("")}</div>`;
+}
+
+function sellerCouponsView() {
+  return `<div class="seller-card"><div class="seller-card-head"><h2>Kupon yarat</h2></div><form class="seller-form-grid" data-seller-save><label>Kupon kodu<input value="EGSHOP10"></label><label>Endirim tipi<select><option>Faiz endirimi</option><option>Sabit məbləğ endirimi</option></select></label><label>Dəyər<input type="number" value="10"></label><label>İstifadə limiti<input type="number" value="100"></label><label>Bitmə tarixi<input type="date"></label><button class="form-submit">Kuponu aktiv et</button></form></div>`;
+}
+
+function sellerCampaignsView() {
+  return `<div class="seller-card"><div class="seller-card-head"><h2>Endirim kampaniyaları</h2><button type="button" data-seller-save>Yeni kampaniya</button></div><div class="seller-campaign-grid">${["Yay endirimi", "Həftə sonu", "Yeni məhsullar"].map((title) => `<article><b>${title}</b><small>Banner, kupon və məhsul seçimi ilə kampaniya</small><button type="button" data-seller-save>İdarə et</button></article>`).join("")}</div></div>`;
+}
+
+function sellerReviewsView(items) {
+  return `<div class="seller-card"><div class="seller-card-head"><h2>Müştəri rəyləri</h2><button type="button">Filter</button></div>${items.slice(0, 4).map((p) => `<div class="seller-review"><b>${p.name}</b><span>★★★★★</span><p>Məhsul keyfiyyəti və çatdırılma təcrübəsi müsbətdir.</p><button type="button" data-seller-save>Cavab yaz</button><button type="button" data-seller-delete>Sil</button></div>`).join("")}</div>`;
+}
+
+function sellerNotificationsView() {
+  return `<div class="seller-card"><div class="seller-card-head"><h2>Bildirişlər</h2></div>${sellerNotificationsList()}</div>`;
+}
+
+function sellerMessagesView() {
+  return `<div class="seller-messages"><aside>${["Elshad", "Aysel", "Murad"].map((name, i) => `<button class="${i === 0 ? "active" : ""}" type="button"><b>${name}</b><small>${i + 1} oxunmamış mesaj</small></button>`).join("")}</aside><section><div class="seller-chat"><p>Salam, sifarişim nə vaxt göndəriləcək?</p><p class="me">Salam, sifariş bu gün hazırlanır.</p></div><form data-seller-save><input placeholder="Mesaj yaz"><button class="form-submit">Göndər</button><button type="button" class="form-secondary">Fayl</button></form></section></div>`;
+}
+
+function sellerSettingsView(storeName, email) {
+  return `<div class="seller-card"><div class="seller-card-head"><h2>Mağaza ayarları</h2></div><form class="seller-form-grid" data-seller-save><label>Loqo<input type="file" accept="image/*"></label><label>Banner<input type="file" accept="image/*"></label><label>Mağaza adı<input value="${storeName}"></label><label>Email<input value="${email}"></label><label>Telefon<input placeholder="+994 50 000 00 00"></label><label>Ünvan<input placeholder="Bakı"></label><label class="wide">Təsvir<textarea rows="3">EG Shop marketplace mağazası</textarea></label><label>Instagram<input placeholder="@egshop"></label><label>İş saatları<input value="09:00 - 18:00"></label><label class="wide">Çatdırılma məlumatı<textarea rows="3"></textarea></label><label class="wide">Qaytarma siyasəti<textarea rows="3"></textarea></label><button class="form-submit wide">Ayarları saxla</button></form></div>`;
+}
+
+function sellerProfileView(email) {
+  return `<div class="seller-card"><div class="seller-card-head"><h2>Profil</h2></div><form class="seller-form-grid" data-seller-save><label>Profil şəkli<input type="file" accept="image/*"></label><label>Email<input value="${email}" disabled></label><label>Ad və soyad<input placeholder="Satıcı adı"></label><label>Telefon<input placeholder="+994 50 000 00 00"></label><label>Yeni şifrə<input type="password"></label><label>2FA<select><option>Aktiv deyil</option><option>SMS ilə aktiv et</option><option>Authenticator ilə aktiv et</option></select></label><button class="form-submit wide">Profili saxla</button></form></div>`;
+}
+
+function sellerSecurityView() {
+  return `<div class="seller-card"><div class="seller-card-head"><h2>Təhlükəsizlik</h2></div><div class="seller-security-list"><article><b>Şifrə dəyiş</b><button type="button" data-seller-save>Yenilə</button></article><article><b>2FA dəstəyi</b><button type="button" data-seller-save>Aktiv et</button></article><article><b>Aktiv sessiyalar</b><button type="button" data-seller-save>Yoxla</button></article></div></div>`;
+}
+
+function sellerMiniProduct(product) {
+  return `<div class="seller-mini-product"><img src="${product.image}" alt=""><span><b>${product.name}</b><small>${product.brand || "EG Shop"} · ${money(product.price)}</small></span><em>${product.rating || "5.0"}</em></div>`;
+}
+
+function sellerProductRows(items) {
+  return items.map((p) => `<div class="seller-table-row"><img src="${p.image}" alt=""><span><b>${p.name}</b><small>SKU-${String(p.id || "").slice(0, 6)} · ${p.category || "Kateqoriya"}</small></span><b>${money(p.price)}</b><small>Stok ${p.stock || 12}</small><button type="button" data-seller-save>Redaktə et</button><button type="button" data-seller-toggle>Aktiv</button><button type="button" data-seller-delete>Sil</button></div>`).join("");
+}
+
+function sellerOrderRows(items, detailed = false) {
+  return items.map((p, i) => `<div class="seller-table-row"><span><b>#${2033446 + i}</b><small>${p.name} · Müştəri ${i + 1}</small></span><b>${money(p.price)}</b><select><option>Pending</option><option>Confirmed</option><option>Processing</option><option>Ready to Ship</option><option>Shipped</option><option>Delivered</option><option>Returned</option><option>Refunded</option><option>Cancelled</option></select>${detailed ? `<button type="button" data-seller-save>Detallar</button><button type="button" data-seller-save>Faktura</button>` : ""}</div>`).join("");
+}
+
+function sellerNotificationsList() {
+  return ["Yeni sifariş qəbul edildi", "Yeni rəy əlavə olundu", "Müştəridən mesaj gəldi", "Sistem komissiya hesabatını yenilədi"].map((text) => `<div class="seller-notification"><span>♢</span><b>${text}</b><small>${new Date().toLocaleTimeString("az-AZ", { hour: "2-digit", minute: "2-digit" })}</small></div>`).join("");
 }
 
 function contactPage() {
@@ -863,6 +1014,55 @@ function bindRoutedControls(root = document) {
     });
   });
   if (root.querySelector(".account-page")) hydrateAccountPage();
+  if (root.querySelector(".seller-pro-dashboard")) bindSellerDashboard(root);
+}
+
+function bindSellerDashboard(root = document) {
+  const shell = root.querySelector(".seller-pro-dashboard");
+  if (!shell || shell.dataset.bound) return;
+  shell.dataset.bound = "true";
+  shell.querySelectorAll("[data-seller-section]").forEach((button) => {
+    button.addEventListener("click", async () => {
+      const section = button.dataset.sellerSection;
+      if (section === "logout") {
+        await signOut();
+        window.location.assign("/");
+        return;
+      }
+      shell.querySelectorAll("[data-seller-section]").forEach((item) => item.classList.toggle("active", item.dataset.sellerSection === section));
+      shell.querySelectorAll("[data-seller-view]").forEach((view) => view.classList.toggle("active", view.dataset.sellerView === section));
+      const title = button.textContent.trim();
+      shell.querySelector("#sellerPageTitle") && (shell.querySelector("#sellerPageTitle").textContent = title);
+      shell.querySelector("#sellerBreadcrumb") && (shell.querySelector("#sellerBreadcrumb").textContent = title);
+    });
+  });
+  shell.querySelector("[data-seller-theme]")?.addEventListener("click", () => {
+    shell.dataset.theme = shell.dataset.theme === "dark" ? "light" : "dark";
+  });
+  shell.querySelector("[data-seller-collapse]")?.addEventListener("click", () => shell.classList.toggle("collapsed"));
+  shell.querySelectorAll("[data-table-filter]").forEach((input) => input.addEventListener("input", () => {
+    const value = normalizeText(input.value);
+    input.closest(".seller-card")?.querySelectorAll(".seller-table-row").forEach((row) => {
+      row.hidden = value && !normalizeText(row.textContent).includes(value);
+    });
+  }));
+  shell.querySelectorAll("[data-seller-save],.seller-form-grid").forEach((item) => {
+    const eventName = item.tagName === "FORM" ? "submit" : "click";
+    item.addEventListener(eventName, (event) => {
+      event.preventDefault();
+      notify("Məlumat saxlanıldı");
+    });
+  });
+  shell.querySelectorAll("[data-seller-draft]").forEach((button) => button.addEventListener("click", () => notify("Draft saxlanıldı")));
+  shell.querySelectorAll("[data-seller-toggle]").forEach((button) => button.addEventListener("click", () => {
+    button.textContent = button.textContent === "Aktiv" ? "Passiv" : "Aktiv";
+    notify(`Məhsul ${button.textContent.toLowerCase()} edildi`);
+  }));
+  shell.querySelectorAll("[data-seller-delete]").forEach((button) => button.addEventListener("click", () => {
+    if (!confirm("Silmək istədiyinizə əminsiniz?")) return;
+    button.closest(".seller-table-row,.seller-review")?.remove();
+    notify("Silindi");
+  }));
 }
 
 function addFooter() {
@@ -1228,7 +1428,7 @@ async function openPanel(type) {
             ${sellerOrders.length ? sellerOrders.slice(0, 8).map((item) => `<div><span><b>${item.product_name || item.products?.name || "Məhsul"}</b><small>${item.quantity || 1} ədəd - ${money(Number(item.price || 0) * Number(item.quantity || 1))} - ${item.orders?.status || "pending"}</small></span></div>`).join("") : "<p>Bu satıcı üçün hele sifariş yoxdur.</p>"}
           </div>
           <h3>Ödəniş hesabı</h3>
-          <p class="flow-hint">Kart ödənişləri Epoint üzərindən qəbul olunur. Satıcı balans və payout bölməsi növbəti mərhələdə bank hesabına avtomatik çıxarış üçün genişləndirilə bilər.</p>
+          <p class="flow-hint">Kart ödənişləri Epoint üzərindən qəbul olunur. Balans, komissiya və payout məlumatları maliyyə bölməsində idarə edilir.</p>
         </section>
       </div>`;
     content.querySelector("#sellerProfileForm")?.addEventListener("submit", async (event) => {
@@ -1719,6 +1919,7 @@ async function bootstrap() {
 handlePaymentForm();
 window.addEventListener("popstate", applyRouteView);
 bootstrap();
+
 
 
 
