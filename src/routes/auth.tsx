@@ -202,8 +202,13 @@ function AuthPage() {
     if (name.trim().length < 2) { toast.error("Ad daxil edin"); return; }
     if (phone.trim().length < 7) { toast.error("Telefon nömrəsi daxil edin"); return; }
 
+    const normalizedVoen = voen.replace(/\D/g, "");
     if (role === "seller") {
       if (shopName.trim().length < 2) { toast.error("Mağaza adı daxil edin"); return; }
+      if (!/^\d{10}$/.test(normalizedVoen)) {
+        toast.error("VÖEN 10 rəqəmdən ibarət olmalıdır");
+        return;
+      }
     }
     if (role === "pvz") {
       if (!pickupPointId) {
@@ -223,7 +228,7 @@ function AuthPage() {
       ...(role === "seller" ? {
         shop_name: shopName.trim(),
         shop_city: shopCity.trim(),
-        voen: voen.trim() || undefined,
+        voen: normalizedVoen,
       } : {}),
       ...(role === "pvz" ? {
         position,
@@ -251,6 +256,8 @@ function AuthPage() {
     if (role === "seller") {
       const { error: e2 } = await supabase.rpc("register_seller", {
         _shop_name: shopName.trim().slice(0, 100),
+        _phone: phone.trim(),
+        _voen: normalizedVoen,
       });
       if (e2) { setBusy(false); toast.error(e2.message); return; }
       toast.success("Satıcı qeydiyyatınız tamamlandı");
@@ -350,8 +357,28 @@ function AuthPage() {
             </button>
           </div>
           {mode === "signup" && role === "seller" && (
-            <input value={shopName} onChange={(e) => setShopName(e.target.value)}
-              placeholder="Mağaza adı" maxLength={100} className={inputCls} />
+            <div className="space-y-3">
+              <input value={shopName} onChange={(e) => setShopName(e.target.value)}
+                placeholder="Mağaza adı" maxLength={100} className={inputCls} required />
+              <div>
+                <input
+                  value={voen}
+                  onChange={(e) => setVoen(e.target.value.replace(/\D/g, "").slice(0, 10))}
+                  placeholder="VÖEN (10 rəqəm)"
+                  inputMode="numeric"
+                  pattern="[0-9]{10}"
+                  minLength={10}
+                  maxLength={10}
+                  autoComplete="off"
+                  aria-describedby="voen-help"
+                  className={inputCls}
+                  required
+                />
+                <p id="voen-help" className="mt-1 text-xs text-muted-foreground">
+                  Satıcı hesabının təsdiqi üçün 10 rəqəmli VÖEN məcburidir.
+                </p>
+              </div>
+            </div>
           )}
 
           {mode === "signup" && role === "pvz" && (
