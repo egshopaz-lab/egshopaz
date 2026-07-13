@@ -34,7 +34,7 @@ if [[ ! -f "$TARGET/.output/server/index.mjs" ]]; then
   git archive "$SHA" | tar -x -C "$TARGET"
   chown -R egshop:egshop "$TARGET"
 
-  runuser -u egshop -- env     HOME="$BUILD_HOME"     npm_config_cache="$NPM_CACHE"     PATH=/usr/local/bin:/usr/bin:/bin     bash -c 'cd "$1" && npm ci --no-audit --no-fund && npm run typecheck && npm run build'     _ "$TARGET"
+  runuser -u egshop -- env     HOME="$BUILD_HOME"     npm_config_cache="$NPM_CACHE"     PATH=/usr/local/bin:/usr/bin:/bin     bash -c 'cd "$1" && npm install --no-audit --no-fund && npm run typecheck && npm run build'     _ "$TARGET"
 fi
 
 NEXT_LINK="$APP_DIR/.current-next"
