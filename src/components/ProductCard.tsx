@@ -7,6 +7,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { useState, useEffect, useRef } from "react";
 import { useFavorite } from "@/hooks/useFavorite";
+import { addGuestCartItem } from "@/lib/guestCart";
 
 export interface ProductCardData {
   id: string;
@@ -58,7 +59,11 @@ export function ProductCard({ p, enableFavorite = true }: { p: ProductCardData; 
   const addToCart = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    if (!user) { toast.error(t("cart.loginRequired")); return; }
+    if (!user) {
+      addGuestCartItem(p.id);
+      toast.success(t("product.addedToCart"));
+      return;
+    }
     setAdding(true);
     const { data: existing } = await supabase
       .from("cart_items").select("id, quantity")
