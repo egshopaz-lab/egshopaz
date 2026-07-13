@@ -148,6 +148,12 @@ function Catalog() {
   const parents = categories.filter((c) => !c.parent_id);
   const childrenOf = (pid: string) => categories.filter((c) => c.parent_id === pid);
   const activeCat = categories.find((c) => c.slug === cat);
+  const currentLanguage = i18n.resolvedLanguage?.split("-")[0] ?? "az";
+  const productCountLabel = currentLanguage === "ru"
+    ? `${products.length} товаров`
+    : currentLanguage === "en"
+      ? `${products.length} products`
+      : `${products.length} məhsul`;
 
   useEffect(() => {
     if (activeCat?.parent_id) setOpenParents((p) => ({ ...p, [activeCat.parent_id!]: true }));
@@ -249,7 +255,7 @@ function Catalog() {
         <div>
           <h1 className="text-2xl md:text-3xl font-extrabold mb-4">
             {activeCat ? catName(activeCat) : (q ? t("catalog.searchResults", { q }) : t("catalog.allProducts"))}
-            <span className="ml-2 text-sm text-muted-foreground font-normal">{t("catalog.productCount", { count: products.length })}</span>
+            <span className="ml-2 text-sm text-muted-foreground font-normal">{productCountLabel}</span>
           </h1>
 
           <div className="mb-4">
