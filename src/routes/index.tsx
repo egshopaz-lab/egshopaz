@@ -4,7 +4,6 @@ import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { ProductCard, type ProductCardData } from "@/components/ProductCard";
 import { SponsoredProducts } from "@/components/SponsoredProducts";
-import { SellerBanners } from "@/components/SellerBanners";
 import { Tag, Flame, TicketPercent, TrendingUp, Copy, Truck, ShieldCheck, Clock, Gift } from "lucide-react";
 import { toast } from "sonner";
 import { HomeCategoryBrowser } from "@/components/HomeCategoryBrowser";
@@ -31,7 +30,13 @@ interface Category { id: string; name: string; name_ru?: string | null; name_en?
 interface PromoCode { id: string; code: string; discount_percent: number | null; discount_amount: number | null; min_order: number; expires_at: string | null }
 
 function Index() {
-  const { t } = useTranslation();
+  const { t, i18n: translator } = useTranslation();
+  const language = translator.resolvedLanguage?.split("-")[0] ?? "az";
+  const panelLabels = language === "ru"
+    ? { sellerLogin: "Вход для продавца", pvz: "Пункт выдачи", admin: "Админ-панель", becomeSeller: "Стать продавцом" }
+    : language === "en"
+      ? { sellerLogin: "Seller login", pvz: "Pickup point", admin: "Admin panel", becomeSeller: "Become a seller" }
+      : { sellerLogin: "Satıcı girişi", pvz: "PVZ paneli", admin: "Admin paneli", becomeSeller: "Satıcı ol" };
   const [allProducts, setAllProducts] = useState<ProductCardData[]>([]);
   const [discounted, setDiscounted] = useState<ProductCardData[]>([]);
   const [trending, setTrending] = useState<ProductCardData[]>([]);
@@ -90,17 +95,14 @@ function Index() {
       {/* Müvəqqəti panel girişləri — domen ayrılandan sonra silinəcək */}
       <h1 className="sr-only">EG Shop — Azərbaycanın onlayn marketi</h1>
       <div className="flex items-center gap-2 overflow-x-auto pb-1 panel-scroll-row">
-        <Link to="/auth" search={{ role: "seller" }} className="whitespace-nowrap px-3 py-1.5 rounded-lg bg-primary/10 text-primary text-xs font-bold hover:bg-primary/20 transition">Satıcı girişi</Link>
-        <Link to="/pvz" className="whitespace-nowrap px-3 py-1.5 rounded-lg bg-primary/10 text-primary text-xs font-bold hover:bg-primary/20 transition">PVZ paneli</Link>
-        <Link to="/admin" className="whitespace-nowrap px-3 py-1.5 rounded-lg bg-primary/10 text-primary text-xs font-bold hover:bg-primary/20 transition">Admin paneli</Link>
-        <Link to="/become-seller" className="whitespace-nowrap px-3 py-1.5 rounded-lg bg-emerald-100 text-emerald-700 text-xs font-bold hover:bg-emerald-200 transition">Satıcı ol</Link>
+        <Link to="/auth" search={{ role: "seller" }} className="whitespace-nowrap px-3 py-1.5 rounded-lg bg-primary/10 text-primary text-xs font-bold hover:bg-primary/20 transition">{panelLabels.sellerLogin}</Link>
+        <Link to="/pvz" className="whitespace-nowrap px-3 py-1.5 rounded-lg bg-primary/10 text-primary text-xs font-bold hover:bg-primary/20 transition">{panelLabels.pvz}</Link>
+        <Link to="/admin" className="whitespace-nowrap px-3 py-1.5 rounded-lg bg-primary/10 text-primary text-xs font-bold hover:bg-primary/20 transition">{panelLabels.admin}</Link>
+        <Link to="/become-seller" className="whitespace-nowrap px-3 py-1.5 rounded-lg bg-emerald-100 text-emerald-700 text-xs font-bold hover:bg-emerald-200 transition">{panelLabels.becomeSeller}</Link>
       </div>
 
       {/* Kateqoriyalar — ən yuxarıda */}
       <HomeCategoryBrowser />
-
-      {/* 1) REKLAM — Satıcı bannerləri (birinci prioritet) */}
-      <SellerBanners />
 
       {/* 2) REKLAM — Featured shops */}
       <FeaturedShops />
