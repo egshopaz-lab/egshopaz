@@ -7,6 +7,7 @@ RELEASES_DIR="$APP_DIR/releases"
 CURRENT_LINK="$APP_DIR/current"
 BUILD_HOME="$APP_DIR/.build-home"
 NPM_CACHE="$APP_DIR/.npm-cache"
+ENV_FILE=/etc/egshop/egshop.env
 REMOTE=origin
 BRANCH=main
 
@@ -34,7 +35,17 @@ if [[ ! -f "$TARGET/.output/server/index.mjs" ]]; then
   git archive "$SHA" | tar -x -C "$TARGET"
   chown -R egshop:egshop "$TARGET"
 
-  runuser -u egshop -- env     HOME="$BUILD_HOME"     npm_config_cache="$NPM_CACHE"     PATH=/usr/local/bin:/usr/bin:/bin     bash -c 'cd "$1" && npm install --no-audit --no-fund && npm run typecheck && npm run build'     _ "$TARGET"
+  if [[ ! -r "$ENV_FILE" ]]; then
+    echo "Missing build environment: $ENV_FILE" >&2
+    exit 1
+  fi
+
+  set -a
+  # shellcheck disable=SC1090
+  source "$ENV_FILE"
+  set +a
+
+  runuser -u egshop --preserve-environment -- env     HOME="$BUILD_HOME"     npm_config_cache="$NPM_CACHE"     PATH=/usr/local/bin:/usr/bin:/bin     bash -c 'cd "$1" && npm install --no-audit --no-fund && npm run typecheck && npm run build'     _ "$TARGET"
 fi
 
 NEXT_LINK="$APP_DIR/.current-next"
