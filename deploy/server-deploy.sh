@@ -52,7 +52,7 @@ if ! systemctl restart egshop.service; then
 fi
 
 HEALTHY=0
-for _ in {1..15}; do
+for _ in {1..60}; do
   if curl -fsS http://127.0.0.1:3000/ >/dev/null; then
     HEALTHY=1
     break
