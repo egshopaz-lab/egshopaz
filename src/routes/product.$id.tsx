@@ -12,6 +12,7 @@ import { ProductRecommendations } from "@/components/ProductRecommendations";
 import { useFavorite } from "@/hooks/useFavorite";
 import { PinchZoomImage } from "@/components/PinchZoomImage";
 import { absoluteUrl } from "@/lib/site";
+import { addGuestCartItem } from "@/lib/guestCart";
 
 export const Route = createFileRoute("/product/$id")({
   loader: async ({ params }) => {
@@ -83,11 +84,19 @@ interface Product {
   rating: number; reviews_count: number; brand: string | null;
   stock: number; seller_id: string;
   video_url?: string | null; video_duration?: number | null;
+  delivery_days_min?: number | null; delivery_days_max?: number | null;
+  delivery_city?: string | null; free_shipping?: boolean | null; fast_delivery?: boolean | null;
 }
 
 function ProductPage() {
   const { id } = Route.useParams();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const language = i18n.resolvedLanguage?.split("-")[0] ?? "az";
+  const shippingCopy = language === "ru"
+    ? { delivery: "Доставка", days: "Ожидаемый срок", dayUnit: "дн.", city: "Город отправки", free: "Бесплатная доставка", paid: "Стоимость рассчитывается при оформлении", returns: "Возврат и обмен", returnText: "Условия возврата зависят от категории и состояния товара. Перед заказом ознакомьтесь с правилами возврата." }
+    : language === "en"
+      ? { delivery: "Delivery", days: "Estimated time", dayUnit: "days", city: "Dispatch city", free: "Free delivery", paid: "Cost is calculated at checkout", returns: "Returns and exchanges", returnText: "Return conditions depend on the product category and condition. Review the return rules before ordering." }
+      : { delivery: "Çatdırılma", days: "Təxmini müddət", dayUnit: "gün", city: "Göndəriş şəhəri", free: "Pulsuz çatdırılma", paid: "Qiymət sifariş zamanı hesablanır", returns: "Qaytarma və dəyişdirmə", returnText: "Qaytarma şərtləri məhsulun kateqoriyası və vəziyyətindən asılıdır. Sifarişdən əvvəl qaytarma qaydaları ilə tanış olun." };
   const { user } = useAuth();
   const navigate = useNavigate();
   const { isFav, toggle: toggleFavorite, busy: favoriteBusy } = useFavorite(id);
@@ -172,8 +181,12 @@ function ProductPage() {
   }, [id, user]);
 
   const addToCart = async () => {
-    if (!user) { navigate({ to: "/auth", search: { role: "buyer" } as never }); return; }
     if (!p) return;
+    if (!user) {
+      addGuestCartItem(p.id);
+      toast.success(t("product.addedToCart"));
+      return;
+    }
     const { data: existing } = await supabase.from("cart_items")
       .select("id,quantity").eq("user_id", user.id).eq("product_id", p.id).maybeSingle();
     let error: { message: string } | null = null;
@@ -355,11 +368,24 @@ function ProductPage() {
           <div className="grid grid-cols-2 gap-3 text-sm">
             <div className="flex items-center gap-2 p-3 bg-card border border-border rounded-xl">
               <Truck className="h-5 w-5 text-primary shrink-0" />
-              <span>{t("product.fastDelivery")}</span>
+              <span>{p.fast_delivery ? t("product.fastDelivery") : shippingCopy.delivery}</span>
             </div>
             <div className="flex items-center gap-2 p-3 bg-card border border-border rounded-xl">
               <ShieldCheck className="h-5 w-5 text-primary shrink-0" />
               <span>{t("product.originalProduct")}</span>
+            </div>
+          </div>
+
+          <div className="bg-card border border-border rounded-2xl p-4 text-sm space-y-3">
+            <h3 className="font-bold flex items-center gap-2"><Truck className="h-4 w-4 text-primary" />{shippingCopy.delivery}</h3>
+            <div className="grid sm:grid-cols-2 gap-2 text-muted-foreground">
+              <div>{shippingCopy.days}: <strong className="text-foreground">{p.delivery_days_min ?? 1}–{p.delivery_days_max ?? 3} {shippingCopy.dayUnit}</strong></div>
+              <div>{shippingCopy.city}: <strong className="text-foreground">{p.delivery_city || "Bakı"}</strong></div>
+              <div className="sm:col-span-2">{p.free_shipping ? shippingCopy.free : shippingCopy.paid}</div>
+            </div>
+            <div className="border-t border-border pt-3">
+              <h3 className="font-bold mb-1">{shippingCopy.returns}</h3>
+              <p className="text-muted-foreground">{shippingCopy.returnText} <Link to="/terms" className="text-primary hover:underline">{t("footer.terms")}</Link></p>
             </div>
           </div>
 
