@@ -9,6 +9,7 @@ export function SiteFooter() {
         <div>
           <h4 className="font-bold mb-3">{t("footer.about")}</h4>
           <ul className="space-y-2 text-muted-foreground">
+            <li><Link to="/about" className="hover:text-primary transition">Haqqımızda</Link></li>
             <li><Link to="/contact" className="hover:text-primary transition">{t("footer.contact")}</Link></li>
             <li><Link to="/terms" className="hover:text-primary transition">{t("footer.terms")}</Link></li>
             <li><Link to="/privacy" className="hover:text-primary transition">{t("footer.privacy")}</Link></li>
