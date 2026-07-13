@@ -91,8 +91,8 @@ function Index() {
       <h1 className="sr-only">EG Shop — Azərbaycanın onlayn marketi</h1>
       <div className="flex items-center gap-2 overflow-x-auto pb-1 panel-scroll-row">
         <Link to="/auth" search={{ role: "seller" }} className="whitespace-nowrap px-3 py-1.5 rounded-lg bg-primary/10 text-primary text-xs font-bold hover:bg-primary/20 transition">Satıcı girişi</Link>
-        <Link to="/auth" search={{ role: "pvz" }} className="whitespace-nowrap px-3 py-1.5 rounded-lg bg-primary/10 text-primary text-xs font-bold hover:bg-primary/20 transition">PVZ girişi</Link>
-        <Link to="/auth" search={{ role: "admin" }} className="whitespace-nowrap px-3 py-1.5 rounded-lg bg-primary/10 text-primary text-xs font-bold hover:bg-primary/20 transition">Admin</Link>
+        <Link to="/pvz" className="whitespace-nowrap px-3 py-1.5 rounded-lg bg-primary/10 text-primary text-xs font-bold hover:bg-primary/20 transition">PVZ paneli</Link>
+        <Link to="/admin" className="whitespace-nowrap px-3 py-1.5 rounded-lg bg-primary/10 text-primary text-xs font-bold hover:bg-primary/20 transition">Admin paneli</Link>
         <Link to="/become-seller" className="whitespace-nowrap px-3 py-1.5 rounded-lg bg-emerald-100 text-emerald-700 text-xs font-bold hover:bg-emerald-200 transition">Satıcı ol</Link>
       </div>
 
