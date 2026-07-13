@@ -82,10 +82,18 @@ function Catalog() {
     }
 
     let query: any = supabase.from("products")
-      .select("id,title,price,old_price,image_url,video_url,rating,reviews_count,brand,stock,delivery_days_min,delivery_days_max,delivery_city,free_shipping,fast_delivery,condition,categories!inner(slug)")
+      .select("id,title,price,old_price,image_url,video_url,rating,reviews_count,brand,stock,delivery_days_min,delivery_days_max,delivery_city,free_shipping,fast_delivery,condition,category_id")
       .eq("is_active", true);
     if (q) query = query.ilike("title", `%${q}%`);
-    if (catSlugs) query = query.in("categories.slug", catSlugs);
+    if (catSlugs) {
+      const categoryIds = categories.filter((category) => catSlugs!.includes(category.slug)).map((category) => category.id);
+      if (categoryIds.length === 0) {
+        setProducts([]);
+        setLoading(false);
+        return;
+      }
+      query = query.in("category_id", categoryIds);
+    }
     if (filters.minPrice != null) query = query.gte("price", filters.minPrice);
     if (filters.maxPrice != null) query = query.lte("price", filters.maxPrice);
     if (filters.brand) query = query.eq("brand", filters.brand);
@@ -110,7 +118,13 @@ function Catalog() {
     else if (filters.sort === "discount_high") query = query.order("old_price", { ascending: false, nullsFirst: false });
     else query = query.order("created_at", { ascending: false });
 
-    query.limit(80).then(({ data }: { data: ProductCardData[] | null }) => {
+    query.limit(80).then(({ data, error }: { data: ProductCardData[] | null; error: { message: string } | null }) => {
+      if (error) {
+        console.error("Catalog products query failed:", error);
+        setProducts([]);
+        setLoading(false);
+        return;
+      }
       let list = (data ?? []) as ProductCardData[];
       if (filters.minDiscount) {
         const min = filters.minDiscount;
