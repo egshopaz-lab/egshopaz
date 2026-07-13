@@ -74,7 +74,7 @@ function AdminPanel() {
   const [pwSubmitting, setPwSubmitting] = useState(false);
 
   useEffect(() => {
-    if (!loading && !user) navigate({ to: "/auth" });
+    if (!loading && !user) navigate({ to: "/auth", search: { role: "admin" } as never });
   }, [user, loading, navigate]);
 
   const submitPassword = async (e: React.FormEvent) => {
