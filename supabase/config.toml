@@ -1,5 +1,10 @@
-[functions.epoint-create]
+project_id = "ibhmwwdrzgjgwfrvpjht"
+
+[functions.verify-admin-password]
 verify_jwt = false
 
-[functions.epoint-callback]
+[functions.visual-search]
+verify_jwt = false
+
+[functions.ai-auto-reply]
 verify_jwt = false

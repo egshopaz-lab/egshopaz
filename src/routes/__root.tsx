@@ -1,0 +1,218 @@
+import { Outlet, Link, createRootRoute, HeadContent, Scripts, useLocation, useNavigate } from "@tanstack/react-router";
+import { AuthProvider, useAuth } from "@/contexts/AuthContext";
+import { Toaster } from "@/components/ui/sonner";
+import { SiteHeader } from "@/components/SiteHeader";
+import { SiteFooter } from "@/components/SiteFooter";
+import { CategoryBar } from "@/components/CategoryBar";
+import { SidebarProvider } from "@/components/ui/sidebar";
+import { MainSidebar } from "@/components/MainSidebar";
+import { LogOut, Clock } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useEffect, useState } from "react";
+import { MobileTabBar } from "@/components/MobileTabBar";
+import { LanguageDomSync } from "@/components/LanguageDomSync";
+import "@/i18n";
+import { absoluteUrl, SITE_URL } from "@/lib/site";
+
+import "../styles.css";
+
+function NotFoundComponent() {
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-background px-4">
+      <div className="max-w-md text-center">
+        <h1 className="text-7xl font-bold text-gradient-brand">404</h1>
+        <h2 className="mt-4 text-xl font-semibold">Səhifə tapılmadı</h2>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Axtardığınız səhifə mövcud deyil və ya köçürülüb.
+        </p>
+        <div className="mt-6">
+          <Link to="/" className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition">
+            Ana səhifəyə qayıt
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export const Route = createRootRoute({
+  head: () => ({
+    meta: [
+      { charSet: "utf-8" },
+      { name: "viewport", content: "width=device-width, initial-scale=1, maximum-scale=5.0, user-scalable=yes" },
+      { title: "EG Shop — Azərbaycanın onlayn marketi" },
+      { name: "description", content: "Milyonlarla məhsul, sürətli çatdırılma və sərfəli qiymətlər. EG Shop Azərbaycanda." },
+      { property: "og:site_name", content: "EG Shop" },
+      { property: "og:type", content: "website" },
+      { property: "og:locale", content: "az_AZ" },
+      { name: "twitter:card", content: "summary_large_image" },
+    ],
+    links: [
+      { rel: "preconnect", href: "https://fonts.googleapis.com" },
+      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
+      { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" },
+      { rel: "icon", type: "image/png", href: "/favicon.png" },
+    ],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "Organization",
+          name: "EG Shop",
+          url: SITE_URL,
+          logo: absoluteUrl("/eg-logo.png"),
+          sameAs: [],
+        }),
+      },
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "WebSite",
+          name: "EG Shop",
+          url: SITE_URL,
+          potentialAction: {
+            "@type": "SearchAction",
+            target: `${SITE_URL}/catalog?q={search_term_string}`,
+            "query-input": "required name=search_term_string",
+          },
+        }),
+      },
+    ],
+  }),
+
+  shellComponent: RootShell,
+  component: RootComponent,
+  notFoundComponent: NotFoundComponent,
+});
+
+function RootShell({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="az">
+      <head><HeadContent /></head>
+      <body>
+        {children}
+        <Scripts />
+      </body>
+    </html>
+  );
+}
+
+function LiveClock() {
+  const [now, setNow] = useState(() => new Date());
+  useEffect(() => {
+    const t = setInterval(() => setNow(new Date()), 1000);
+    return () => clearInterval(t);
+  }, []);
+  const time = now.toLocaleTimeString("az-AZ", { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false });
+  const date = now.toLocaleDateString("az-AZ", { weekday: "short", day: "2-digit", month: "short" });
+  return (
+    <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-secondary/80 border border-border">
+      <Clock className="h-4 w-4 text-primary shrink-0" />
+      <div className="min-w-0 text-right">
+        <div className="font-mono font-bold text-sm tabular-nums leading-tight">{time}</div>
+        <div className="text-[10px] text-muted-foreground capitalize leading-tight">{date}</div>
+      </div>
+    </div>
+  );
+}
+
+function WorkHeader({ label }: { label: string }) {
+  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
+  return (
+    <header className="sticky top-0 z-50 bg-background border-b border-border shadow-sm">
+      <div className="container mx-auto px-4 h-14 flex items-center gap-3">
+        <div className="font-extrabold text-primary tracking-tight">EG Shop · {label}</div>
+        <div className="ml-auto flex items-center gap-3">
+          <LiveClock />
+          {user && (
+            <span className="hidden md:inline text-xs text-muted-foreground truncate max-w-[180px]">{user.email}</span>
+          )}
+          {user && (
+            <Button variant="ghost" size="sm" onClick={async () => { await signOut(); navigate({ to: "/auth" }); }}>
+              <LogOut className="h-4 w-4 mr-1" /> Çıxış
+            </Button>
+          )}
+        </div>
+      </div>
+    </header>
+  );
+}
+
+function AppShell() {
+  const { pathname } = useLocation();
+  const navigate = useNavigate();
+  const { isSeller, isAdmin, isPvz, loading } = useAuth();
+  const isSellerPanel = pathname === "/seller" || pathname.startsWith("/seller/");
+  const isPvzPanel = pathname === "/pvz" || pathname.startsWith("/pvz/");
+  const isAdminPanel = pathname === "/admin" || pathname.startsWith("/admin/");
+  const isWorkPanel = isSellerPanel || isPvzPanel || isAdminPanel;
+  const isAuthRoute = pathname === "/auth" || pathname.startsWith("/auth/") || pathname === "/reset-password";
+
+
+  // Subdomain-based routing: seller.* / admin.* / pvz.* avtomatik öz panelinə açılır
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const sub = window.location.hostname.split(".")[0].toLowerCase();
+    const map: Record<string, string> = { seller: "/seller", satici: "/seller", admin: "/admin", pvz: "/pvz" };
+    const target = map[sub];
+    if (!target || isAuthRoute) return;
+    if (pathname === target || pathname.startsWith(target + "/")) return;
+    navigate({ to: target, replace: true });
+  }, [pathname, isAuthRoute, navigate]);
+
+  // Sellers (without admin/pvz) should only use the seller panel — block customer-side pages
+  useEffect(() => {
+    if (loading) return;
+    if (isSeller && !isAdmin && !isPvz && !isWorkPanel && !isAuthRoute) {
+      navigate({ to: "/seller", replace: true });
+    }
+  }, [loading, isSeller, isAdmin, isPvz, isWorkPanel, isAuthRoute, pathname, navigate]);
+
+  if (isSeller && !isAdmin && !isPvz && !isWorkPanel && !isAuthRoute) {
+    return null;
+  }
+
+  if (isWorkPanel) {
+    const label = isSellerPanel ? "Satıcı paneli" : isPvzPanel ? "PVZ PUNKT paneli" : "Admin";
+    return (
+      <div className="min-h-screen flex flex-col bg-background w-full">
+        <WorkHeader label={label} />
+        <main className="flex-1">
+          <Outlet />
+        </main>
+      </div>
+    );
+  }
+
+
+  return (
+    <SidebarProvider defaultOpen={false}>
+      <div className="min-h-screen flex flex-col bg-background w-full">
+        <MainSidebar />
+        <div className="flex-1 flex flex-col min-w-0">
+          <SiteHeader />
+          <CategoryBar />
+          <main className="flex-1 pb-20 lg:pb-0">
+            <Outlet />
+          </main>
+          <SiteFooter />
+          <MobileTabBar />
+        </div>
+      </div>
+    </SidebarProvider>
+  );
+}
+
+function RootComponent() {
+  return (
+    <AuthProvider>
+      <LanguageDomSync />
+      <AppShell />
+      
+      <Toaster position="top-center" richColors />
+    </AuthProvider>
+  );
+}

@@ -1,0 +1,20 @@
+[Unit]
+Description=EG Shop TanStack Start server
+After=network.target
+
+[Service]
+Type=simple
+User=egshop
+Group=egshop
+WorkingDirectory=/var/www/egshop/current
+EnvironmentFile=/etc/egshop/egshop.env
+Environment=NODE_ENV=production
+Environment=PORT=3000
+ExecStart=/usr/bin/node .output/server/index.mjs
+Restart=always
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
