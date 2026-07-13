@@ -5,6 +5,8 @@ REPO_DIR=/var/www/eg-shop
 APP_DIR=/var/www/egshop
 RELEASES_DIR="$APP_DIR/releases"
 CURRENT_LINK="$APP_DIR/current"
+BUILD_HOME="$APP_DIR/.build-home"
+NPM_CACHE="$APP_DIR/.npm-cache"
 REMOTE=origin
 BRANCH=main
 
@@ -24,13 +26,15 @@ if [[ "$ACTIVE" == "$TARGET" ]]; then
 fi
 
 install -d -o egshop -g egshop "$RELEASES_DIR"
+install -d -o egshop -g egshop "$BUILD_HOME"
+install -d -o egshop -g egshop "$NPM_CACHE"
 
-if [[ ! -d "$TARGET" ]]; then
+if [[ ! -f "$TARGET/.output/server/index.mjs" ]]; then
   install -d -o egshop -g egshop "$TARGET"
   git archive "$SHA" | tar -x -C "$TARGET"
   chown -R egshop:egshop "$TARGET"
 
-  runuser -u egshop -- env     HOME=/home/egshop     PATH=/usr/local/bin:/usr/bin:/bin     bash -c 'cd "$1" && npm ci --no-audit --no-fund && npm run typecheck && npm run build'     _ "$TARGET"
+  runuser -u egshop -- env     HOME="$BUILD_HOME"     npm_config_cache="$NPM_CACHE"     PATH=/usr/local/bin:/usr/bin:/bin     bash -c 'cd "$1" && npm ci --no-audit --no-fund && npm run typecheck && npm run build'     _ "$TARGET"
 fi
 
 NEXT_LINK="$APP_DIR/.current-next"
