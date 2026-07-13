@@ -578,7 +578,9 @@ function CartPage() {
               <span>{t("cart.total")}</span>
               <span>{formatAZN(finalTotal)}</span>
             </div>
-            <div className="border-t border-border pt-3 space-y-2">
+            {user && (
+              <>
+                <div className="border-t border-border pt-3 space-y-2">
               <label className="text-xs font-semibold text-muted-foreground">Alıcı məlumatları</label>
               <input
                 value={recipientName}
@@ -705,6 +707,8 @@ function CartPage() {
                   className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm resize-none"
                 />
               </div>
+            )}
+              </>
             )}
             {!user ? (
               <Link
