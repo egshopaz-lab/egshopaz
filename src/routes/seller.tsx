@@ -149,14 +149,14 @@ interface SellerNotif {
 }
 
 const productSchema = z.object({
-  title: z.string().trim().min(2, "Başlıq minimum 2 simvol").max(200),
+  title: z.string().trim().min(8, "Başlıq minimum 8 simvol olmalıdır").max(200),
   price: z.number().min(0.01, "Qiymət 0-dan böyük olmalıdır").max(1000000),
   old_price: z.number().min(0).max(1000000).nullable(),
   stock: z.number().int().min(0).max(100000),
-  brand: z.string().trim().max(100),
+  brand: z.string().trim().min(2, "Marka daxil edilməlidir").max(100),
   sku: z.string().trim().max(50),
-  description: z.string().trim().max(2000),
-  category_id: z.string().uuid().nullable(),
+  description: z.string().trim().min(40, "Təsvir minimum 40 simvol olmalıdır").max(2000),
+  category_id: z.string().uuid("Kateqoriya seçilməlidir"),
   weight: z.number().min(0).max(10000).nullable(),
 });
 
@@ -501,6 +501,10 @@ function SellerPanel() {
     }
 
     const images = editing.images ?? [];
+    if (images.length === 0 && !editing.image_url) {
+      toast.error("Ən azı bir məhsul şəkli əlavə edilməlidir");
+      return;
+    }
     const data = {
       ...payload,
       images,
@@ -509,7 +513,8 @@ function SellerPanel() {
       sku: payload.sku || null,
       description: payload.description || null,
       seller_id: user.id,
-      is_active: editing.is_active ?? true,
+      // Hər yeni və redaktə edilmiş məhsul admin yoxlamasından sonra yayımlanır.
+      is_active: false,
       delivery_days_min: editing.delivery_days_min != null ? Number(editing.delivery_days_min) : 1,
       delivery_days_max: editing.delivery_days_max != null ? Number(editing.delivery_days_max) : 3,
       delivery_city: editing.delivery_city || "Bakı",
@@ -528,7 +533,7 @@ function SellerPanel() {
         toast.error("Yadda saxlanmadı: " + (error.message || "naməlum xəta"));
         return;
       }
-      toast.success("Yeniləndi");
+      toast.success("Dəyişikliklər yoxlamaya göndərildi");
     } else {
       const { error } = await supabase.from("products").insert(data);
       if (error) {
@@ -536,7 +541,7 @@ function SellerPanel() {
         toast.error("Əlavə olunmadı: " + (error.message || "naməlum xəta"));
         return;
       }
-      toast.success("Məhsul əlavə olundu");
+      toast.success("Məhsul yoxlamaya göndərildi");
     }
     setEditing(null);
     load();
@@ -584,11 +589,6 @@ function SellerPanel() {
     a.href = qrDataUrl;
     a.download = `qr-${qrProduct.title.replace(/[^a-z0-9]+/gi, "-").toLowerCase()}.png`;
     a.click();
-  };
-
-  const toggleActive = async (p: Product) => {
-    await supabase.from("products").update({ is_active: !p.is_active }).eq("id", p.id);
-    load();
   };
 
   const updateOrderStatus = async (item: OrderItem, status: string) => {
@@ -1016,12 +1016,11 @@ function SellerPanel() {
                         </span>
                       </td>
                       <td className="p-3">
-                        <button
-                          onClick={() => toggleActive(p)}
-                          className={`text-xs px-2 py-1 rounded-full font-semibold ${p.is_active ? "bg-success/10 text-success" : "bg-muted text-muted-foreground"}`}
+                        <span
+                          className={`text-xs px-2 py-1 rounded-full font-semibold ${p.is_active ? "bg-success/10 text-success" : "bg-warning/10 text-warning"}`}
                         >
-                          {p.is_active ? "Aktiv" : "Deaktiv"}
-                        </button>
+                          {p.is_active ? "Təsdiqlənib" : "Yoxlamadadır"}
+                        </span>
                       </td>
                       <td className="p-3">
                         <div className="flex gap-1 justify-end">
@@ -1781,15 +1780,9 @@ function SellerPanel() {
               </div>
 
 
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={editing.is_active ?? true}
-                  onChange={(e) => setEditing({ ...editing, is_active: e.target.checked })}
-                  className="w-4 h-4"
-                />
-                <span className="text-sm font-semibold">Aktiv (mağazada göstər)</span>
-              </label>
+              <div className="rounded-lg border border-warning/40 bg-warning/5 p-3 text-sm">
+                <strong>Admin yoxlaması:</strong> məhsul yadda saxlandıqdan sonra yoxlamaya göndəriləcək və yalnız təsdiqdən sonra kataloqda görünəcək.
+              </div>
 
               <div className="flex gap-2 pt-2">
                 <button
