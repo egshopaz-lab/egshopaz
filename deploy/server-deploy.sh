@@ -45,7 +45,7 @@ if [[ ! -f "$TARGET/.output/server/index.mjs" ]]; then
   source "$ENV_FILE"
   set +a
 
-  runuser -u egshop --preserve-environment -- env     HOME="$BUILD_HOME"     npm_config_cache="$NPM_CACHE"     PATH=/usr/local/bin:/usr/bin:/bin     bash -c 'cd "$1" && npm install --no-audit --no-fund && npm run typecheck && npm run build'     _ "$TARGET"
+  runuser -u egshop --preserve-environment -- env     HOME="$BUILD_HOME"     npm_config_cache="$NPM_CACHE"     PATH=/usr/local/bin:/usr/bin:/bin     bash -c 'cd "$1" && npm install --no-audit --no-fund && npm run build && npm run typecheck'     _ "$TARGET"
 fi
 
 NEXT_LINK="$APP_DIR/.current-next"
