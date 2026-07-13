@@ -6,6 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { formatAZN } from "@/lib/format";
 import { Trash2, Plus, Minus, ShoppingBag, MapPin, Search } from "lucide-react";
 import { toast } from "sonner";
+import { clearGuestCart, readGuestCart, removeGuestCartItem, updateGuestCartItem } from "@/lib/guestCart";
 
 export const Route = createFileRoute("/cart")({
   component: CartPage,
@@ -60,6 +61,58 @@ function CartPage() {
   const [bonusToAzn, setBonusToAzn] = useState(0.01);
   const [profile, setProfile] = useState<{ full_name: string | null; phone: string | null } | null>(null);
 
+  const loadGuest = async () => {
+    setLoading(true);
+    const guestItems = readGuestCart();
+    const productIds = guestItems.map((item) => item.productId);
+    const { data, error } = productIds.length
+      ? await supabase
+          .from("products")
+          .select("id,title,price,image_url,stock,seller_id")
+          .eq("is_active", true)
+          .in("id", productIds)
+      : { data: [], error: null };
+    if (error) {
+      toast.error(`Səbət yüklənmədi: ${error.message}`);
+      setLoading(false);
+      return;
+    }
+    const productMap = new Map((data ?? []).map((product) => [product.id, product]));
+    setItems(
+      guestItems.map((item) => ({
+        id: `guest:${item.productId}`,
+        product_id: item.productId,
+        quantity: item.quantity,
+        products: (productMap.get(item.productId) as CartRow["products"]) ?? null,
+      })),
+    );
+    setLoading(false);
+  };
+
+  const mergeGuestCart = async (userId: string) => {
+    const guestItems = readGuestCart();
+    if (guestItems.length === 0) return;
+    for (const item of guestItems) {
+      const { data: existing } = await supabase
+        .from("cart_items")
+        .select("id,quantity")
+        .eq("user_id", userId)
+        .eq("product_id", item.productId)
+        .maybeSingle();
+      if (existing) {
+        await supabase
+          .from("cart_items")
+          .update({ quantity: Math.min(99, existing.quantity + item.quantity) })
+          .eq("id", existing.id);
+      } else {
+        await supabase
+          .from("cart_items")
+          .insert({ user_id: userId, product_id: item.productId, quantity: item.quantity });
+      }
+    }
+    clearGuestCart();
+  };
+
   const load = async () => {
     if (!user) return;
     setLoading(true);
@@ -110,8 +163,11 @@ function CartPage() {
   };
 
   useEffect(() => {
-    if (user) load();
-    else if (!authLoading) setLoading(false);
+    if (user) {
+      void mergeGuestCart(user.id).then(load);
+    } else if (!authLoading) {
+      void loadGuest();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id, authLoading]);
 
@@ -156,13 +212,24 @@ function CartPage() {
       toast.error(`Maksimum stok: ${item.products.stock} ədəd`);
       return;
     }
+    if (!user || id.startsWith("guest:")) {
+      if (item) updateGuestCartItem(item.product_id, qty);
+      await loadGuest();
+      return;
+    }
     await supabase.from("cart_items").update({ quantity: qty }).eq("id", id);
-    load();
+    await load();
   };
 
   const remove = async (id: string) => {
+    const item = items.find((i) => i.id === id);
+    if (!user || id.startsWith("guest:")) {
+      if (item) removeGuestCartItem(item.product_id);
+      await loadGuest();
+      return;
+    }
     await supabase.from("cart_items").delete().eq("id", id);
-    load();
+    await load();
   };
 
   const subtotal = items.reduce(
@@ -183,7 +250,12 @@ function CartPage() {
   const maxBonus = Math.min(bonusBalance, Math.floor(subtotal / bonusToAzn));
 
   const checkout = async () => {
-    if (!user || items.length === 0) return;
+    if (items.length === 0) return;
+    if (!user) {
+      toast.info("Səbətiniz saxlanıldı. Sifarişi tamamlamaq üçün daxil olun.");
+      navigate({ to: "/auth", search: { role: "buyer" } as never });
+      return;
+    }
     const finalRecipientName = recipientName.trim() || profile?.full_name || "";
     const finalRecipientEmail = recipientEmail.trim() || user.email || "";
     const finalRecipientPhone = recipientPhone.trim() || profile?.phone || "";
@@ -320,22 +392,6 @@ function CartPage() {
     setPlacing(false);
     navigate({ to: "/checkout-pay/$orderId", params: { orderId } });
   };
-
-  if (!authLoading && !user) {
-    return (
-      <div className="container mx-auto px-4 py-16 text-center">
-        <ShoppingBag className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
-        <h2 className="text-2xl font-bold mb-2">{t("cart.loginRequired")}</h2>
-        <Link
-          to="/auth"
-          search={{ role: "buyer" } as never}
-          className="inline-block mt-4 bg-primary text-primary-foreground px-6 py-3 rounded-xl font-bold"
-        >
-          {t("cart.login")}
-        </Link>
-      </div>
-    );
-  }
 
   return (
     <div className="container mx-auto px-4 py-6">
@@ -650,13 +706,23 @@ function CartPage() {
                 />
               </div>
             )}
-            <button
-              onClick={checkout}
-              disabled={placing}
-              className="w-full bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl py-3 font-bold disabled:opacity-60"
-            >
-              {placing ? t("cart.placing") : t("cart.checkout")}
-            </button>
+            {!user ? (
+              <Link
+                to="/auth"
+                search={{ role: "buyer" } as never}
+                className="block w-full text-center bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl py-3 font-bold"
+              >
+                Daxil ol və sifarişi tamamla
+              </Link>
+            ) : (
+              <button
+                onClick={checkout}
+                disabled={placing}
+                className="w-full bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl py-3 font-bold disabled:opacity-60"
+              >
+                {placing ? t("cart.placing") : t("cart.checkout")}
+              </button>
+            )}
           </aside>
         </div>
       )}
