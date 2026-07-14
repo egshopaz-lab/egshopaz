@@ -21,7 +21,7 @@ RELEASE_ID="github-${SHA:0:12}"
 TARGET="$RELEASES_DIR/$RELEASE_ID"
 ACTIVE="$(readlink -f "$CURRENT_LINK" 2>/dev/null || true)"
 
-if [[ "$ACTIVE" == "$TARGET" ]]; then
+if [[ "$ACTIVE" == "$TARGET" && -f "$TARGET/.deploy-complete" ]]; then
   echo "EG Shop is already on $RELEASE_ID"
   exit 0
 fi
@@ -30,10 +30,25 @@ install -d -o egshop -g egshop "$RELEASES_DIR"
 install -d -o egshop -g egshop "$BUILD_HOME"
 install -d -o egshop -g egshop "$NPM_CACHE"
 
-if [[ ! -f "$TARGET/.output/server/index.mjs" ]]; then
-  install -d -o egshop -g egshop "$TARGET"
-  git archive "$SHA" | tar -x -C "$TARGET"
-  chown -R egshop:egshop "$TARGET"
+STAGING=""
+cleanup() {
+  if [[ -n "$STAGING" && "$STAGING" == "$RELEASES_DIR/.build-$RELEASE_ID-"* ]]; then
+    rm -rf -- "$STAGING"
+  fi
+}
+trap cleanup EXIT
+
+if [[ ! -f "$TARGET/.deploy-complete" ]]; then
+  if [[ -e "$TARGET" ]]; then
+    FAILED_TARGET="$TARGET.failed-$(date -u +%Y%m%dT%H%M%SZ)"
+    mv "$TARGET" "$FAILED_TARGET"
+    echo "Moved incomplete release to $FAILED_TARGET"
+  fi
+
+  STAGING="$(mktemp -d "$RELEASES_DIR/.build-$RELEASE_ID-XXXXXX")"
+  chown egshop:egshop "$STAGING"
+  git archive "$SHA" | tar -x -C "$STAGING"
+  chown -R egshop:egshop "$STAGING"
 
   if [[ ! -r "$ENV_FILE" ]]; then
     echo "Missing build environment: $ENV_FILE" >&2
@@ -45,7 +60,17 @@ if [[ ! -f "$TARGET/.output/server/index.mjs" ]]; then
   source "$ENV_FILE"
   set +a
 
-  runuser -u egshop --preserve-environment -- env     HOME="$BUILD_HOME"     npm_config_cache="$NPM_CACHE"     PATH=/usr/local/bin:/usr/bin:/bin     bash -c 'cd "$1" && npm install --no-audit --no-fund && npm run build && npm run typecheck'     _ "$TARGET"
+  runuser -u egshop --preserve-environment -- env     HOME="$BUILD_HOME"     npm_config_cache="$NPM_CACHE"     PATH=/usr/local/bin:/usr/bin:/bin     bash -c 'cd "$1" && npm install --no-audit --no-fund && npm run build && npm run typecheck'     _ "$STAGING"
+
+  printf '%s\n' "$SHA" >"$STAGING/.deploy-complete"
+  chown egshop:egshop "$STAGING/.deploy-complete"
+  mv "$STAGING" "$TARGET"
+  STAGING=""
+fi
+
+if [[ ! -f "$TARGET/.deploy-complete" || ! -f "$TARGET/.output/server/index.mjs" ]]; then
+  echo "Release validation failed for $RELEASE_ID" >&2
+  exit 1
 fi
 
 NEXT_LINK="$APP_DIR/.current-next"
