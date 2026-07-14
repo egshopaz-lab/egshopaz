@@ -10,8 +10,12 @@ import { HomeCategoryBrowser } from "@/components/HomeCategoryBrowser";
 import { FeaturedShops } from "@/components/FeaturedShops";
 import i18n from "@/i18n";
 import { absoluteUrl } from "@/lib/site";
+import { z } from "zod";
 
 export const Route = createFileRoute("/")({
+  validateSearch: z.object({
+    payment: z.enum(["success", "error"]).optional(),
+  }),
   head: () => ({
     meta: [
       { title: i18n.t("seo.homeTitle") },
@@ -30,6 +34,7 @@ interface Category { id: string; name: string; name_ru?: string | null; name_en?
 interface PromoCode { id: string; code: string; discount_percent: number | null; discount_amount: number | null; min_order: number; expires_at: string | null }
 
 function Index() {
+  const { payment } = Route.useSearch();
   const { t, i18n: translator } = useTranslation();
   const language = translator.resolvedLanguage?.split("-")[0] ?? "az";
   const panelLabels = language === "ru"
@@ -92,6 +97,18 @@ function Index() {
 
   return (
     <div className="container mx-auto px-3 md:px-4 py-4 space-y-5 md:space-y-8">
+      {payment === "success" && (
+        <div role="status" className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-emerald-900">
+          <p className="font-bold">Ödəniş sorğusu qəbul edildi</p>
+          <p className="mt-1 text-sm">Bank təsdiqi yoxlanılır. Yekun status Epoint callback-i alındıqdan sonra sifarişinizə tətbiq ediləcək.</p>
+        </div>
+      )}
+      {payment === "error" && (
+        <div role="alert" className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-red-900">
+          <p className="font-bold">Ödəniş tamamlanmadı</p>
+          <p className="mt-1 text-sm">Kartınızdan məbləğ tutulubsa, dəqiq status bank callback-i ilə yoxlanılacaq. Yenidən cəhd edə bilərsiniz.</p>
+        </div>
+      )}
       {/* Müvəqqəti panel girişləri — domen ayrılandan sonra silinəcək */}
       <h1 className="sr-only">EG Shop — Azərbaycanın onlayn marketi</h1>
       <div className="flex items-center gap-2 overflow-x-auto pb-1 panel-scroll-row">
