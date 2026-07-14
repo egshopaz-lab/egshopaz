@@ -1,55 +1,33 @@
-create table public.epoint_payment_transactions (
-  id uuid primary key default gen_random_uuid(),
-  merchant_order_id text not null unique
-    check (char_length(merchant_order_id) between 1 and 128),
-  amount numeric(12, 2) not null
-    check (amount > 0),
-  currency text not null default 'AZN'
-    check (currency ~ '^[A-Z]{3}$'),
-  status text not null default 'new'
-    check (status in ('new', 'success', 'returned', 'error', 'server_error')),
-  provider_transaction_id text,
-  bank_transaction_id text,
-  operation_code text,
-  response_code text,
-  rrn text,
-  card_mask text,
-  message text,
-  last_callback_payload jsonb not null default '{}'::jsonb,
-  paid_at timestamptz,
-  returned_at timestamptz,
-  created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now()
-);
+do $$
+begin
+  if to_regclass('public.epoint_payment_transactions') is null
+     and exists (
+       select 1 from information_schema.columns
+       where table_schema = 'public'
+         and table_name = 'payment_transactions'
+         and column_name = 'merchant_order_id'
+     ) then
+    alter table public.payment_transactions rename to epoint_payment_transactions;
+    alter table public.epoint_payment_transactions
+      rename constraint payment_transactions_pkey to epoint_payment_transactions_pkey;
+    alter table public.epoint_payment_transactions
+      rename constraint payment_transactions_merchant_order_id_key to epoint_payment_transactions_merchant_order_id_key;
+    alter index public.payment_transactions_provider_transaction_id_key
+      rename to epoint_payment_transactions_provider_transaction_id_key;
+  end if;
 
-create unique index epoint_payment_transactions_provider_transaction_id_key
-  on public.epoint_payment_transactions (provider_transaction_id)
-  where provider_transaction_id is not null;
-
-create table public.epoint_payment_webhook_events (
-  id bigint generated always as identity primary key,
-  event_hash text not null unique
-    check (event_hash ~ '^[0-9a-f]{64}$'),
-  merchant_order_id text not null,
-  provider_transaction_id text,
-  provider_status text not null,
-  payload jsonb not null,
-  received_at timestamptz not null default now()
-);
-
-create index epoint_payment_webhook_events_merchant_order_id_idx
-  on public.epoint_payment_webhook_events (merchant_order_id);
-
-alter table public.epoint_payment_transactions enable row level security;
-alter table public.epoint_payment_webhook_events enable row level security;
-
-revoke all on table public.epoint_payment_transactions from anon, authenticated;
-revoke all on table public.epoint_payment_webhook_events from anon, authenticated;
-revoke all on sequence public.epoint_payment_webhook_events_id_seq from anon, authenticated;
-
-grant select, insert, update, delete on table public.epoint_payment_transactions to service_role;
-grant select, insert, update, delete on table public.epoint_payment_webhook_events to service_role;
-grant usage, select on sequence public.epoint_payment_webhook_events_id_seq to service_role;
+  if to_regclass('public.epoint_payment_webhook_events') is null
+     and to_regclass('public.payment_webhook_events') is not null then
+    alter table public.payment_webhook_events rename to epoint_payment_webhook_events;
+    alter table public.epoint_payment_webhook_events
+      rename constraint payment_webhook_events_pkey to epoint_payment_webhook_events_pkey;
+    alter table public.epoint_payment_webhook_events
+      rename constraint payment_webhook_events_event_hash_key to epoint_payment_webhook_events_event_hash_key;
+    alter index public.payment_webhook_events_merchant_order_id_idx
+      rename to epoint_payment_webhook_events_merchant_order_id_idx;
+  end if;
+end;
+$$;
 
 create or replace function public.process_epoint_callback(
   p_event_hash text,
@@ -170,17 +148,3 @@ begin
   return 'processed';
 end;
 $$;
-
-revoke all on function public.process_epoint_callback(
-  text, text, numeric, text, text, text, text, text, text, text, text, text, jsonb
-) from public, anon, authenticated;
-
-grant execute on function public.process_epoint_callback(
-  text, text, numeric, text, text, text, text, text, text, text, text, text, jsonb
-) to service_role;
-
-comment on table public.epoint_payment_transactions is
-  'Server-only Epoint payment state. Browser roles have no access.';
-
-comment on table public.epoint_payment_webhook_events is
-  'Immutable, idempotent log of signature-verified Epoint callbacks.';
