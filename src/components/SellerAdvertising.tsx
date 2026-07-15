@@ -206,7 +206,16 @@ export function SellerAdvertising() {
   const bannerBaseService = baseService("banner_promotion");
   const productBaseService = baseService("product_promotion");
   const shopBaseService = baseService("shop_promotion");
-  const modularPackage = Boolean(activeSub?.ad_packages?.package_services?.length);
+  const activePackageServices = activeSub?.ad_packages?.package_services?.filter(
+    (service) => service.is_active && service.service_type?.is_active !== false
+  ) ?? [];
+  const modularPackage = activePackageServices.length > 0;
+  const serviceRemaining = (service: PackageService) => {
+    if (service.service_type?.slug === "banner_promotion") return service.usage_limit - activeBanners.length;
+    if (service.service_type?.slug === "product_promotion") return service.usage_limit - activeSponsored.length;
+    if (service.service_type?.slug === "shop_promotion") return service.usage_limit - activeShopPromos.length;
+    return service.usage_limit;
+  };
   const bannersLeft = (modularPackage ? (bannerPackageService?.usage_limit ?? 0) : (activeSub?.ad_packages?.banner_slots ?? 0)) - activeBanners.length;
   const sponsoredLeft = (modularPackage ? (productPackageService?.usage_limit ?? 0) : (activeSub?.ad_packages?.sponsored_product_slots ?? 0)) - activeSponsored.length;
   const shopPromoLeft = (modularPackage ? (shopPackageService?.usage_limit ?? 0) : (activeSub?.ad_packages?.shop_promo_slots ?? 0)) - activeShopPromos.length;
@@ -533,9 +542,18 @@ export function SellerAdvertising() {
             </div>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4">
-            <div className="bg-card/60 rounded-xl p-3"><div className="text-xs text-muted-foreground">Banner (qalır / cəmi)</div><div className="font-bold text-lg">{Math.max(0, bannersLeft)} / {activeSub.ad_packages.banner_slots}</div></div>
-            <div className="bg-card/60 rounded-xl p-3"><div className="text-xs text-muted-foreground">Sponsor məhsul</div><div className="font-bold text-lg">{Math.max(0, sponsoredLeft)} / {activeSub.ad_packages.sponsored_product_slots}</div></div>
-            <div className="bg-card/60 rounded-xl p-3"><div className="text-xs text-muted-foreground">Mağaza reklamı</div><div className="font-bold text-lg">{Math.max(0, shopPromoLeft)} / {activeSub.ad_packages.shop_promo_slots ?? 0}</div></div>
+            {modularPackage ? activePackageServices.map((service) => (
+              <div key={service.service_type_id} className="bg-card/60 rounded-xl p-3">
+                <div className="text-xs text-muted-foreground">{service.service_type?.name ?? "Reklam xidməti"}</div>
+                <div className="font-bold text-lg">{Math.max(0, serviceRemaining(service))} / {service.usage_limit}</div>
+              </div>
+            )) : (
+              <>
+                <div className="bg-card/60 rounded-xl p-3"><div className="text-xs text-muted-foreground">Banner (qalır / cəmi)</div><div className="font-bold text-lg">{Math.max(0, bannersLeft)} / {activeSub.ad_packages.banner_slots}</div></div>
+                <div className="bg-card/60 rounded-xl p-3"><div className="text-xs text-muted-foreground">Sponsor məhsul</div><div className="font-bold text-lg">{Math.max(0, sponsoredLeft)} / {activeSub.ad_packages.sponsored_product_slots}</div></div>
+                <div className="bg-card/60 rounded-xl p-3"><div className="text-xs text-muted-foreground">Mağaza reklamı</div><div className="font-bold text-lg">{Math.max(0, shopPromoLeft)} / {activeSub.ad_packages.shop_promo_slots ?? 0}</div></div>
+              </>
+            )}
             <div className="bg-card/60 rounded-xl p-3"><div className="text-xs text-muted-foreground">Müddət</div><div className="font-bold text-lg">{activeSub.ad_packages.duration_days} gün</div></div>
           </div>
         </div>
@@ -719,10 +737,13 @@ export function SellerAdvertising() {
                   <div className="text-3xl font-extrabold mb-1" style={{ color: p.color }}>{formatAZN(p.price)}</div>
                   <div className="text-xs text-muted-foreground mb-4">{p.duration_days} gün</div>
                   <ul className="space-y-2 mb-5">
-                    {p.features.map((f, i) => (
+                    {(p.package_services?.filter((service) => service.is_active).length
+                      ? p.package_services.filter((service) => service.is_active).map((service) => `${service.service_type?.name ?? "Reklam xidməti"}: ${service.usage_limit} istifadə`)
+                      : p.features
+                    ).map((feature, i) => (
                       <li key={i} className="flex items-start gap-2 text-sm">
                         <Check className="h-4 w-4 mt-0.5 shrink-0" style={{ color: p.color }} />
-                        <span>{f}</span>
+                        <span>{feature}</span>
                       </li>
                     ))}
                   </ul>
