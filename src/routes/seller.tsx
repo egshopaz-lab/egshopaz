@@ -43,6 +43,7 @@ import QRCode from "qrcode";
 import { PanelLayout, type PanelNavItem } from "@/components/PanelLayout";
 import { SellerMessages } from "@/components/SellerMessages";
 import { SellerAdvertising } from "@/components/SellerAdvertising";
+import { SellerTrends } from "@/components/SellerTrends";
 import { SellerFollowers } from "@/components/SellerFollowers";
 import { SellerAnalytics } from "@/components/SellerAnalytics";
 import { BulkProductUpload } from "@/components/BulkProductUpload";
@@ -177,6 +178,7 @@ function SellerPanel() {
     | "orders"
     | "messages"
     | "advertising"
+    | "trends"
     | "balance"
     | "analytics"
     | "bulk"
@@ -184,7 +186,7 @@ function SellerPanel() {
     | "support"
     | "returns"
     | "followers"
-  >("dashboard");
+  >(typeof window !== "undefined" && new URLSearchParams(window.location.search).has("trends_payment") ? "trends" : "dashboard");
 
   const [unreadMsgs, setUnreadMsgs] = useState(0);
   const [sellerNotifs, setSellerNotifs] = useState<SellerNotif[]>([]);
@@ -806,6 +808,13 @@ function SellerPanel() {
       onClick: () => setTab("advertising"),
     },
     {
+      key: "trends",
+      label: "EG Trends",
+      icon: Rocket,
+      active: tab === "trends",
+      onClick: () => setTab("trends"),
+    },
+    {
       key: "followers",
       label: "İzləyicilər",
       icon: Users,
@@ -1195,6 +1204,8 @@ function SellerPanel() {
       {tab === "bulk" && <BulkProductUpload sellerId={user.id} onDone={load} />}
 
       {tab === "advertising" && <SellerAdvertising />}
+
+      {tab === "trends" && <SellerTrends sellerId={user.id} />}
 
       {tab === "balance" && <SellerBalance sellerId={user.id} />}
 
