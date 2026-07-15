@@ -52,7 +52,7 @@ export const Route = createRootRoute({
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" },
-      { rel: "icon", type: "image/png", href: "/favicon.png" },
+      { rel: "icon", type: "image/svg+xml", href: "/eg-logo.svg" },
     ],
     scripts: [
       {
@@ -62,7 +62,7 @@ export const Route = createRootRoute({
           "@type": "Organization",
           name: "EG Shop",
           url: SITE_URL,
-          logo: absoluteUrl("/eg-logo.png"),
+          logo: absoluteUrl("/eg-logo.svg"),
           sameAs: [],
         }),
       },
