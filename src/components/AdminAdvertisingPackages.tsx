@@ -382,7 +382,24 @@ function PackageModal({ pkg, serviceTypes, current, onClose, onSave }: { pkg: Ad
     usage_limit: type.default_usage_limit, priority: type.priority,
     display_rules: type.display_rules, settings: type.settings,
   }));
+  const [rulesText, setRulesText] = useState<Record<string, string>>(() => Object.fromEntries(services.map((row) => [row.service_type_id, json(row.display_rules)])));
+  const [settingsText, setSettingsText] = useState<Record<string, string>>(() => Object.fromEntries(services.map((row) => [row.service_type_id, json(row.settings)])));
   const updateService = (id: string, patch: Partial<PackageService>) => setServices((rows) => rows.map((row) => row.service_type_id === id ? { ...row, ...patch } : row));
+  const submit = async () => {
+    try {
+      const parsed = services.map((row) => ({
+        ...row,
+        display_rules: parseObject(rulesText[row.service_type_id], "GÃ¶stÉ™rilmÉ™ qaydalarÄ±"),
+        settings: parseObject(settingsText[row.service_type_id], "ParametrlÉ™r"),
+      }));
+      setSaving(true);
+      await onSave(draft, parsed);
+    } catch (error) {
+      toast.error((error as Error).message);
+    } finally {
+      setSaving(false);
+    }
+  };
 
   return <Modal title={pkg.id ? "Reklam paketini redaktÉ™ et" : "Yeni reklam paketi"} onClose={onClose}>
     <div className="space-y-5">
@@ -404,12 +421,12 @@ function PackageModal({ pkg, serviceTypes, current, onClose, onSave }: { pkg: Ad
             <Field label="MÃ¼ddÉ™t (gÃ¼n)"><input type="number" min={1} value={row.duration_days} onChange={(e) => updateService(type.id, { duration_days: Number(e.target.value) })} className={inputClass} /></Field>
             <Field label="Ä°stifadÉ™ limiti"><input type="number" min={0} value={row.usage_limit} onChange={(e) => updateService(type.id, { usage_limit: Number(e.target.value) })} className={inputClass} /></Field>
             <Field label="Prioritet"><input type="number" value={row.priority} onChange={(e) => updateService(type.id, { priority: Number(e.target.value) })} className={inputClass} /></Field>
-            <div className="sm:col-span-2"><Field label="GÃ¶stÉ™rilmÉ™ qaydalarÄ± (JSON)"><textarea rows={4} value={json(row.display_rules)} onChange={(e) => { try { updateService(type.id, { display_rules: parseObject(e.target.value, "GÃ¶stÉ™rilmÉ™ qaydalarÄ±") }); } catch { /* allow editing */ } }} onBlur={(e) => { try { updateService(type.id, { display_rules: parseObject(e.target.value, "GÃ¶stÉ™rilmÉ™ qaydalarÄ±") }); } catch (error) { toast.error((error as Error).message); } }} className="w-full p-3 rounded-md border border-input bg-background text-xs font-mono" /></Field></div>
-            <div className="sm:col-span-2"><Field label="DigÉ™r parametrlÉ™r (JSON)"><textarea rows={4} value={json(row.settings)} onChange={(e) => { try { updateService(type.id, { settings: parseObject(e.target.value, "ParametrlÉ™r") }); } catch { /* allow editing */ } }} onBlur={(e) => { try { updateService(type.id, { settings: parseObject(e.target.value, "ParametrlÉ™r") }); } catch (error) { toast.error((error as Error).message); } }} className="w-full p-3 rounded-md border border-input bg-background text-xs font-mono" /></Field></div>
+            <div className="sm:col-span-2"><Field label="GÃ¶stÉ™rilmÉ™ qaydalarÄ± (JSON)"><textarea rows={4} value={rulesText[type.id] ?? "{}"} onChange={(e) => setRulesText((text) => ({ ...text, [type.id]: e.target.value }))} className="w-full p-3 rounded-md border border-input bg-background text-xs font-mono" /></Field></div>
+            <div className="sm:col-span-2"><Field label="DigÉ™r parametrlÉ™r (JSON)"><textarea rows={4} value={settingsText[type.id] ?? "{}"} onChange={(e) => setSettingsText((text) => ({ ...text, [type.id]: e.target.value }))} className="w-full p-3 rounded-md border border-input bg-background text-xs font-mono" /></Field></div>
           </div>
         </div>;
       })}</div></div>
-      <div className="flex justify-end gap-2"><button onClick={onClose} className="h-10 px-4 rounded-md border border-border font-bold">LÉ™ÄŸv et</button><button disabled={saving} onClick={async () => { setSaving(true); await onSave(draft, services); setSaving(false); }} className="h-10 px-4 rounded-md bg-primary text-primary-foreground font-bold inline-flex items-center gap-2"><Check className="h-4 w-4" />{saving ? "SaxlanÄ±lÄ±r..." : "Yadda saxla"}</button></div>
+      <div className="flex justify-end gap-2"><button onClick={onClose} className="h-10 px-4 rounded-md border border-border font-bold">LÉ™ÄŸv et</button><button disabled={saving} onClick={() => void submit()} className="h-10 px-4 rounded-md bg-primary text-primary-foreground font-bold inline-flex items-center gap-2"><Check className="h-4 w-4" />{saving ? "SaxlanÄ±lÄ±r..." : "Yadda saxla"}</button></div>
     </div>
   </Modal>;
 }
