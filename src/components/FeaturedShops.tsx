@@ -28,11 +28,12 @@ export function FeaturedShops() {
   useEffect(() => {
     void (async () => {
       const nowIso = new Date().toISOString();
-      const { data } = await supabase
+      const { data } = await (supabase as any)
         .from("sponsored_shops")
         .select("id,seller_id,profiles:seller_id(id,shop_name,full_name,shop_logo_url,shop_banner_url,shop_city)")
         .eq("is_active", true)
         .gt("ends_at", nowIso)
+        .order("priority", { ascending: false })
         .limit(12);
       setShops((data ?? []) as unknown as ShopRow[]);
     })();
