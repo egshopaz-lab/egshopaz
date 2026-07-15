@@ -219,6 +219,12 @@ export function SellerAdvertising() {
   const productBaseDays = Number(productBaseService?.default_duration_days ?? promoSettings?.single_product_promo_days ?? 7);
   const shopBasePrice = Number(shopBaseService?.base_price ?? promoSettings?.single_shop_promo_price ?? 10);
   const shopBaseDays = Number(shopBaseService?.default_duration_days ?? promoSettings?.single_shop_promo_days ?? 7);
+  const packageServiceEndsAt = (service?: PackageService) => {
+    const candidate = new Date();
+    candidate.setDate(candidate.getDate() + Number(service?.duration_days ?? activeSub?.ad_packages?.duration_days ?? 1));
+    if (!activeSub) return candidate.toISOString();
+    return new Date(Math.min(candidate.getTime(), new Date(activeSub.ends_at).getTime())).toISOString();
+  };
 
   const checkoutMeta = (() => {
     if (!checkout) return null;
@@ -286,9 +292,12 @@ export function SellerAdvertising() {
 
       if (checkout.kind === "one_product") {
         const ends = new Date(); ends.setDate(ends.getDate() + checkout.days);
-        const { error } = await supabase.from("sponsored_products").insert({
+        const { error } = await (supabase as any).from("sponsored_products").insert({
           seller_id: user.id, product_id: checkout.productId,
-          position: "catalog_top", is_active: true, ends_at: ends.toISOString(),
+          position: String(productBaseService?.display_rules?.position ?? "catalog_top"),
+          priority: Number(productBaseService?.priority ?? 100),
+          display_rules: productBaseService?.display_rules ?? {},
+          is_active: true, ends_at: ends.toISOString(),
         });
         if (error) throw error;
         await supabase.from("payment_transactions").insert({
@@ -298,8 +307,10 @@ export function SellerAdvertising() {
         toast.success("Məhsul ana səhifədə önə çəkildi! 🎉");
       } else if (checkout.kind === "one_shop") {
         const ends = new Date(); ends.setDate(ends.getDate() + checkout.days);
-        const { error } = await supabase.from("sponsored_shops").insert({
+        const { error } = await (supabase as any).from("sponsored_shops").insert({
           seller_id: user.id, ends_at: ends.toISOString(), is_active: true,
+          priority: Number(shopBaseService?.priority ?? 100),
+          display_rules: shopBaseService?.display_rules ?? {},
         });
         if (error) throw error;
         await supabase.from("payment_transactions").insert({
@@ -309,13 +320,15 @@ export function SellerAdvertising() {
         toast.success("Mağazanız ana səhifədə önə çəkildi! 🎉");
       } else if (checkout.kind === "one_banner") {
         const ends = new Date(); ends.setDate(ends.getDate() + checkout.days);
-        const { error } = await supabase.from("banners").insert({
+        const { error } = await (supabase as any).from("banners").insert({
           seller_id: user.id,
           title: checkout.form.title.trim().slice(0, 200),
           image_url: checkout.form.image_url || null,
           video_url: checkout.form.video_url || null,
           link_url: checkout.form.link_url.trim().slice(0, 500) || null,
-          position: "home_top",
+          position: String(bannerBaseService?.display_rules?.position ?? "home_top"),
+          priority: Number(bannerBaseService?.priority ?? 100),
+          display_rules: bannerBaseService?.display_rules ?? {},
           is_active: true,
           ends_at: ends.toISOString(),
         });
@@ -328,9 +341,12 @@ export function SellerAdvertising() {
         setBannerForm(null);
       } else if (checkout.kind === "slot_product") {
         if (!activeSub) throw new Error("Aktiv paket yoxdur");
-        const { error } = await supabase.from("sponsored_products").insert({
+        const { error } = await (supabase as any).from("sponsored_products").insert({
           seller_id: user.id, subscription_id: activeSub.id, product_id: checkout.productId,
-          position: "catalog_top", is_active: true, ends_at: activeSub.ends_at,
+          position: String(productPackageService?.display_rules?.position ?? "catalog_top"),
+          priority: Number(productPackageService?.priority ?? 100),
+          display_rules: productPackageService?.display_rules ?? {},
+          is_active: true, ends_at: packageServiceEndsAt(productPackageService),
         });
         if (error) throw error;
         await supabase.from("payment_transactions").insert({
@@ -342,8 +358,11 @@ export function SellerAdvertising() {
         setPickProduct(false);
       } else if (checkout.kind === "slot_shop") {
         if (!activeSub) throw new Error("Aktiv paket yoxdur");
-        const { error } = await supabase.from("sponsored_shops").insert({
-          seller_id: user.id, subscription_id: activeSub.id, ends_at: activeSub.ends_at, is_active: true,
+        const { error } = await (supabase as any).from("sponsored_shops").insert({
+          seller_id: user.id, subscription_id: activeSub.id,
+          ends_at: packageServiceEndsAt(shopPackageService), is_active: true,
+          priority: Number(shopPackageService?.priority ?? 100),
+          display_rules: shopPackageService?.display_rules ?? {},
         });
         if (error) throw error;
         await supabase.from("payment_transactions").insert({
@@ -354,16 +373,18 @@ export function SellerAdvertising() {
         toast.success("Mağazanız önə çəkildi 🎉");
       } else if (checkout.kind === "slot_banner") {
         if (!activeSub) throw new Error("Aktiv paket yoxdur");
-        const { error } = await supabase.from("banners").insert({
+        const { error } = await (supabase as any).from("banners").insert({
           seller_id: user.id,
           subscription_id: activeSub.id,
           title: checkout.form.title.trim().slice(0, 200),
           image_url: checkout.form.image_url || null,
           video_url: checkout.form.video_url || null,
           link_url: checkout.form.link_url.trim().slice(0, 500) || null,
-          position: "home_top",
+          position: String(bannerPackageService?.display_rules?.position ?? "home_top"),
+          priority: Number(bannerPackageService?.priority ?? 100),
+          display_rules: bannerPackageService?.display_rules ?? {},
           is_active: true,
-          ends_at: activeSub.ends_at,
+          ends_at: packageServiceEndsAt(bannerPackageService),
         });
         if (error) throw error;
         await supabase.from("payment_transactions").insert({
