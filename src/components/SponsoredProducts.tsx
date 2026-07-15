@@ -26,11 +26,12 @@ export function SponsoredProducts({ limit = 6 }: { limit?: number }) {
   useEffect(() => {
     let active = true;
     void (async () => {
-      const { data } = await supabase
+      const { data } = await (supabase as any)
         .from("sponsored_products")
         .select("id, product_id")
         .eq("is_active", true)
         .gt("ends_at", new Date().toISOString())
+        .order("priority", { ascending: false })
         .limit(limit);
       const placements = (data ?? []) as Pick<SponsoredItem, "id" | "product_id">[];
       const ids = placements.map((p) => p.product_id).filter(Boolean);
