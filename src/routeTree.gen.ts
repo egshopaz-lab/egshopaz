@@ -17,6 +17,7 @@ import { Route as SellerRouteImport } from './routes/seller'
 import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
 import { Route as ReturnsRouteImport } from './routes/returns'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as RegisterRouteImport } from './routes/register'
 import { Route as ReferralRouteImport } from './routes/referral'
 import { Route as PvzRouteImport } from './routes/pvz'
 import { Route as PromotionsRouteImport } from './routes/promotions'
@@ -30,6 +31,7 @@ import { Route as MyReviewsRouteImport } from './routes/my-reviews'
 import { Route as MessagesPvzRouteImport } from './routes/messages-pvz'
 import { Route as MessagesRouteImport } from './routes/messages'
 import { Route as MapRouteImport } from './routes/map'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as LlmsDottxtRouteImport } from './routes/llms[.]txt'
 import { Route as FollowedShopsRouteImport } from './routes/followed-shops'
 import { Route as FavoritesRouteImport } from './routes/favorites'
@@ -88,6 +90,11 @@ const ReturnsRoute = ReturnsRouteImport.update({
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
   path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RegisterRoute = RegisterRouteImport.update({
+  id: '/register',
+  path: '/register',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ReferralRoute = ReferralRouteImport.update({
@@ -153,6 +160,11 @@ const MessagesRoute = MessagesRouteImport.update({
 const MapRoute = MapRouteImport.update({
   id: '/map',
   path: '/map',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LlmsDottxtRoute = LlmsDottxtRouteImport.update({
@@ -268,6 +280,7 @@ export interface FileRoutesByFullPath {
   '/favorites': typeof FavoritesRoute
   '/followed-shops': typeof FollowedShopsRoute
   '/llms.txt': typeof LlmsDottxtRoute
+  '/login': typeof LoginRoute
   '/map': typeof MapRoute
   '/messages': typeof MessagesRoute
   '/messages-pvz': typeof MessagesPvzRoute
@@ -281,6 +294,7 @@ export interface FileRoutesByFullPath {
   '/promotions': typeof PromotionsRoute
   '/pvz': typeof PvzRoute
   '/referral': typeof ReferralRoute
+  '/register': typeof RegisterRoute
   '/reset-password': typeof ResetPasswordRoute
   '/returns': typeof ReturnsRoute
   '/robots.txt': typeof RobotsDottxtRoute
@@ -310,6 +324,7 @@ export interface FileRoutesByTo {
   '/favorites': typeof FavoritesRoute
   '/followed-shops': typeof FollowedShopsRoute
   '/llms.txt': typeof LlmsDottxtRoute
+  '/login': typeof LoginRoute
   '/map': typeof MapRoute
   '/messages': typeof MessagesRoute
   '/messages-pvz': typeof MessagesPvzRoute
@@ -323,6 +338,7 @@ export interface FileRoutesByTo {
   '/promotions': typeof PromotionsRoute
   '/pvz': typeof PvzRoute
   '/referral': typeof ReferralRoute
+  '/register': typeof RegisterRoute
   '/reset-password': typeof ResetPasswordRoute
   '/returns': typeof ReturnsRoute
   '/robots.txt': typeof RobotsDottxtRoute
@@ -353,6 +369,7 @@ export interface FileRoutesById {
   '/favorites': typeof FavoritesRoute
   '/followed-shops': typeof FollowedShopsRoute
   '/llms.txt': typeof LlmsDottxtRoute
+  '/login': typeof LoginRoute
   '/map': typeof MapRoute
   '/messages': typeof MessagesRoute
   '/messages-pvz': typeof MessagesPvzRoute
@@ -366,6 +383,7 @@ export interface FileRoutesById {
   '/promotions': typeof PromotionsRoute
   '/pvz': typeof PvzRoute
   '/referral': typeof ReferralRoute
+  '/register': typeof RegisterRoute
   '/reset-password': typeof ResetPasswordRoute
   '/returns': typeof ReturnsRoute
   '/robots.txt': typeof RobotsDottxtRoute
@@ -397,6 +415,7 @@ export interface FileRouteTypes {
     | '/favorites'
     | '/followed-shops'
     | '/llms.txt'
+    | '/login'
     | '/map'
     | '/messages'
     | '/messages-pvz'
@@ -410,6 +429,7 @@ export interface FileRouteTypes {
     | '/promotions'
     | '/pvz'
     | '/referral'
+    | '/register'
     | '/reset-password'
     | '/returns'
     | '/robots.txt'
@@ -439,6 +459,7 @@ export interface FileRouteTypes {
     | '/favorites'
     | '/followed-shops'
     | '/llms.txt'
+    | '/login'
     | '/map'
     | '/messages'
     | '/messages-pvz'
@@ -452,6 +473,7 @@ export interface FileRouteTypes {
     | '/promotions'
     | '/pvz'
     | '/referral'
+    | '/register'
     | '/reset-password'
     | '/returns'
     | '/robots.txt'
@@ -481,6 +503,7 @@ export interface FileRouteTypes {
     | '/favorites'
     | '/followed-shops'
     | '/llms.txt'
+    | '/login'
     | '/map'
     | '/messages'
     | '/messages-pvz'
@@ -494,6 +517,7 @@ export interface FileRouteTypes {
     | '/promotions'
     | '/pvz'
     | '/referral'
+    | '/register'
     | '/reset-password'
     | '/returns'
     | '/robots.txt'
@@ -524,6 +548,7 @@ export interface RootRouteChildren {
   FavoritesRoute: typeof FavoritesRoute
   FollowedShopsRoute: typeof FollowedShopsRoute
   LlmsDottxtRoute: typeof LlmsDottxtRoute
+  LoginRoute: typeof LoginRoute
   MapRoute: typeof MapRoute
   MessagesRoute: typeof MessagesRoute
   MessagesPvzRoute: typeof MessagesPvzRoute
@@ -537,6 +562,7 @@ export interface RootRouteChildren {
   PromotionsRoute: typeof PromotionsRoute
   PvzRoute: typeof PvzRoute
   ReferralRoute: typeof ReferralRoute
+  RegisterRoute: typeof RegisterRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   ReturnsRoute: typeof ReturnsRoute
   RobotsDottxtRoute: typeof RobotsDottxtRoute
@@ -606,6 +632,13 @@ declare module '@tanstack/react-router' {
       path: '/reset-password'
       fullPath: '/reset-password'
       preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/register': {
+      id: '/register'
+      path: '/register'
+      fullPath: '/register'
+      preLoaderRoute: typeof RegisterRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/referral': {
@@ -697,6 +730,13 @@ declare module '@tanstack/react-router' {
       path: '/map'
       fullPath: '/map'
       preLoaderRoute: typeof MapRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/llms.txt': {
@@ -852,6 +892,7 @@ const rootRouteChildren: RootRouteChildren = {
   FavoritesRoute: FavoritesRoute,
   FollowedShopsRoute: FollowedShopsRoute,
   LlmsDottxtRoute: LlmsDottxtRoute,
+  LoginRoute: LoginRoute,
   MapRoute: MapRoute,
   MessagesRoute: MessagesRoute,
   MessagesPvzRoute: MessagesPvzRoute,
@@ -865,6 +906,7 @@ const rootRouteChildren: RootRouteChildren = {
   PromotionsRoute: PromotionsRoute,
   PvzRoute: PvzRoute,
   ReferralRoute: ReferralRoute,
+  RegisterRoute: RegisterRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   ReturnsRoute: ReturnsRoute,
   RobotsDottxtRoute: RobotsDottxtRoute,

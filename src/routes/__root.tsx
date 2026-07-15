@@ -13,6 +13,7 @@ import { MobileTabBar } from "@/components/MobileTabBar";
 import { LanguageDomSync } from "@/components/LanguageDomSync";
 import "@/i18n";
 import { absoluteUrl, SITE_URL } from "@/lib/site";
+import { portalUrl, usePortal } from "@/lib/portals";
 
 import "../styles.css";
 
@@ -131,7 +132,7 @@ function WorkHeader({ label }: { label: string }) {
             <span className="hidden md:inline text-xs text-muted-foreground truncate max-w-[180px]">{user.email}</span>
           )}
           {user && (
-            <Button variant="ghost" size="sm" onClick={async () => { await signOut(); navigate({ to: "/auth" }); }}>
+            <Button variant="ghost" size="sm" onClick={async () => { await signOut(); navigate({ to: "/login" }); }}>
               <LogOut className="h-4 w-4 mr-1" /> Çıxış
             </Button>
           )}
@@ -144,39 +145,59 @@ function WorkHeader({ label }: { label: string }) {
 function AppShell() {
   const { pathname } = useLocation();
   const navigate = useNavigate();
-  const { isSeller, isAdmin, isPvz, loading } = useAuth();
+  const portal = usePortal();
+  const { user, isSeller, isAdmin, isPvz, loading } = useAuth();
   const isSellerPanel = pathname === "/seller" || pathname.startsWith("/seller/");
   const isPvzPanel = pathname === "/pvz" || pathname.startsWith("/pvz/");
   const isAdminPanel = pathname === "/admin" || pathname.startsWith("/admin/");
   const isWorkPanel = isSellerPanel || isPvzPanel || isAdminPanel;
-  const isAuthRoute = pathname === "/auth" || pathname.startsWith("/auth/") || pathname === "/reset-password";
+  const isAuthRoute = pathname === "/auth" || pathname.startsWith("/auth/") || pathname === "/login" || pathname === "/register" || pathname === "/reset-password";
 
 
-  // Subdomain-based routing: seller.* / admin.* / pvz.* avtomatik öz panelinə açılır
+  // One build serves four isolated portals. Cross-domain navigation uses full
+  // URLs because browser sessions and canonical hosts are origin-scoped.
   useEffect(() => {
     if (typeof window === "undefined") return;
-    const sub = window.location.hostname.split(".")[0].toLowerCase();
-    const map: Record<string, string> = { seller: "/seller", satici: "/seller", admin: "/admin", pvz: "/pvz" };
-    const target = map[sub];
-    if (!target || isAuthRoute) return;
-    if (pathname === target || pathname.startsWith(target + "/")) return;
-    navigate({ to: target, replace: true });
-  }, [pathname, isAuthRoute, navigate]);
+    const query = window.location.search;
 
-  // Sellers (without admin/pvz) should only use the seller panel — block customer-side pages
-  useEffect(() => {
-    if (loading) return;
-    if (isSeller && !isAdmin && !isPvz && !isWorkPanel && !isAuthRoute) {
-      navigate({ to: "/seller", replace: true });
+    if (portal === "marketplace") {
+      if (pathname === "/become-seller") window.location.replace(portalUrl("seller", "/register"));
+      else if (isSellerPanel) window.location.replace(portalUrl("seller", pathname + query));
+      else if (isPvzPanel) window.location.replace(portalUrl("pvz", pathname + query));
+      else if (isAdminPanel) window.location.replace(portalUrl("admin", pathname + query));
+      else if (pathname === "/auth") {
+        const role = new URLSearchParams(query).get("role");
+        const destination = role === "seller" ? "seller" : role === "pvz" ? "pvz" : role === "admin" ? "admin" : "marketplace";
+        window.location.replace(portalUrl(destination, "/login"));
+      }
+      return;
     }
-  }, [loading, isSeller, isAdmin, isPvz, isWorkPanel, isAuthRoute, pathname, navigate]);
 
-  if (isSeller && !isAdmin && !isPvz && !isWorkPanel && !isAuthRoute) {
-    return null;
-  }
+    if (pathname === "/auth") {
+      navigate({ to: "/login", replace: true });
+      return;
+    }
 
-  if (isWorkPanel) {
-    const label = isSellerPanel ? "Satıcı paneli" : isPvzPanel ? "PVZ PUNKT paneli" : "Admin";
+    const correctPanel = portal === "seller" ? isSellerPanel : portal === "pvz" ? isPvzPanel : isAdminPanel;
+    const sellerOnboarding = portal === "seller" && pathname === "/become-seller";
+    if (isAuthRoute || correctPanel || sellerOnboarding) return;
+
+    if (pathname === "/") {
+      if (loading) return;
+      const target = !user
+        ? "/login"
+        : portal === "seller" ? (isSeller ? "/seller" : "/become-seller")
+        : portal === "pvz" ? (isPvz ? "/pvz" : "/login")
+        : isAdmin ? "/admin" : "/login";
+      navigate({ to: target, replace: true });
+      return;
+    }
+
+    window.location.replace(portalUrl("marketplace", pathname + query));
+  }, [isAdmin, isAdminPanel, isAuthRoute, isPvz, isPvzPanel, isSeller, isSellerPanel, loading, navigate, pathname, portal, user]);
+
+  if (isWorkPanel || (portal !== "marketplace" && isAuthRoute) || (portal === "seller" && pathname === "/become-seller")) {
+    const label = portal === "seller" ? "Satıcı portalı" : portal === "pvz" ? "PVZ PUNKT portalı" : "Admin portalı";
     return (
       <div className="min-h-screen flex flex-col bg-background w-full">
         <WorkHeader label={label} />

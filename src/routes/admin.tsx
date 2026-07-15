@@ -47,7 +47,7 @@ interface AdPackageRow {
 }
 
 function AdminPanel() {
-  const { user, isAdmin, loading } = useAuth();
+  const { user, isAdmin, loading, signOut } = useAuth();
   const navigate = useNavigate();
   const [tab, setTab] = useState<TabKey>("dashboard");
   const [stats, setStats] = useState<Stat>({ users: 0, products: 0, orders: 0, revenue: 0, sellers: 0 });
@@ -74,8 +74,11 @@ function AdminPanel() {
   const [pwSubmitting, setPwSubmitting] = useState(false);
 
   useEffect(() => {
-    if (!loading && !user) navigate({ to: "/auth", search: { role: "admin" } as never });
-  }, [user, loading, navigate]);
+    if (!loading && !user) navigate({ to: "/login" });
+    if (!loading && user && !isAdmin) {
+      void signOut().then(() => navigate({ to: "/login", replace: true }));
+    }
+  }, [user, isAdmin, loading, navigate, signOut]);
 
   const submitPassword = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -146,7 +149,7 @@ function AdminPanel() {
 
   useEffect(() => { if (isAdmin && unlocked) reload(); }, [isAdmin, unlocked]);
 
-  if (!user) return null;
+  if (!user || !isAdmin) return null;
 
   if (!unlocked) {
     return (

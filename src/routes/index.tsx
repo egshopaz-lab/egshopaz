@@ -10,6 +10,7 @@ import { HomeCategoryBrowser } from "@/components/HomeCategoryBrowser";
 import { FeaturedShops } from "@/components/FeaturedShops";
 import i18n from "@/i18n";
 import { absoluteUrl } from "@/lib/site";
+import { portalUrl } from "@/lib/portals";
 import { z } from "zod";
 
 export const Route = createFileRoute("/")({
@@ -38,10 +39,10 @@ function Index() {
   const { t, i18n: translator } = useTranslation();
   const language = translator.resolvedLanguage?.split("-")[0] ?? "az";
   const panelLabels = language === "ru"
-    ? { sellerLogin: "Вход для продавца", pvz: "Пункт выдачи", admin: "Админ-панель", becomeSeller: "Стать продавцом" }
+    ? { marketplace: "Маркетплейс", becomeSeller: "Стать продавцом", becomePvz: "Стать PVZ" }
     : language === "en"
-      ? { sellerLogin: "Seller login", pvz: "Pickup point", admin: "Admin panel", becomeSeller: "Become a seller" }
-      : { sellerLogin: "Satıcı girişi", pvz: "PVZ paneli", admin: "Admin paneli", becomeSeller: "Satıcı ol" };
+      ? { marketplace: "Marketplace", becomeSeller: "Become a seller", becomePvz: "Become a PVZ" }
+      : { marketplace: "Marketplace", becomeSeller: "Satıcı ol", becomePvz: "PVZ ol" };
   const [allProducts, setAllProducts] = useState<ProductCardData[]>([]);
   const [discounted, setDiscounted] = useState<ProductCardData[]>([]);
   const [trending, setTrending] = useState<ProductCardData[]>([]);
@@ -109,13 +110,12 @@ function Index() {
           <p className="mt-1 text-sm">Kartınızdan məbləğ tutulubsa, dəqiq status bank callback-i ilə yoxlanılacaq. Yenidən cəhd edə bilərsiniz.</p>
         </div>
       )}
-      {/* Müvəqqəti panel girişləri — domen ayrılandan sonra silinəcək */}
+      {/* Public marketplace actions. Operational logins live on subdomains. */}
       <h1 className="sr-only">EG Shop — Azərbaycanın onlayn marketi</h1>
       <div className="flex items-center gap-2 overflow-x-auto pb-1 panel-scroll-row">
-        <Link to="/auth" search={{ role: "seller" }} className="whitespace-nowrap px-3 py-1.5 rounded-lg bg-primary/10 text-primary text-xs font-bold hover:bg-primary/20 transition">{panelLabels.sellerLogin}</Link>
-        <Link to="/pvz" className="whitespace-nowrap px-3 py-1.5 rounded-lg bg-primary/10 text-primary text-xs font-bold hover:bg-primary/20 transition">{panelLabels.pvz}</Link>
-        <Link to="/admin" className="whitespace-nowrap px-3 py-1.5 rounded-lg bg-primary/10 text-primary text-xs font-bold hover:bg-primary/20 transition">{panelLabels.admin}</Link>
-        <Link to="/become-seller" className="whitespace-nowrap px-3 py-1.5 rounded-lg bg-emerald-100 text-emerald-700 text-xs font-bold hover:bg-emerald-200 transition">{panelLabels.becomeSeller}</Link>
+        <Link to="/catalog" search={{ q: undefined, cat: undefined } as never} className="whitespace-nowrap px-3 py-1.5 rounded-lg bg-primary/10 text-primary text-xs font-bold hover:bg-primary/20 transition">{panelLabels.marketplace}</Link>
+        <a href={portalUrl("seller", "/register")} className="whitespace-nowrap px-3 py-1.5 rounded-lg bg-emerald-100 text-emerald-700 text-xs font-bold hover:bg-emerald-200 transition">{panelLabels.becomeSeller}</a>
+        <a href={portalUrl("pvz", "/register")} className="whitespace-nowrap px-3 py-1.5 rounded-lg bg-sky-100 text-sky-700 text-xs font-bold hover:bg-sky-200 transition">{panelLabels.becomePvz}</a>
       </div>
 
       {/* Kateqoriyalar — ən yuxarıda */}
@@ -241,7 +241,7 @@ function Index() {
         {allProducts.length === 0 ? (
           <div className="text-center py-16 bg-secondary/40 rounded-2xl">
             <p className="text-muted-foreground mb-2">{t("home.noProducts")}</p>
-            <Link to="/become-seller" className="text-primary font-bold hover:underline">{t("home.becomeFirstSeller")}</Link>
+            <a href={portalUrl("seller", "/register")} className="text-primary font-bold hover:underline">{t("home.becomeFirstSeller")}</a>
           </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-4 mobile-product-grid">
