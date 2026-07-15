@@ -83,7 +83,8 @@ function normalizeAmount(value: unknown): string {
 
 function redactPayload(value: unknown, depth = 0): unknown {
   if (depth > 8) return "[truncated]";
-  if (Array.isArray(value)) return value.slice(0, 100).map((item) => redactPayload(item, depth + 1));
+  if (Array.isArray(value))
+    return value.slice(0, 100).map((item) => redactPayload(item, depth + 1));
   if (!value || typeof value !== "object") {
     return typeof value === "string" ? value.slice(0, 2_000) : value;
   }
@@ -165,7 +166,7 @@ Deno.serve(async (req: Request) => {
     const payload = decodePayload(data);
     const configuredPublicKey = Deno.env.get("EPOINT_PUBLIC_KEY");
     const payloadPublicKey = optionalString(payload.public_key, 128);
-    if (configuredPublicKey && payloadPublicKey !== configuredPublicKey) {
+    if (configuredPublicKey && payloadPublicKey && payloadPublicKey !== configuredPublicKey) {
       return jsonResponse({ ok: false, error: "invalid_public_key" }, 401);
     }
 
@@ -209,7 +210,10 @@ Deno.serve(async (req: Request) => {
     const result = await rpcResponse.json();
     return jsonResponse({ ok: true, result });
   } catch (error) {
-    console.error("Rejected malformed Epoint callback", error instanceof Error ? error.message : error);
+    console.error(
+      "Rejected malformed Epoint callback",
+      error instanceof Error ? error.message : error,
+    );
     return jsonResponse({ ok: false, error: "invalid_request" }, 400);
   }
 });
