@@ -177,28 +177,34 @@ Deno.serve(async (req: Request) => {
     if (!/^[A-Z]{3}$/.test(currency)) throw new Error("Invalid currency");
 
     const eventHash = await sha256Hex(`${data}.${signature}`);
-    const rpcResponse = await fetch(`${supabaseUrl}/rest/v1/rpc/process_epoint_callback`, {
+    const isTrendsPayment = merchantOrderId.startsWith("trends_");
+    const rpcName = isTrendsPayment ? "process_eg_trends_callback" : "process_epoint_callback";
+    const commonPayload = {
+      p_event_hash: eventHash,
+      p_merchant_order_id: merchantOrderId,
+      p_amount: amount,
+      p_currency: currency,
+      p_status: status,
+      p_provider_transaction_id: optionalString(payload.transaction, 256),
+      p_message: optionalString(payload.message, 1_000),
+      p_payload: redactPayload(payload),
+    };
+    const rpcPayload = isTrendsPayment ? commonPayload : {
+      ...commonPayload,
+      p_bank_transaction_id: optionalString(payload.bank_transaction, 256),
+      p_operation_code: optionalString(payload.operation_code, 128),
+      p_response_code: optionalString(payload.response_code, 128),
+      p_rrn: optionalString(payload.rrn, 128),
+      p_card_mask: optionalString(payload.card_mask ?? payload.card_number, 64),
+    };
+    const rpcResponse = await fetch(`${supabaseUrl}/rest/v1/rpc/${rpcName}`, {
       method: "POST",
       headers: {
         apikey: adminKey,
         "Content-Type": "application/json",
         "Cache-Control": "no-store",
       },
-      body: JSON.stringify({
-        p_event_hash: eventHash,
-        p_merchant_order_id: merchantOrderId,
-        p_amount: amount,
-        p_currency: currency,
-        p_status: status,
-        p_provider_transaction_id: optionalString(payload.transaction, 256),
-        p_bank_transaction_id: optionalString(payload.bank_transaction, 256),
-        p_operation_code: optionalString(payload.operation_code, 128),
-        p_response_code: optionalString(payload.response_code, 128),
-        p_rrn: optionalString(payload.rrn, 128),
-        p_card_mask: optionalString(payload.card_mask ?? payload.card_number, 64),
-        p_message: optionalString(payload.message, 1_000),
-        p_payload: redactPayload(payload),
-      }),
+      body: JSON.stringify(rpcPayload),
     });
 
     if (!rpcResponse.ok) {
