@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { AdminPayouts } from "@/components/AdminPayouts";
 import { AdminTreasury } from "@/components/AdminTreasury";
+import { AdminAdvertisingPackages } from "@/components/AdminAdvertisingPackages";
 import { toast } from "sonner";
 import { PanelLayout, type PanelNavItem } from "@/components/PanelLayout";
 import { AZ_CITY_NAMES, findCity } from "@/lib/azCities";
@@ -398,7 +399,7 @@ function AdminPanel() {
       {tab === "payouts" && <AdminPayouts />}
       {tab === "marketing" && <MarketingSection />}
       {tab === "banners" && <BannersSection banners={banners} addBanner={addBanner} toggleBanner={toggleBanner} deleteBanner={deleteBanner} />}
-      {tab === "packages" && <PackagesSection packages={packages} savePackage={savePackage} deletePackage={deletePackage} togglePackage={togglePackage} />}
+      {tab === "packages" && <AdminAdvertisingPackages />}
       {tab === "promo" && <PromoSection promos={promos} addPromo={addPromo} togglePromo={togglePromo} />}
       {tab === "analytics" && <AnalyticsSection products={products} orders={orders} categories={categories} />}
       {tab === "security" && <SecuritySection />}
