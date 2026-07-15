@@ -567,6 +567,96 @@ export type Database = {
         }
         Relationships: []
       }
+      epoint_payment_transactions: {
+        Row: {
+          amount: number
+          bank_transaction_id: string | null
+          card_mask: string | null
+          created_at: string
+          currency: string
+          id: string
+          last_callback_payload: Json
+          merchant_order_id: string
+          message: string | null
+          operation_code: string | null
+          paid_at: string | null
+          provider_transaction_id: string | null
+          response_code: string | null
+          returned_at: string | null
+          rrn: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          bank_transaction_id?: string | null
+          card_mask?: string | null
+          created_at?: string
+          currency?: string
+          id?: string
+          last_callback_payload?: Json
+          merchant_order_id: string
+          message?: string | null
+          operation_code?: string | null
+          paid_at?: string | null
+          provider_transaction_id?: string | null
+          response_code?: string | null
+          returned_at?: string | null
+          rrn?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          bank_transaction_id?: string | null
+          card_mask?: string | null
+          created_at?: string
+          currency?: string
+          id?: string
+          last_callback_payload?: Json
+          merchant_order_id?: string
+          message?: string | null
+          operation_code?: string | null
+          paid_at?: string | null
+          provider_transaction_id?: string | null
+          response_code?: string | null
+          returned_at?: string | null
+          rrn?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      epoint_payment_webhook_events: {
+        Row: {
+          event_hash: string
+          id: number
+          merchant_order_id: string
+          payload: Json
+          provider_status: string
+          provider_transaction_id: string | null
+          received_at: string
+        }
+        Insert: {
+          event_hash: string
+          id?: never
+          merchant_order_id: string
+          payload: Json
+          provider_status: string
+          provider_transaction_id?: string | null
+          received_at?: string
+        }
+        Update: {
+          event_hash?: string
+          id?: never
+          merchant_order_id?: string
+          payload?: Json
+          provider_status?: string
+          provider_transaction_id?: string | null
+          received_at?: string
+        }
+        Relationships: []
+      }
       faq_items: {
         Row: {
           answer: string
@@ -1538,6 +1628,57 @@ export type Database = {
         }
         Relationships: []
       }
+      seller_applications: {
+        Row: {
+          activated_at: string | null
+          created_at: string
+          currency: string
+          id: string
+          paid_at: string | null
+          payment_status: string
+          phone: string | null
+          registration_fee: number
+          shop_city: string | null
+          shop_name: string
+          status: string
+          updated_at: string
+          user_id: string
+          voen: string | null
+        }
+        Insert: {
+          activated_at?: string | null
+          created_at?: string
+          currency?: string
+          id?: string
+          paid_at?: string | null
+          payment_status?: string
+          phone?: string | null
+          registration_fee?: number
+          shop_city?: string | null
+          shop_name: string
+          status?: string
+          updated_at?: string
+          user_id: string
+          voen?: string | null
+        }
+        Update: {
+          activated_at?: string | null
+          created_at?: string
+          currency?: string
+          id?: string
+          paid_at?: string | null
+          payment_status?: string
+          phone?: string | null
+          registration_fee?: number
+          shop_city?: string | null
+          shop_name?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+          voen?: string | null
+        }
+        Relationships: []
+      }
       seller_balances: {
         Row: {
           available: number
@@ -1561,6 +1702,62 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      seller_payment_attempts: {
+        Row: {
+          amount: number
+          application_id: string
+          created_at: string
+          currency: string
+          id: string
+          merchant_order_id: string
+          message: string | null
+          paid_at: string | null
+          provider_transaction_id: string | null
+          returned_at: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount?: number
+          application_id: string
+          created_at?: string
+          currency?: string
+          id?: string
+          merchant_order_id: string
+          message?: string | null
+          paid_at?: string | null
+          provider_transaction_id?: string | null
+          returned_at?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          application_id?: string
+          created_at?: string
+          currency?: string
+          id?: string
+          merchant_order_id?: string
+          message?: string | null
+          paid_at?: string | null
+          provider_transaction_id?: string | null
+          returned_at?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "seller_payment_attempts_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: false
+            referencedRelation: "seller_applications"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       seller_subscriptions: {
         Row: {
@@ -2231,9 +2428,43 @@ export type Database = {
         Args: { _order_id: string; _user_id: string }
         Returns: boolean
       }
+      prepare_seller_payment: {
+        Args: {
+          _phone?: string
+          _shop_city?: string
+          _shop_name: string
+          _user_id: string
+          _voen?: string
+        }
+        Returns: {
+          amount: number
+          application_id: string
+          application_status: string
+          currency: string
+          merchant_order_id: string
+        }[]
+      }
       process_card_payment: {
         Args: { _card_id?: string; _new_card?: Json; _order_id: string }
         Returns: Json
+      }
+      process_epoint_callback: {
+        Args: {
+          p_amount: number
+          p_bank_transaction_id: string
+          p_card_mask: string
+          p_currency: string
+          p_event_hash: string
+          p_merchant_order_id: string
+          p_message: string
+          p_operation_code: string
+          p_payload: Json
+          p_provider_transaction_id: string
+          p_response_code: string
+          p_rrn: string
+          p_status: string
+        }
+        Returns: string
       }
       recalc_product_review_stats: {
         Args: { p_product_id: string }

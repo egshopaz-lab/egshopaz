@@ -11,3 +11,6 @@ verify_jwt = false
 
 [functions.epoint-callback]
 verify_jwt = false
+
+[functions.seller-payment-init]
+verify_jwt = true
