@@ -655,7 +655,7 @@ export function SellerAdvertising() {
             <Sparkles className="h-5 w-5 text-primary" />
             <h2 className="text-lg font-bold">Ayrıca ödənişli reklam (paketsiz)</h2>
           </div>
-          <p className="text-xs text-muted-foreground mb-4">{promoSettings.promo_terms_text}</p>
+          <p className="text-xs text-muted-foreground mb-4">{promoSettings?.promo_terms_text ?? "Reklam müddəti və qiyməti admin tərəfindən idarə olunur."}</p>
           <div className="grid sm:grid-cols-2 gap-3">
             {productBaseService && <button
               onClick={() => setOneOffPickProduct(true)}
