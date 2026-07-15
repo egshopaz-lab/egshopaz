@@ -37,9 +37,9 @@ export function SiteHeader() {
         <div className="max-w-7xl mx-auto w-full flex flex-wrap sm:flex-nowrap items-center gap-2 sm:gap-4">
           <SidebarTrigger className="shrink-0 text-white" />
 
-          <Link to="/" className="flex items-center gap-2 sm:gap-3 shrink-0 hover:scale-105 transition-transform" aria-label="EG Shop">
-            <img src={egLogo} alt="EG Shop logo" width={512} height={512} className="h-11 w-11 sm:h-14 sm:w-14 md:h-16 md:w-16 rounded-full object-contain ring-2 ring-white/35 shadow-lg bg-white/10" />
-            <span className="text-xl sm:text-2xl md:text-3xl uppercase tracking-wide text-white whitespace-nowrap" style={{ fontFamily: "'Bebas Neue', sans-serif" }}>
+          <Link to="/" className="flex items-center gap-3 shrink-0 transition-opacity hover:opacity-95" aria-label="EG Shop">
+            <img src={egLogo} alt="EG Shop logo" width={512} height={512} className="h-9 w-9 sm:h-12 sm:w-12 md:h-14 md:w-14 shrink-0 rounded-full object-contain ring-2 ring-white/35 shadow-lg bg-white/10" />
+            <span className="text-xl sm:text-2xl md:text-3xl uppercase tracking-wide leading-none text-white whitespace-nowrap" style={{ fontFamily: "'Bebas Neue', sans-serif" }}>
               EG Shop
             </span>
           </Link>
