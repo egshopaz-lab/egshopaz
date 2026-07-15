@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { AdminPayouts } from "@/components/AdminPayouts";
 import { AdminTreasury } from "@/components/AdminTreasury";
+import { AdminPayments } from "@/components/AdminPayments";
 import { toast } from "sonner";
 import { PanelLayout, type PanelNavItem } from "@/components/PanelLayout";
 import { AZ_CITY_NAMES, findCity } from "@/lib/azCities";
@@ -23,7 +24,7 @@ export const Route = createFileRoute("/admin")({
 type TabKey =
   | "dashboard" | "customers" | "sellers" | "couriers" | "pvz_staff"
   | "categories" | "products" | "shops" | "warehouses" | "pickup_points"
-  | "orders" | "returns" | "finance" | "treasury" | "payouts" | "marketing" | "banners" | "packages" | "promo" | "analytics"
+  | "orders" | "returns" | "finance" | "payments" | "treasury" | "payouts" | "marketing" | "banners" | "packages" | "promo" | "analytics"
   | "security" | "disputes" | "content" | "settings" | "support" | "ai_bot";
 
 interface Stat { users: number; products: number; orders: number; revenue: number; sellers: number }
@@ -357,6 +358,7 @@ function AdminPanel() {
     { key: "orders", label: "Sifarişlər", icon: ShoppingBag, badge: orders.filter((o) => o.status === "pending").length, active: tab === "orders", onClick: () => setTab("orders") },
     { key: "returns", label: "Qaytarmalar", icon: Undo2, active: tab === "returns", onClick: () => setTab("returns") },
     { key: "finance", label: "Maliyyə", icon: DollarSign, active: tab === "finance", onClick: () => setTab("finance") },
+    { key: "payments", label: "Epoint ödənişləri", icon: DollarSign, active: tab === "payments", onClick: () => setTab("payments") },
     { key: "treasury", label: "Xəzinə (Kassa)", icon: Wallet, active: tab === "treasury", onClick: () => setTab("treasury") },
     { key: "payouts", label: "Ödənişlər (Payout)", icon: Wallet, active: tab === "payouts", onClick: () => setTab("payouts") },
     { key: "marketing", label: "Marketinq", icon: Megaphone, active: tab === "marketing", onClick: () => setTab("marketing") },
@@ -395,6 +397,7 @@ function AdminPanel() {
       {tab === "returns" && <AdminReturnsSection />}
       {tab === "finance" && <FinanceSection stats={stats} orders={orders} settings={settings} />}
       {tab === "treasury" && <AdminTreasury />}
+      {tab === "payments" && <AdminPayments />}
       {tab === "payouts" && <AdminPayouts />}
       {tab === "marketing" && <MarketingSection />}
       {tab === "banners" && <BannersSection banners={banners} addBanner={addBanner} toggleBanner={toggleBanner} deleteBanner={deleteBanner} />}

@@ -43,6 +43,7 @@ import { Route as CatalogRouteImport } from './routes/catalog'
 import { Route as CartRouteImport } from './routes/cart'
 import { Route as BonusRouteImport } from './routes/bonus'
 import { Route as BecomeSellerRouteImport } from './routes/become-seller'
+import { Route as BecomePvzRouteImport } from './routes/become-pvz'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AddressesRouteImport } from './routes/addresses'
@@ -50,6 +51,8 @@ import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ShopIdRouteImport } from './routes/shop.$id'
 import { Route as ProductIdRouteImport } from './routes/product.$id'
+import { Route as PaymentSuccessRouteImport } from './routes/payment.success'
+import { Route as PaymentErrorRouteImport } from './routes/payment.error'
 import { Route as CheckoutPayOrderIdRouteImport } from './routes/checkout-pay.$orderId'
 
 const TermsRoute = TermsRouteImport.update({
@@ -222,6 +225,11 @@ const BecomeSellerRoute = BecomeSellerRouteImport.update({
   path: '/become-seller',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BecomePvzRoute = BecomePvzRouteImport.update({
+  id: '/become-pvz',
+  path: '/become-pvz',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
@@ -257,6 +265,16 @@ const ProductIdRoute = ProductIdRouteImport.update({
   path: '/product/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PaymentSuccessRoute = PaymentSuccessRouteImport.update({
+  id: '/payment/success',
+  path: '/payment/success',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PaymentErrorRoute = PaymentErrorRouteImport.update({
+  id: '/payment/error',
+  path: '/payment/error',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CheckoutPayOrderIdRoute = CheckoutPayOrderIdRouteImport.update({
   id: '/checkout-pay/$orderId',
   path: '/checkout-pay/$orderId',
@@ -269,6 +287,7 @@ export interface FileRoutesByFullPath {
   '/addresses': typeof AddressesRoute
   '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
+  '/become-pvz': typeof BecomePvzRoute
   '/become-seller': typeof BecomeSellerRoute
   '/bonus': typeof BonusRoute
   '/cart': typeof CartRoute
@@ -304,6 +323,8 @@ export interface FileRoutesByFullPath {
   '/support': typeof SupportRoute
   '/terms': typeof TermsRoute
   '/checkout-pay/$orderId': typeof CheckoutPayOrderIdRoute
+  '/payment/error': typeof PaymentErrorRoute
+  '/payment/success': typeof PaymentSuccessRoute
   '/product/$id': typeof ProductIdRoute
   '/shop/$id': typeof ShopIdRoute
 }
@@ -313,6 +334,7 @@ export interface FileRoutesByTo {
   '/addresses': typeof AddressesRoute
   '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
+  '/become-pvz': typeof BecomePvzRoute
   '/become-seller': typeof BecomeSellerRoute
   '/bonus': typeof BonusRoute
   '/cart': typeof CartRoute
@@ -348,6 +370,8 @@ export interface FileRoutesByTo {
   '/support': typeof SupportRoute
   '/terms': typeof TermsRoute
   '/checkout-pay/$orderId': typeof CheckoutPayOrderIdRoute
+  '/payment/error': typeof PaymentErrorRoute
+  '/payment/success': typeof PaymentSuccessRoute
   '/product/$id': typeof ProductIdRoute
   '/shop/$id': typeof ShopIdRoute
 }
@@ -358,6 +382,7 @@ export interface FileRoutesById {
   '/addresses': typeof AddressesRoute
   '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
+  '/become-pvz': typeof BecomePvzRoute
   '/become-seller': typeof BecomeSellerRoute
   '/bonus': typeof BonusRoute
   '/cart': typeof CartRoute
@@ -393,6 +418,8 @@ export interface FileRoutesById {
   '/support': typeof SupportRoute
   '/terms': typeof TermsRoute
   '/checkout-pay/$orderId': typeof CheckoutPayOrderIdRoute
+  '/payment/error': typeof PaymentErrorRoute
+  '/payment/success': typeof PaymentSuccessRoute
   '/product/$id': typeof ProductIdRoute
   '/shop/$id': typeof ShopIdRoute
 }
@@ -404,6 +431,7 @@ export interface FileRouteTypes {
     | '/addresses'
     | '/admin'
     | '/auth'
+    | '/become-pvz'
     | '/become-seller'
     | '/bonus'
     | '/cart'
@@ -439,6 +467,8 @@ export interface FileRouteTypes {
     | '/support'
     | '/terms'
     | '/checkout-pay/$orderId'
+    | '/payment/error'
+    | '/payment/success'
     | '/product/$id'
     | '/shop/$id'
   fileRoutesByTo: FileRoutesByTo
@@ -448,6 +478,7 @@ export interface FileRouteTypes {
     | '/addresses'
     | '/admin'
     | '/auth'
+    | '/become-pvz'
     | '/become-seller'
     | '/bonus'
     | '/cart'
@@ -483,6 +514,8 @@ export interface FileRouteTypes {
     | '/support'
     | '/terms'
     | '/checkout-pay/$orderId'
+    | '/payment/error'
+    | '/payment/success'
     | '/product/$id'
     | '/shop/$id'
   id:
@@ -492,6 +525,7 @@ export interface FileRouteTypes {
     | '/addresses'
     | '/admin'
     | '/auth'
+    | '/become-pvz'
     | '/become-seller'
     | '/bonus'
     | '/cart'
@@ -527,6 +561,8 @@ export interface FileRouteTypes {
     | '/support'
     | '/terms'
     | '/checkout-pay/$orderId'
+    | '/payment/error'
+    | '/payment/success'
     | '/product/$id'
     | '/shop/$id'
   fileRoutesById: FileRoutesById
@@ -537,6 +573,7 @@ export interface RootRouteChildren {
   AddressesRoute: typeof AddressesRoute
   AdminRoute: typeof AdminRoute
   AuthRoute: typeof AuthRoute
+  BecomePvzRoute: typeof BecomePvzRoute
   BecomeSellerRoute: typeof BecomeSellerRoute
   BonusRoute: typeof BonusRoute
   CartRoute: typeof CartRoute
@@ -572,6 +609,8 @@ export interface RootRouteChildren {
   SupportRoute: typeof SupportRoute
   TermsRoute: typeof TermsRoute
   CheckoutPayOrderIdRoute: typeof CheckoutPayOrderIdRoute
+  PaymentErrorRoute: typeof PaymentErrorRoute
+  PaymentSuccessRoute: typeof PaymentSuccessRoute
   ProductIdRoute: typeof ProductIdRoute
   ShopIdRoute: typeof ShopIdRoute
 }
@@ -816,6 +855,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BecomeSellerRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/become-pvz': {
+      id: '/become-pvz'
+      path: '/become-pvz'
+      fullPath: '/become-pvz'
+      preLoaderRoute: typeof BecomePvzRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/auth': {
       id: '/auth'
       path: '/auth'
@@ -865,6 +911,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProductIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/payment/success': {
+      id: '/payment/success'
+      path: '/payment/success'
+      fullPath: '/payment/success'
+      preLoaderRoute: typeof PaymentSuccessRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/payment/error': {
+      id: '/payment/error'
+      path: '/payment/error'
+      fullPath: '/payment/error'
+      preLoaderRoute: typeof PaymentErrorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/checkout-pay/$orderId': {
       id: '/checkout-pay/$orderId'
       path: '/checkout-pay/$orderId'
@@ -881,6 +941,7 @@ const rootRouteChildren: RootRouteChildren = {
   AddressesRoute: AddressesRoute,
   AdminRoute: AdminRoute,
   AuthRoute: AuthRoute,
+  BecomePvzRoute: BecomePvzRoute,
   BecomeSellerRoute: BecomeSellerRoute,
   BonusRoute: BonusRoute,
   CartRoute: CartRoute,
@@ -916,6 +977,8 @@ const rootRouteChildren: RootRouteChildren = {
   SupportRoute: SupportRoute,
   TermsRoute: TermsRoute,
   CheckoutPayOrderIdRoute: CheckoutPayOrderIdRoute,
+  PaymentErrorRoute: PaymentErrorRoute,
+  PaymentSuccessRoute: PaymentSuccessRoute,
   ProductIdRoute: ProductIdRoute,
   ShopIdRoute: ShopIdRoute,
 }

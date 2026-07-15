@@ -96,8 +96,6 @@ const SLOT_PRODUCT_FEE = 1;
 const SLOT_SHOP_FEE = 1;
 const SLOT_BANNER_FEE = 1;
 
-const CARD_STORAGE_KEY = "elzan_saved_card_v1";
-
 export function SellerAdvertising() {
   const { user } = useAuth();
   const [packages, setPackages] = useState<Pkg[]>([]);
@@ -111,8 +109,6 @@ export function SellerAdvertising() {
   const [loading, setLoading] = useState(true);
   const [paying, setPaying] = useState(false);
   const [checkout, setCheckout] = useState<CheckoutTarget | null>(null);
-  const [card, setCard] = useState({ number: "", name: "", expiry: "", cvc: "" });
-  const [saveCard, setSaveCard] = useState(false);
   const [postPay, setPostPay] = useState(false); // post-package chooser
   const [oneOffPickProduct, setOneOffPickProduct] = useState(false); // paid one-off product picker
 
@@ -172,154 +168,28 @@ export function SellerAdvertising() {
 
   })();
 
-  // Prefill saved card when opening checkout
-  useEffect(() => {
-    if (!checkout) return;
-    try {
-      const raw = localStorage.getItem(CARD_STORAGE_KEY);
-      if (raw) {
-        const saved = JSON.parse(raw) as typeof card;
-        setCard(saved);
-        setSaveCard(true);
-      }
-    } catch { /* ignore */ }
-  }, [checkout]);
-
   const purchase = async () => {
     if (!user || !checkout || !checkoutMeta) return;
-    if (!card.number || !card.name || !card.expiry || !card.cvc) {
-      toast.error("Bütün kart məlumatlarını doldurun");
-      return;
-    }
     setPaying(true);
     try {
-      // Persist/clear saved card
-      try {
-        if (saveCard) localStorage.setItem(CARD_STORAGE_KEY, JSON.stringify(card));
-        else localStorage.removeItem(CARD_STORAGE_KEY);
-      } catch { /* ignore */ }
-
-      if (checkout.kind === "pkg") {
-        const ends = new Date(); ends.setDate(ends.getDate() + checkoutMeta.days);
-        const { data: sub, error: subErr } = await supabase.from("seller_subscriptions").insert({
-          seller_id: user.id,
-          package_id: checkout.pkg.id,
-          ends_at: ends.toISOString(),
-          amount: checkout.pkg.price,
-          payment_status: "completed",
-          payment_method: "mock_card",
-          is_active: true,
-        }).select().single();
-        if (subErr) throw subErr;
-        await supabase.from("payment_transactions").insert({
-          seller_id: user.id, subscription_id: sub.id, amount: checkout.pkg.price,
-          status: "completed", method: "mock_card",
-          description: `${checkout.pkg.name} paketi (${checkout.pkg.duration_days} gün)`,
-        });
-        toast.success(`${checkout.pkg.name} paketi aktiv edildi! 🎉`);
-        setCheckout(null);
-        if (!saveCard) setCard({ number: "", name: "", expiry: "", cvc: "" });
-        await load();
-        setPostPay(true);
-        return;
+      const request = (() => {
+        if (checkout.kind === "pkg") return { service_type: "seller_package", resource_id: checkout.pkg.id };
+        if (checkout.kind === "one_product") return { service_type: "product_promotion", resource_id: checkout.productId };
+        if (checkout.kind === "one_shop") return { service_type: "shop_promotion" };
+        if (checkout.kind === "one_banner") return { service_type: "banner_promotion", payload: checkout.form };
+        if (checkout.kind === "slot_product") return { service_type: "slot_product", resource_id: checkout.productId };
+        if (checkout.kind === "slot_shop") return { service_type: "slot_shop" };
+        return { service_type: "slot_banner", payload: checkout.form };
+      })();
+      const { data, error } = await supabase.functions.invoke("payment-init", {
+        body: { ...request, language: "az" },
+      });
+      if (error || !data?.redirect_url) {
+        throw new Error(data?.error === "payment_not_configured" ? "Epoint açarları aktiv deyil" : "Epoint səhifəsi açıla bilmədi");
       }
-
-      if (checkout.kind === "one_product") {
-        const ends = new Date(); ends.setDate(ends.getDate() + checkout.days);
-        const { error } = await supabase.from("sponsored_products").insert({
-          seller_id: user.id, product_id: checkout.productId,
-          position: "catalog_top", is_active: true, ends_at: ends.toISOString(),
-        });
-        if (error) throw error;
-        await supabase.from("payment_transactions").insert({
-          seller_id: user.id, amount: checkout.price, status: "completed", method: "mock_card",
-          description: `Tək məhsul reklamı: ${checkout.productTitle} (${checkout.days} gün)`,
-        });
-        toast.success("Məhsul ana səhifədə önə çəkildi! 🎉");
-      } else if (checkout.kind === "one_shop") {
-        const ends = new Date(); ends.setDate(ends.getDate() + checkout.days);
-        const { error } = await supabase.from("sponsored_shops").insert({
-          seller_id: user.id, ends_at: ends.toISOString(), is_active: true,
-        });
-        if (error) throw error;
-        await supabase.from("payment_transactions").insert({
-          seller_id: user.id, amount: checkout.price, status: "completed", method: "mock_card",
-          description: `Mağaza reklamı (${checkout.days} gün)`,
-        });
-        toast.success("Mağazanız ana səhifədə önə çəkildi! 🎉");
-      } else if (checkout.kind === "one_banner") {
-        const ends = new Date(); ends.setDate(ends.getDate() + checkout.days);
-        const { error } = await supabase.from("banners").insert({
-          seller_id: user.id,
-          title: checkout.form.title.trim().slice(0, 200),
-          image_url: checkout.form.image_url || null,
-          video_url: checkout.form.video_url || null,
-          link_url: checkout.form.link_url.trim().slice(0, 500) || null,
-          position: "home_top",
-          is_active: true,
-          ends_at: ends.toISOString(),
-        });
-        if (error) throw error;
-        await supabase.from("payment_transactions").insert({
-          seller_id: user.id, amount: checkout.price, status: "completed", method: "mock_card",
-          description: `Banner reklamı: ${checkout.form.title} (${checkout.days} gün)`,
-        });
-        toast.success("Banner əlavə olundu 🎉");
-        setBannerForm(null);
-      } else if (checkout.kind === "slot_product") {
-        if (!activeSub) throw new Error("Aktiv paket yoxdur");
-        const { error } = await supabase.from("sponsored_products").insert({
-          seller_id: user.id, subscription_id: activeSub.id, product_id: checkout.productId,
-          position: "catalog_top", is_active: true, ends_at: activeSub.ends_at,
-        });
-        if (error) throw error;
-        await supabase.from("payment_transactions").insert({
-          seller_id: user.id, subscription_id: activeSub.id, amount: checkout.price,
-          status: "completed", method: "mock_card",
-          description: `Slot aktivasiyası — Məhsul: ${checkout.productTitle}`,
-        });
-        toast.success("Məhsul önə çəkildi 🎉");
-        setPickProduct(false);
-      } else if (checkout.kind === "slot_shop") {
-        if (!activeSub) throw new Error("Aktiv paket yoxdur");
-        const { error } = await supabase.from("sponsored_shops").insert({
-          seller_id: user.id, subscription_id: activeSub.id, ends_at: activeSub.ends_at, is_active: true,
-        });
-        if (error) throw error;
-        await supabase.from("payment_transactions").insert({
-          seller_id: user.id, subscription_id: activeSub.id, amount: checkout.price,
-          status: "completed", method: "mock_card",
-          description: "Slot aktivasiyası — Mağaza reklamı",
-        });
-        toast.success("Mağazanız önə çəkildi 🎉");
-      } else if (checkout.kind === "slot_banner") {
-        if (!activeSub) throw new Error("Aktiv paket yoxdur");
-        const { error } = await supabase.from("banners").insert({
-          seller_id: user.id,
-          subscription_id: activeSub.id,
-          title: checkout.form.title.trim().slice(0, 200),
-          image_url: checkout.form.image_url || null,
-          video_url: checkout.form.video_url || null,
-          link_url: checkout.form.link_url.trim().slice(0, 500) || null,
-          position: "home_top",
-          is_active: true,
-          ends_at: activeSub.ends_at,
-        });
-        if (error) throw error;
-        await supabase.from("payment_transactions").insert({
-          seller_id: user.id, subscription_id: activeSub.id, amount: checkout.price,
-          status: "completed", method: "mock_card",
-          description: `Slot aktivasiyası — Banner: ${checkout.form.title}`,
-        });
-        toast.success("Banner əlavə olundu 🎉");
-        setBannerForm(null);
-      }
-      setCheckout(null);
-      if (!saveCard) setCard({ number: "", name: "", expiry: "", cvc: "" });
-      await load();
+      window.location.assign(data.redirect_url as string);
     } catch (e) {
       toast.error("Ödəniş alınmadı: " + (e as Error).message);
-    } finally {
       setPaying(false);
     }
   };
@@ -798,7 +668,7 @@ export function SellerAdvertising() {
         </div>
       )}
 
-      {/* Checkout modal (mock) */}
+      {/* Epoint checkout confirmation */}
       {checkout && (
         <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4" onClick={() => !paying && setCheckout(null)}>
           <div className="bg-card rounded-2xl max-w-md w-full p-6 shadow-2xl" onClick={(e) => e.stopPropagation()}>
@@ -809,32 +679,8 @@ export function SellerAdvertising() {
               </h3>
               <button onClick={() => !paying && setCheckout(null)} className="p-1 hover:bg-secondary rounded"><X className="h-5 w-5" /></button>
             </div>
-            <div className="bg-warning/10 border border-warning/20 rounded-lg p-3 mb-4 text-xs">
-              ⚠️ <strong>Demo rejimi:</strong> Real ödəniş baş vermir. İstənilən test kartı işləyir.
-            </div>
-            <div className="space-y-3">
-              <div>
-                <label className="text-xs font-semibold text-muted-foreground">Kart nömrəsi</label>
-                <input value={card.number} onChange={(e) => setCard({ ...card, number: e.target.value })} placeholder="4242 4242 4242 4242" className="w-full mt-1 px-3 py-2 rounded-lg bg-secondary border border-border focus:border-primary outline-none" />
-              </div>
-              <div>
-                <label className="text-xs font-semibold text-muted-foreground">Kart sahibi</label>
-                <input value={card.name} onChange={(e) => setCard({ ...card, name: e.target.value })} placeholder="ALI MAMMADOV" className="w-full mt-1 px-3 py-2 rounded-lg bg-secondary border border-border focus:border-primary outline-none" />
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-xs font-semibold text-muted-foreground">Bitir</label>
-                  <input value={card.expiry} onChange={(e) => setCard({ ...card, expiry: e.target.value })} placeholder="12/28" className="w-full mt-1 px-3 py-2 rounded-lg bg-secondary border border-border focus:border-primary outline-none" />
-                </div>
-                <div>
-                  <label className="text-xs font-semibold text-muted-foreground">CVC</label>
-                  <input value={card.cvc} onChange={(e) => setCard({ ...card, cvc: e.target.value })} placeholder="123" maxLength={4} className="w-full mt-1 px-3 py-2 rounded-lg bg-secondary border border-border focus:border-primary outline-none" />
-                </div>
-              </div>
-              <label className="flex items-center gap-2 mt-3 cursor-pointer select-none">
-                <input type="checkbox" checked={saveCard} onChange={(e) => setSaveCard(e.target.checked)} className="h-4 w-4 rounded border-border" />
-                <span className="text-sm">Kart məlumatlarını yadda saxla (növbəti ödənişdə avtomatik dolacaq)</span>
-              </label>
+            <div className="bg-primary/10 border border-primary/20 rounded-lg p-3 mb-4 text-sm">
+              🔒 Kart məlumatları yalnız Epoint-in təhlükəsiz səhifəsində daxil ediləcək.
             </div>
             <div className="flex items-center justify-between mt-5 pt-4 border-t border-border">
               <div>
@@ -845,7 +691,7 @@ export function SellerAdvertising() {
                 )}
               </div>
               <button onClick={purchase} disabled={paying} className="px-6 py-3 rounded-xl font-bold text-white disabled:opacity-60" style={{ background: checkoutMeta?.color }}>
-                {paying ? <Loader2 className="h-5 w-5 animate-spin" /> : "Ödə"}
+                {paying ? <Loader2 className="h-5 w-5 animate-spin" /> : "Epoint ilə ödə"}
               </button>
             </div>
           </div>

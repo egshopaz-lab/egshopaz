@@ -207,8 +207,36 @@ Deno.serve(async (req: Request) => {
       return jsonResponse({ ok: false, error: "storage_error" }, 500);
     }
 
-    const result = await rpcResponse.json();
-    return jsonResponse({ ok: true, result });
+    const legacyResult = await rpcResponse.json();
+
+    // The shared payment core handles marketplace, PVZ and seller services.
+    // The RPC is idempotent, so provider retries cannot activate a service twice.
+    const unifiedResponse = await fetch(
+      `${supabaseUrl}/rest/v1/rpc/apply_payment_intent_callback`,
+      {
+        method: "POST",
+        headers: {
+          apikey: adminKey,
+          "Content-Type": "application/json",
+          "Cache-Control": "no-store",
+        },
+        body: JSON.stringify({
+          _merchant_order_id: merchantOrderId,
+          _amount: amount,
+          _currency: currency,
+          _status: status,
+          _provider_transaction_id: optionalString(payload.transaction, 256),
+          _message: optionalString(payload.message, 1_000),
+        }),
+      },
+    );
+    if (!unifiedResponse.ok) {
+      const detail = (await unifiedResponse.text()).slice(0, 1_000);
+      console.error("Failed to apply unified payment", unifiedResponse.status, detail);
+      return jsonResponse({ ok: false, error: "activation_error" }, 500);
+    }
+    const unifiedResult = await unifiedResponse.json();
+    return jsonResponse({ ok: true, result: unifiedResult, legacy_result: legacyResult });
   } catch (error) {
     console.error(
       "Rejected malformed Epoint callback",

@@ -152,6 +152,7 @@ function AppShell() {
   const isAdminPanel = pathname === "/admin" || pathname.startsWith("/admin/");
   const isWorkPanel = isSellerPanel || isPvzPanel || isAdminPanel;
   const isAuthRoute = pathname === "/auth" || pathname.startsWith("/auth/") || pathname === "/login" || pathname === "/register" || pathname === "/reset-password";
+  const isPaymentRoute = pathname === "/payment/success" || pathname === "/payment/error";
 
 
   // One build serves four isolated portals. Cross-domain navigation uses full
@@ -180,23 +181,24 @@ function AppShell() {
 
     const correctPanel = portal === "seller" ? isSellerPanel : portal === "pvz" ? isPvzPanel : isAdminPanel;
     const sellerOnboarding = portal === "seller" && pathname === "/become-seller";
-    if (isAuthRoute || correctPanel || sellerOnboarding) return;
+    const pvzOnboarding = portal === "pvz" && pathname === "/become-pvz";
+    if (isAuthRoute || isPaymentRoute || correctPanel || sellerOnboarding || pvzOnboarding) return;
 
     if (pathname === "/") {
       if (loading) return;
       const target = !user
         ? "/login"
         : portal === "seller" ? (isSeller ? "/seller" : "/become-seller")
-        : portal === "pvz" ? (isPvz ? "/pvz" : "/login")
+        : portal === "pvz" ? (isPvz ? "/pvz" : "/become-pvz")
         : isAdmin ? "/admin" : "/login";
       navigate({ to: target, replace: true });
       return;
     }
 
     window.location.replace(portalUrl("marketplace", pathname + query));
-  }, [isAdmin, isAdminPanel, isAuthRoute, isPvz, isPvzPanel, isSeller, isSellerPanel, loading, navigate, pathname, portal, user]);
+  }, [isAdmin, isAdminPanel, isAuthRoute, isPaymentRoute, isPvz, isPvzPanel, isSeller, isSellerPanel, loading, navigate, pathname, portal, user]);
 
-  if (isWorkPanel || (portal !== "marketplace" && isAuthRoute) || (portal === "seller" && pathname === "/become-seller")) {
+  if (isWorkPanel || (portal !== "marketplace" && (isAuthRoute || isPaymentRoute)) || (portal === "seller" && pathname === "/become-seller") || (portal === "pvz" && pathname === "/become-pvz")) {
     const label = portal === "seller" ? "Satıcı portalı" : portal === "pvz" ? "PVZ PUNKT portalı" : "Admin portalı";
     return (
       <div className="min-h-screen flex flex-col bg-background w-full">
