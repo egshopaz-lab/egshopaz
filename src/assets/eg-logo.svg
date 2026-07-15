@@ -1,0 +1,26 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="EG Shop logo">
+  <defs>
+    <linearGradient id="eg-bg" x1="104" y1="62" x2="418" y2="458" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#C03CFF"/>
+      <stop offset="0.5" stop-color="#7B22D6"/>
+      <stop offset="1" stop-color="#34106D"/>
+    </linearGradient>
+    <linearGradient id="eg-shine" x1="145" y1="77" x2="363" y2="254" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFFFFF" stop-opacity="0.34"/>
+      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/>
+    </linearGradient>
+    <filter id="eg-shadow" x="50" y="54" width="412" height="414" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="16" stdDeviation="20" flood-color="#210047" flood-opacity="0.24"/>
+    </filter>
+  </defs>
+
+  <circle cx="256" cy="256" r="208" fill="url(#eg-bg)" filter="url(#eg-shadow)"/>
+  <path d="M128 217c13-72 65-121 128-121s115 49 128 121" stroke="white" stroke-width="31" stroke-linecap="round"/>
+  <circle cx="147" cy="217" r="16" fill="white"/>
+  <circle cx="365" cy="217" r="16" fill="white"/>
+  <path d="M105 147c37-47 89-73 151-73 68 0 124 31 160 86 29 45 38 101 25 152-16 63-65 111-126 130" stroke="url(#eg-shine)" stroke-width="24" stroke-linecap="round"/>
+
+  <path d="M145 206h143l-18 45h-72v34h78l-17 43h-61v42h91l-19 48H145V206Z" fill="white"/>
+  <path d="M335 202c42 0 74 20 91 49l-43 28c-10-17-25-27-47-27-34 0-57 25-57 63 0 39 23 64 60 64 23 0 39-9 49-25h-56v-45h111c1 7 2 14 2 23 0 59-43 90-108 90-66 0-111-44-111-107 0-65 46-113 109-113Z" fill="white"/>
+  <text x="256" y="449" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="46" font-weight="800" letter-spacing="5" fill="white">SHOP</text>
+</svg>
