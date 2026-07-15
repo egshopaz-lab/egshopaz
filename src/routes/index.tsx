@@ -8,6 +8,7 @@ import { Tag, Flame, TicketPercent, TrendingUp, Copy, Truck, ShieldCheck, Clock,
 import { toast } from "sonner";
 import { HomeCategoryBrowser } from "@/components/HomeCategoryBrowser";
 import { FeaturedShops } from "@/components/FeaturedShops";
+import { TrendsFeed } from "@/components/TrendsFeed";
 import i18n from "@/i18n";
 import { absoluteUrl } from "@/lib/site";
 import { portalUrl } from "@/lib/portals";
@@ -126,6 +127,8 @@ function Index() {
 
       {/* 3) REKLAM — Sponsored products (önə çıxan) */}
       <SponsoredProducts limit={8} />
+
+      <TrendsFeed compact />
 
 
       {giveaways.length > 0 && (
