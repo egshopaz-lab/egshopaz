@@ -78,11 +78,31 @@ function ContactPage() {
           <Instagram className="h-5 w-5 text-primary mt-0.5" />
           <div>
             <div className="font-semibold">{copy.social}</div>
-            <div className="mt-1 flex flex-wrap gap-3 text-sm">
-              <a href={INSTAGRAM_URL} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 hover:text-primary">
+            <div className="mt-2 flex flex-wrap gap-2 text-sm">
+              <a
+                href={INSTAGRAM_URL}
+                target="_blank"
+                rel="noreferrer"
+                aria-label={copy.instagram}
+                title={copy.instagram}
+                className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-pink-500 via-fuchsia-500 to-amber-400 text-white shadow-sm transition hover:scale-105 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-primary/40"
+              >
+                <Instagram className="h-5 w-5" />
+              </a>
+              <a
+                href={FACEBOOK_URL}
+                target="_blank"
+                rel="noreferrer"
+                aria-label={copy.facebook}
+                title={copy.facebook}
+                className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-[#1877F2] text-white shadow-sm transition hover:scale-105 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-primary/40"
+              >
+                <span className="font-black text-2xl leading-none" aria-hidden="true">f</span>
+              </a>
+              <a href={INSTAGRAM_URL} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 rounded-full border border-border px-3 py-2 hover:border-primary hover:text-primary">
                 {copy.instagram} <ExternalLink className="h-3.5 w-3.5" />
               </a>
-              <a href={FACEBOOK_URL} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 hover:text-primary">
+              <a href={FACEBOOK_URL} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 rounded-full border border-border px-3 py-2 hover:border-primary hover:text-primary">
                 {copy.facebook} <ExternalLink className="h-3.5 w-3.5" />
               </a>
             </div>
