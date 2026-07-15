@@ -148,34 +148,8 @@ export function PortalAuthForm({
 
   useEffect(() => {
     if (!user || fixedMode !== "signup") return;
-    if (fixedRole === "seller") {
-      navigate({ to: "/become-seller", replace: true });
-      return;
-    }
-    if (fixedRole !== "pvz") return;
-
-    const metadata = user.user_metadata ?? {};
-    if (metadata.onboarding_portal !== "pvz") return;
-    const args: Record<string, string> = {
-      _full_name: String(metadata.full_name ?? user.email ?? "PVZ istifadəçisi"),
-      _phone: String(metadata.phone ?? ""),
-      _position: String(metadata.position ?? "operator"),
-    };
-    if (metadata.pickup_point_id) args._pickup_point_id = String(metadata.pickup_point_id);
-    else {
-      args._new_pvz_name = String(metadata.new_pvz_name ?? "");
-      args._new_pvz_city = String(metadata.new_pvz_city ?? "");
-      args._new_pvz_address = String(metadata.new_pvz_address ?? "");
-    }
-    void supabase.rpc("register_pvz_staff", args as never).then(async ({ error }) => {
-      if (error) {
-        toast.error("PVZ qeydiyyatı tamamlana bilmədi: " + error.message);
-        return;
-      }
-      await refreshRoles();
-      navigate({ to: "/pvz", replace: true });
-    });
-  }, [fixedMode, fixedRole, navigate, refreshRoles, user]);
+    if (fixedRole === "seller") navigate({ to: "/become-seller", replace: true });
+  }, [fixedMode, fixedRole, navigate, user]);
 
   if (!mounted) {
     return <div className="container mx-auto px-4 py-10 max-w-lg"><div className="bg-card border border-border rounded-2xl p-6 md:p-8 shadow-card h-96 animate-pulse" /></div>;
@@ -290,7 +264,7 @@ export function PortalAuthForm({
     const { data, error } = await supabase.auth.signUp({
       email, password,
       options: {
-        emailRedirectTo: `${window.location.origin}/${role === "seller" ? "become-seller" : role === "pvz" ? "register" : ""}`,
+        emailRedirectTo: `${window.location.origin}/${role === "seller" ? "become-seller" : role === "pvz" ? "become-pvz" : ""}`,
         data: signupMetadata,
       },
     });
@@ -312,24 +286,11 @@ export function PortalAuthForm({
     }
 
     if (role === "pvz") {
-      const rpcArgs: Record<string, string> = {
-        _full_name: name.trim(),
-        _phone: phone.trim(),
-        _position: position,
-      };
-      if (pickupPointId) {
-        rpcArgs._pickup_point_id = pickupPointId;
-      } else {
-        rpcArgs._new_pvz_name = newPvzName.trim();
-        rpcArgs._new_pvz_city = newPvzCity.trim();
-        rpcArgs._new_pvz_address = newPvzAddress.trim();
-      }
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { error: e3 } = await supabase.rpc("register_pvz_staff", rpcArgs as any);
-      if (e3) { setBusy(false); toast.error(e3.message); return; }
-      toast.success("PVZ PUNKT qeydiyyatı tamamlandı");
+      toast.success(data.session
+        ? "Hesab yaradıldı. PVZ müraciətini və qeydiyyat ödənişini tamamlayın."
+        : "Hesab yaradıldı. E-poçtunuzu təsdiqləyib PVZ müraciətini tamamlayın.");
       setBusy(false);
-      navigate({ to: "/pvz" });
+      if (data.session) window.location.assign("/become-pvz");
       return;
     }
 

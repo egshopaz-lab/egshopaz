@@ -330,65 +330,9 @@ function CartPage() {
       return;
     }
 
-    if (bonusToUse > 0) {
-      const { error: bonusError } = await supabase.from("bonus_transactions").insert({
-        user_id: user.id,
-        amount: -bonusToUse,
-        reason: t("cart.useBonus"),
-        order_id: orderId,
-      } as never);
-      if (bonusError) {
-        toast.error(`Bonus tətbiq olunmadı: ${bonusError.message}`);
-        setPlacing(false);
-        return;
-      }
-      await supabase
-        .from("profiles")
-        .update({ bonus_balance: bonusBalance - bonusToUse })
-        .eq("id", user.id);
-    }
-
-    // Promo used_count artır
-    if (promoInfo?.code) {
-      const { error: rpcErr } = await supabase.rpc(
-        "increment_promo_used_count" as never,
-        { promo_code: promoInfo.code } as never
-      );
-      if (rpcErr) {
-        const { data } = await supabase
-          .from("promo_codes")
-          .select("used_count")
-          .eq("code", promoInfo.code)
-          .maybeSingle();
-        if (data) {
-          await supabase
-            .from("promo_codes")
-            .update({ used_count: (data.used_count ?? 0) + 1 })
-            .eq("code", promoInfo.code);
-        }
-      }
-    }
-
-    // Stoku azalt
-    await Promise.all(
-      items
-        .filter((i) => i.products)
-        .map(async (i) => {
-          const { error: rpcErr } = await supabase.rpc(
-            "decrement_stock" as never,
-            { product_id: i.products!.id, qty: i.quantity } as never
-          );
-          if (rpcErr) {
-            await supabase
-              .from("products")
-              .update({ stock: Math.max(0, (i.products!.stock ?? 0) - i.quantity) } as never)
-              .eq("id", i.products!.id);
-          }
-        })
-    );
-
-    await supabase.from("cart_items").delete().eq("user_id", user.id);
-    toast.success(t("cart.orderPlaced"));
+    // Stock, bonus, promo usage and cart clearing are finalized atomically only
+    // after the signed Epoint callback confirms payment.
+    toast.success("Sifariş hazırlandı. Ödənişi Epoint-də tamamlayın.");
     setPlacing(false);
     navigate({ to: "/checkout-pay/$orderId", params: { orderId } });
   };
