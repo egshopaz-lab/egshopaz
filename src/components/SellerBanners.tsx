@@ -22,13 +22,14 @@ export function SellerBanners() {
   useEffect(() => {
     void (async () => {
       const nowIso = new Date().toISOString();
-      const { data } = await supabase
+      const { data } = await (supabase as any)
         .from("banners")
         .select("id,title,image_url,video_url,link_url,ends_at,seller_id,created_at")
         .eq("is_active", true)
         .eq("position", "home_top")
         .not("seller_id", "is", null)
         .or(`ends_at.is.null,ends_at.gt.${nowIso}`)
+        .order("priority", { ascending: false })
         .order("created_at", { ascending: false })
         .limit(50);
       const bySeller = new Map<string, Banner>();
