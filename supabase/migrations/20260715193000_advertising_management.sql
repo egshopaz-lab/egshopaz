@@ -43,6 +43,20 @@ alter table public.seller_subscriptions
   add column if not exists cancelled_at timestamptz,
   add column if not exists cancelled_by uuid;
 
+alter table public.banners
+  add column if not exists priority integer not null default 100,
+  add column if not exists display_rules jsonb not null default '{}'::jsonb;
+alter table public.sponsored_products
+  add column if not exists priority integer not null default 100,
+  add column if not exists display_rules jsonb not null default '{}'::jsonb;
+alter table public.sponsored_shops
+  add column if not exists priority integer not null default 100,
+  add column if not exists display_rules jsonb not null default '{}'::jsonb;
+
+create index if not exists banners_delivery_idx on public.banners(is_active, position, priority desc, ends_at);
+create index if not exists sponsored_products_delivery_idx on public.sponsored_products(is_active, priority desc, ends_at);
+create index if not exists sponsored_shops_delivery_idx on public.sponsored_shops(is_active, priority desc, ends_at);
+
 alter table public.ad_service_types enable row level security;
 alter table public.ad_package_services enable row level security;
 
