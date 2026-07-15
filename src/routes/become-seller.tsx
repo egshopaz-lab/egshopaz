@@ -72,7 +72,7 @@ function BecomeSeller() {
   }, [navigate, refreshRoles, user]);
 
   useEffect(() => {
-    if (!loading && !user) navigate({ to: "/auth" });
+    if (!loading && !user) navigate({ to: "/login" });
     if (isSeller) navigate({ to: "/seller", replace: true });
   }, [user, isSeller, loading, navigate]);
 

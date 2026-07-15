@@ -1,5 +1,17 @@
 project_id = "njqyfbnxoewjprvvaugr"
 
+[auth]
+site_url = "https://egshop.az"
+additional_redirect_urls = [
+  "https://egshop.az/",
+  "https://egshop.az/reset-password",
+  "https://seller.egshop.az/become-seller",
+  "https://seller.egshop.az/reset-password",
+  "https://pvz.egshop.az/register",
+  "https://pvz.egshop.az/reset-password",
+  "https://admin.egshop.az/reset-password",
+]
+
 [functions.verify-admin-password]
 verify_jwt = false
 

@@ -12,6 +12,7 @@ import { useTranslation } from "react-i18next";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import egLogo from "@/assets/eg-logo.png";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { portalUrl } from "@/lib/portals";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
   DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger,
@@ -98,7 +99,7 @@ export function SiteHeader() {
                     </DropdownMenuItem>
                   )}
                   {isSeller && (
-                    <DropdownMenuItem onClick={() => navigate({ to: "/seller" })}>
+                    <DropdownMenuItem onClick={() => window.location.assign(portalUrl("seller", "/seller"))}>
                       <Store className="h-4 w-4 mr-2" /> {t("header.sellerPanel")}
                     </DropdownMenuItem>
                   )}
@@ -109,7 +110,7 @@ export function SiteHeader() {
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
-              <Link to="/auth" search={{ role: "buyer" } as never} className="flex flex-col items-center text-xs px-2 sm:px-3 py-1.5 hover:text-white/80 transition text-white min-w-0">
+              <Link to="/login" className="flex flex-col items-center text-xs px-2 sm:px-3 py-1.5 hover:text-white/80 transition text-white min-w-0">
                 <User className="h-5 w-5 mb-0.5" />
                 <span>{t("header.login")}</span>
               </Link>

@@ -103,8 +103,8 @@ function PvzPanel() {
   const [pvzUnread, setPvzUnread] = useState(0);
 
   useEffect(() => {
-    if (!authLoading && !user) navigate({ to: "/auth", search: { role: "pvz" } as never });
-    if (!authLoading && user && !isPvz) navigate({ to: "/" });
+    if (!authLoading && !user) navigate({ to: "/login" });
+    if (!authLoading && user && !isPvz) navigate({ to: "/register" });
   }, [user, isPvz, authLoading, navigate]);
 
   useEffect(() => {

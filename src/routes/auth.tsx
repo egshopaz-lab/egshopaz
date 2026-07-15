@@ -1,6 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { z } from "zod";
@@ -24,7 +23,8 @@ export const Route = createFileRoute("/auth")({
   component: AuthPage,
 });
 
-type RoleTab = "buyer" | "seller" | "pvz" | "admin";
+export type RoleTab = "buyer" | "seller" | "pvz" | "admin";
+export type AuthMode = "login" | "signup";
 
 const TERMS_TEXT: Record<Exclude<RoleTab, "admin">, { title: string; body: string }> = {
   buyer: {
@@ -81,23 +81,42 @@ Qeydiyyatdan keçməklə bu qaydalara qeyd-şərtsiz əməl etməyə razılıq v
 };
 
 function AuthPage() {
-  const { t } = useTranslation();
-  const { user } = useAuth();
-  const navigate = useNavigate();
   const search = Route.useSearch();
+  const role = search.role && ["buyer", "seller", "pvz", "admin"].includes(search.role)
+    ? search.role
+    : "buyer";
+  return <PortalAuthForm fixedRole={role} referralCode={search.ref} />;
+}
 
-  const [mode, setMode] = useState<"login" | "signup">("login");
-  const lockedRole = (search.role ?? null) as RoleTab | null;
+export function PortalAuthForm({
+  fixedRole,
+  fixedMode,
+  referralCode: initialReferralCode,
+  portalLabel,
+}: {
+  fixedRole?: RoleTab;
+  fixedMode?: AuthMode;
+  referralCode?: string;
+  portalLabel?: string;
+}) {
+  const { user, refreshRoles } = useAuth();
+  const navigate = useNavigate();
+
+  const [mode, setMode] = useState<AuthMode>(fixedMode ?? "login");
+  const lockedRole = fixedRole ?? null;
   const validLocked: RoleTab | null = lockedRole && ["buyer","seller","pvz","admin"].includes(lockedRole) ? lockedRole : null;
   const [role, setRole] = useState<RoleTab>(validLocked ?? "buyer");
-  useEffect(() => { if (validLocked === "admin") setMode("login"); }, [validLocked]);
+  useEffect(() => {
+    if (validLocked === "admin" || fixedMode === "login") setMode("login");
+    else if (fixedMode === "signup") setMode("signup");
+  }, [fixedMode, validLocked]);
 
   // shared
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
-  const [referralCode, setReferralCode] = useState(() => search.ref ?? "");
+  const [referralCode, setReferralCode] = useState(() => initialReferralCode ?? "");
   const [agree, setAgree] = useState(false);
 
   // seller
@@ -121,13 +140,42 @@ function AuthPage() {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => { setMounted(true); }, []);
-  useEffect(() => { if (user) navigate({ to: "/" }); }, [user, navigate]);
-
   useEffect(() => {
     if (role !== "pvz") return;
     supabase.from("pickup_points").select("id,name,city").eq("is_active", true).order("city")
       .then(({ data }) => setPvzList(data ?? []));
   }, [role]);
+
+  useEffect(() => {
+    if (!user || fixedMode !== "signup") return;
+    if (fixedRole === "seller") {
+      navigate({ to: "/become-seller", replace: true });
+      return;
+    }
+    if (fixedRole !== "pvz") return;
+
+    const metadata = user.user_metadata ?? {};
+    if (metadata.onboarding_portal !== "pvz") return;
+    const args: Record<string, string> = {
+      _full_name: String(metadata.full_name ?? user.email ?? "PVZ istifadəçisi"),
+      _phone: String(metadata.phone ?? ""),
+      _position: String(metadata.position ?? "operator"),
+    };
+    if (metadata.pickup_point_id) args._pickup_point_id = String(metadata.pickup_point_id);
+    else {
+      args._new_pvz_name = String(metadata.new_pvz_name ?? "");
+      args._new_pvz_city = String(metadata.new_pvz_city ?? "");
+      args._new_pvz_address = String(metadata.new_pvz_address ?? "");
+    }
+    void supabase.rpc("register_pvz_staff", args as never).then(async ({ error }) => {
+      if (error) {
+        toast.error("PVZ qeydiyyatı tamamlana bilmədi: " + error.message);
+        return;
+      }
+      await refreshRoles();
+      navigate({ to: "/pvz", replace: true });
+    });
+  }, [fixedMode, fixedRole, navigate, refreshRoles, user]);
 
   if (!mounted) {
     return <div className="container mx-auto px-4 py-10 max-w-lg"><div className="bg-card border border-border rounded-2xl p-6 md:p-8 shadow-card h-96 animate-pulse" /></div>;
@@ -171,12 +219,6 @@ function AuthPage() {
         toast.error("Bu hesab müştəri deyil. Satıcı və ya PVZ PUNKT seçimini istifadə edin.");
         return;
       }
-      if (role === "seller" && !roles.includes("seller")) {
-        await supabase.auth.signOut();
-        setBusy(false);
-        toast.error("Bu hesab satıcı kimi qeydiyyatdan keçməyib.");
-        return;
-      }
       if (role === "pvz" && !roles.includes("pvz")) {
         await supabase.auth.signOut();
         setBusy(false);
@@ -192,7 +234,11 @@ function AuthPage() {
 
       setBusy(false);
       toast.success("Xoş gəldiniz!");
-      const dest = role === "seller" ? "/seller" : role === "pvz" ? "/pvz" : role === "admin" ? "/admin" : "/";
+      const dest = role === "seller"
+        ? (roles.includes("seller") ? "/seller" : "/become-seller")
+        : role === "pvz" ? "/pvz"
+        : role === "admin" ? "/admin"
+        : "/";
       navigate({ to: dest });
       return;
     }
@@ -221,7 +267,10 @@ function AuthPage() {
 
     setBusy(true);
     const signupMetadata = {
-      account_role: role,
+      // Authorization is never assigned from user-editable metadata. Every new
+      // account starts as a customer; paid/RPC flows grant operational roles.
+      account_role: "buyer",
+      onboarding_portal: role,
       full_name: name.trim(),
       phone: phone.trim(),
       referral_code: referralCode.trim().toUpperCase() || undefined,
@@ -241,7 +290,7 @@ function AuthPage() {
     const { data, error } = await supabase.auth.signUp({
       email, password,
       options: {
-        emailRedirectTo: `${window.location.origin}/`,
+        emailRedirectTo: `${window.location.origin}/${role === "seller" ? "become-seller" : role === "pvz" ? "register" : ""}`,
         data: signupMetadata,
       },
     });
@@ -254,15 +303,11 @@ function AuthPage() {
     }
 
     if (role === "seller") {
-      const { error: e2 } = await supabase.rpc("register_seller", {
-        _shop_name: shopName.trim().slice(0, 100),
-        _phone: phone.trim(),
-        _voen: normalizedVoen,
-      });
-      if (e2) { setBusy(false); toast.error(e2.message); return; }
-      toast.success("Satıcı qeydiyyatınız tamamlandı");
+      toast.success(data.session
+        ? "Hesab yaradıldı. Satıcı müraciətini və 20 AZN ödənişi tamamlayın."
+        : "Hesab yaradıldı. E-poçtunuzu təsdiqləyib satıcı müraciətini tamamlayın.");
       setBusy(false);
-      navigate({ to: "/seller" });
+      if (data.session) navigate({ to: "/become-seller" });
       return;
     }
 
@@ -304,7 +349,7 @@ function AuthPage() {
         </div>
         <h1 className="text-2xl font-extrabold mb-1 text-center">{mode === "login" ? "Giriş" : "Qeydiyyat"}</h1>
         <p className="text-sm text-muted-foreground mb-4 text-center">
-          Hesab növünü seçin
+          {portalLabel ?? "Hesab növünü seçin"}
         </p>
 
         <div className="mb-5 grid grid-cols-4 gap-2">
@@ -464,7 +509,7 @@ function AuthPage() {
           </button>
         )}
 
-        {role !== "admin" && (
+        {role !== "admin" && !fixedMode && (
           <button onClick={() => setMode(mode === "login" ? "signup" : "login")}
             className="mt-4 w-full text-sm text-muted-foreground hover:text-primary">
             {mode === "login" ? "Hesabınız yoxdur? Qeydiyyat" : "Artıq hesabınız var? Daxil olun"}

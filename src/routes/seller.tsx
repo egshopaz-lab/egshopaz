@@ -205,7 +205,7 @@ function SellerPanel() {
   useEffect(() => { setMounted(true); }, []);
 
   useEffect(() => {
-    if (!authLoading && !user) navigate({ to: "/auth", search: { role: "seller" } as never });
+    if (!authLoading && !user) navigate({ to: "/login" });
     if (!authLoading && user && !isSeller) navigate({ to: "/become-seller" });
   }, [user, isSeller, authLoading, navigate]);
 

@@ -45,8 +45,11 @@ function response(body: JsonRecord, status: number, origin: string | null): Resp
 
 function getAllowedOrigin(origin: string | null): string | null {
   if (!origin) return null;
-  const siteOrigin = new URL(Deno.env.get("SITE_URL") ?? "https://egshop.az").origin;
-  if (origin === siteOrigin) return origin;
+  const allowedOrigins = new Set([
+    new URL(Deno.env.get("SITE_URL") ?? "https://egshop.az").origin,
+    new URL(Deno.env.get("SELLER_SITE_URL") ?? "https://seller.egshop.az").origin,
+  ]);
+  if (allowedOrigins.has(origin)) return origin;
   if (/^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) return origin;
   return null;
 }
@@ -178,10 +181,10 @@ Deno.serve(async (req: Request) => {
     if (!payment?.application_id || !payment.merchant_order_id)
       throw new Error("Müraciət yaradıla bilmədi");
 
-    const siteUrl = new URL(Deno.env.get("SITE_URL") ?? "https://egshop.az");
-    const successUrl = new URL("/become-seller", siteUrl);
+    const sellerSiteUrl = new URL(Deno.env.get("SELLER_SITE_URL") ?? "https://seller.egshop.az");
+    const successUrl = new URL("/become-seller", sellerSiteUrl);
     successUrl.searchParams.set("payment", "success");
-    const errorUrl = new URL("/become-seller", siteUrl);
+    const errorUrl = new URL("/become-seller", sellerSiteUrl);
     errorUrl.searchParams.set("payment", "error");
 
     const epointPayload = {
