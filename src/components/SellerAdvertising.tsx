@@ -19,6 +19,32 @@ interface Pkg {
   shop_promo_slots: number;
   features: string[];
   color: string;
+  package_services?: PackageService[];
+}
+
+interface ServiceType {
+  id: string;
+  slug: string;
+  name: string;
+  base_price: number;
+  default_duration_days: number;
+  default_usage_limit: number;
+  priority: number;
+  display_rules: Record<string, unknown>;
+  settings: Record<string, unknown>;
+  is_active: boolean;
+}
+
+interface PackageService {
+  service_type_id: string;
+  is_active: boolean;
+  activation_price: number;
+  duration_days: number;
+  usage_limit: number;
+  priority: number;
+  display_rules: Record<string, unknown>;
+  settings: Record<string, unknown>;
+  service_type?: ServiceType | null;
 }
 interface Sub {
   id: string;
@@ -108,6 +134,7 @@ export function SellerAdvertising() {
   const [sponsoredShops, setSponsoredShops] = useState<{ id: string; ends_at: string; is_active: boolean }[]>([]);
   const [myProducts, setMyProducts] = useState<Product[]>([]);
   const [promoSettings, setPromoSettings] = useState<PromoSettings | null>(null);
+  const [serviceTypes, setServiceTypes] = useState<ServiceType[]>([]);
   const [loading, setLoading] = useState(true);
   const [paying, setPaying] = useState(false);
   const [checkout, setCheckout] = useState<CheckoutTarget | null>(null);
@@ -127,15 +154,16 @@ export function SellerAdvertising() {
   const load = async () => {
     if (!user) return;
     setLoading(true);
-    const [pk, sb, tx, bn, sp, ss, pr, st] = await Promise.all([
-      supabase.from("ad_packages").select("*").eq("is_active", true).order("sort_order"),
-      supabase.from("seller_subscriptions").select("*, ad_packages(*)").eq("seller_id", user.id).order("created_at", { ascending: false }),
+    const [pk, sb, tx, bn, sp, ss, pr, st, svc] = await Promise.all([
+      supabase.from("ad_packages").select("*, package_services:ad_package_services(*, service_type:ad_service_types(*))").eq("is_active", true).order("sort_order"),
+      supabase.from("seller_subscriptions").select("*, ad_packages(*, package_services:ad_package_services(*, service_type:ad_service_types(*)))").eq("seller_id", user.id).order("created_at", { ascending: false }),
       supabase.from("payment_transactions").select("*").eq("seller_id", user.id).order("created_at", { ascending: false }).limit(20),
       supabase.from("banners").select("*").eq("seller_id", user.id).order("created_at", { ascending: false }),
       supabase.from("sponsored_products").select("*, products(id,title,image_url,price)").eq("seller_id", user.id).order("created_at", { ascending: false }),
       supabase.from("sponsored_shops").select("id,ends_at,is_active").eq("seller_id", user.id).order("created_at", { ascending: false }),
       supabase.from("products").select("id,title,image_url,price").eq("seller_id", user.id).eq("is_active", true).order("created_at", { ascending: false }),
       supabase.from("system_settings").select("single_product_promo_price,single_product_promo_days,single_shop_promo_price,single_shop_promo_days,single_banner_price,single_banner_days,promo_terms_text").limit(1).maybeSingle(),
+      (supabase as any).from("ad_service_types").select("*").eq("is_active", true).order("sort_order"),
     ]);
     setPackages((pk.data ?? []) as unknown as Pkg[]);
     setSubs((sb.data ?? []) as unknown as Sub[]);
@@ -145,20 +173,52 @@ export function SellerAdvertising() {
     setSponsoredShops((ss.data ?? []) as { id: string; ends_at: string; is_active: boolean }[]);
     setMyProducts((pr.data ?? []) as unknown as Product[]);
     setPromoSettings((st.data as PromoSettings | null) ?? null);
+    setServiceTypes((svc.data ?? []) as ServiceType[]);
     setLoading(false);
   };
 
 
   useEffect(() => { void load(); }, [user]);
 
+  useEffect(() => {
+    if (!user) return;
+    const channel = supabase.channel(`seller-advertising-${user.id}`)
+      .on("postgres_changes", { event: "*", schema: "public", table: "ad_packages" }, () => void load())
+      .on("postgres_changes", { event: "*", schema: "public", table: "ad_service_types" }, () => void load())
+      .on("postgres_changes", { event: "*", schema: "public", table: "ad_package_services" }, () => void load())
+      .on("postgres_changes", { event: "*", schema: "public", table: "seller_subscriptions", filter: `seller_id=eq.${user.id}` }, () => void load())
+      .subscribe();
+    return () => { void supabase.removeChannel(channel); };
+  }, [user]);
+
   const activeSub = subs.find((s) => s.is_active && new Date(s.ends_at) > new Date());
   const activeBanners = banners.filter((b) => b.is_active && (!b.ends_at || new Date(b.ends_at) > new Date()));
   const activeSponsored = sponsored.filter((s) => s.is_active && new Date(s.ends_at) > new Date());
   const activeShopPromos = sponsoredShops.filter((s) => s.is_active && new Date(s.ends_at) > new Date());
 
-  const bannersLeft = (activeSub?.ad_packages?.banner_slots ?? 0) - activeBanners.length;
-  const sponsoredLeft = (activeSub?.ad_packages?.sponsored_product_slots ?? 0) - activeSponsored.length;
-  const shopPromoLeft = (activeSub?.ad_packages?.shop_promo_slots ?? 0) - activeShopPromos.length;
+  const packageService = (slug: string) => activeSub?.ad_packages?.package_services?.find(
+    (service) => service.is_active && service.service_type?.is_active !== false && service.service_type?.slug === slug
+  );
+  const baseService = (slug: string) => serviceTypes.find((service) => service.slug === slug && service.is_active);
+  const bannerPackageService = packageService("banner_promotion");
+  const productPackageService = packageService("product_promotion");
+  const shopPackageService = packageService("shop_promotion");
+  const bannerBaseService = baseService("banner_promotion");
+  const productBaseService = baseService("product_promotion");
+  const shopBaseService = baseService("shop_promotion");
+  const modularPackage = Boolean(activeSub?.ad_packages?.package_services?.length);
+  const bannersLeft = (modularPackage ? (bannerPackageService?.usage_limit ?? 0) : (activeSub?.ad_packages?.banner_slots ?? 0)) - activeBanners.length;
+  const sponsoredLeft = (modularPackage ? (productPackageService?.usage_limit ?? 0) : (activeSub?.ad_packages?.sponsored_product_slots ?? 0)) - activeSponsored.length;
+  const shopPromoLeft = (modularPackage ? (shopPackageService?.usage_limit ?? 0) : (activeSub?.ad_packages?.shop_promo_slots ?? 0)) - activeShopPromos.length;
+  const bannerAvailable = activeSub ? (!modularPackage || Boolean(bannerPackageService)) : Boolean(bannerBaseService);
+  const productAvailable = activeSub ? (!modularPackage || Boolean(productPackageService)) : Boolean(productBaseService);
+  const shopAvailable = activeSub ? (!modularPackage || Boolean(shopPackageService)) : Boolean(shopBaseService);
+  const bannerBasePrice = Number(bannerBaseService?.base_price ?? promoSettings?.single_banner_price ?? 5);
+  const bannerBaseDays = Number(bannerBaseService?.default_duration_days ?? promoSettings?.single_banner_days ?? 30);
+  const productBasePrice = Number(productBaseService?.base_price ?? promoSettings?.single_product_promo_price ?? 5);
+  const productBaseDays = Number(productBaseService?.default_duration_days ?? promoSettings?.single_product_promo_days ?? 7);
+  const shopBasePrice = Number(shopBaseService?.base_price ?? promoSettings?.single_shop_promo_price ?? 10);
+  const shopBaseDays = Number(shopBaseService?.default_duration_days ?? promoSettings?.single_shop_promo_days ?? 7);
 
   const checkoutMeta = (() => {
     if (!checkout) return null;
@@ -365,16 +425,14 @@ export function SellerAdvertising() {
     if (!bannerForm.image_url && !bannerForm.video_url) { toast.error("Şəkil və ya video yükləyin"); return; }
 
     // Active subscription → use included slot (still uses slot_banner small fee path)
+    if (!bannerAvailable) { toast.error("Banner reklamı admin tərəfindən deaktiv edilib"); return; }
     if (activeSub) {
       if (bannersLeft <= 0) { toast.error("Banner limiti dolub. Yeni paket alın."); return; }
-      setCheckout({ kind: "slot_banner", price: SLOT_BANNER_FEE, form: bannerForm });
+      setCheckout({ kind: "slot_banner", price: Number(bannerPackageService?.activation_price ?? SLOT_BANNER_FEE), form: bannerForm });
       return;
     }
 
-    // No subscription → paid one-off banner (admin-set price + days)
-    const price = Number(promoSettings?.single_banner_price ?? 5);
-    const days = Number(promoSettings?.single_banner_days ?? 30);
-    setCheckout({ kind: "one_banner", price, days, form: bannerForm });
+    setCheckout({ kind: "one_banner", price: bannerBasePrice, days: bannerBaseDays, form: bannerForm });
   };
 
 
@@ -394,13 +452,14 @@ export function SellerAdvertising() {
 
   const promoteProduct = async (productId: string) => {
     if (!user || !activeSub) return;
+    if (!productAvailable) { toast.error("Məhsul reklamı admin tərəfindən deaktiv edilib"); return; }
     if (sponsoredLeft <= 0) { toast.error("Sponsor məhsul limiti dolub"); return; }
     const exists = activeSponsored.find((s) => s.product_id === productId);
     if (exists) { toast.error("Bu məhsul artıq önə çəkilib"); return; }
     const product = myProducts.find((p) => p.id === productId);
     if (!product) return;
     setPickProduct(false);
-    setCheckout({ kind: "slot_product", productId, productTitle: product.title, price: SLOT_PRODUCT_FEE });
+    setCheckout({ kind: "slot_product", productId, productTitle: product.title, price: Number(productPackageService?.activation_price ?? SLOT_PRODUCT_FEE) });
   };
 
 
@@ -414,8 +473,9 @@ export function SellerAdvertising() {
 
   const promoteShop = async () => {
     if (!user || !activeSub) return;
+    if (!shopAvailable) { toast.error("Mağaza reklamı admin tərəfindən deaktiv edilib"); return; }
     if (shopPromoLeft <= 0) { toast.error("Mağaza reklamı limiti dolub"); return; }
-    setCheckout({ kind: "slot_shop", price: SLOT_SHOP_FEE });
+    setCheckout({ kind: "slot_shop", price: Number(shopPackageService?.activation_price ?? SLOT_SHOP_FEE) });
   };
 
   const removeShopPromo = async (id: string) => {
@@ -461,7 +521,7 @@ export function SellerAdvertising() {
       )}
 
       {/* === SHOP PROMOTION === */}
-      {activeSub ? (
+      {activeSub && shopAvailable ? (
         <div className="bg-card border border-border rounded-2xl p-6">
           <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
             <div className="flex items-center gap-2">
@@ -498,7 +558,7 @@ export function SellerAdvertising() {
 
 
       {/* === BANNER MANAGER (always available to sellers) === */}
-      <div className="bg-card border border-border rounded-2xl p-6">
+      {bannerAvailable && <div className="bg-card border border-border rounded-2xl p-6">
         <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
           <div className="flex items-center gap-2">
             <Megaphone className="h-5 w-5 text-primary" />
@@ -520,7 +580,7 @@ export function SellerAdvertising() {
         </div>
         {!activeSub && (
           <p className="text-xs text-muted-foreground mb-3">
-            Banner reklamı ödənişlidir: <b>{Number(promoSettings?.single_banner_price ?? 5)} AZN</b> / <b>{Number(promoSettings?.single_banner_days ?? 30)} gün</b>. Qiymət admin tərəfindən tənzimlənir. Reklam paketi alanlar paketin slotlarından istifadə edir.
+            Banner reklamı ödənişlidir: <b>{bannerBasePrice} AZN</b> / <b>{bannerBaseDays} gün</b>. Qiymət admin tərəfindən tənzimlənir. Reklam paketi alanlar paketin slotlarından istifadə edir.
           </p>
         )}
 
@@ -547,10 +607,10 @@ export function SellerAdvertising() {
             ))}
           </div>
         )}
-      </div>
+      </div>}
 
       {/* === SPONSORED PRODUCTS MANAGER === */}
-      {activeSub ? (
+      {activeSub && productAvailable ? (
         <div className="bg-card border border-border rounded-2xl p-6">
           <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
             <div className="flex items-center gap-2">
@@ -589,7 +649,7 @@ export function SellerAdvertising() {
       ) : null}
 
       {/* === ONE-OFF PAID PROMOTION (paketsiz, admin qiymətli) === */}
-      {promoSettings && (
+      {(productBaseService || shopBaseService) && (
         <div className="bg-card border-2 border-dashed border-primary/30 rounded-2xl p-6">
           <div className="flex items-center gap-2 mb-2">
             <Sparkles className="h-5 w-5 text-primary" />
@@ -597,22 +657,22 @@ export function SellerAdvertising() {
           </div>
           <p className="text-xs text-muted-foreground mb-4">{promoSettings.promo_terms_text}</p>
           <div className="grid sm:grid-cols-2 gap-3">
-            <button
+            {productBaseService && <button
               onClick={() => setOneOffPickProduct(true)}
               className="border border-border rounded-xl p-4 text-left hover:border-warning hover:bg-warning/5 transition"
             >
               <div className="flex items-center gap-2 mb-1"><Package className="h-5 w-5 text-warning" /> <span className="font-bold">Tək məhsulu önə çək</span></div>
-              <div className="text-xs text-muted-foreground">{promoSettings.single_product_promo_days} gün</div>
-              <div className="text-xl font-extrabold text-warning mt-1">{formatAZN(promoSettings.single_product_promo_price)}</div>
-            </button>
-            <button
-              onClick={() => setCheckout({ kind: "one_shop", price: promoSettings.single_shop_promo_price, days: promoSettings.single_shop_promo_days })}
+              <div className="text-xs text-muted-foreground">{productBaseDays} gün</div>
+              <div className="text-xl font-extrabold text-warning mt-1">{formatAZN(productBasePrice)}</div>
+            </button>}
+            {shopBaseService && <button
+              onClick={() => setCheckout({ kind: "one_shop", price: shopBasePrice, days: shopBaseDays })}
               className="border border-border rounded-xl p-4 text-left hover:border-primary hover:bg-primary/5 transition"
             >
               <div className="flex items-center gap-2 mb-1"><Store className="h-5 w-5 text-primary" /> <span className="font-bold">Mağazamı önə çək</span></div>
-              <div className="text-xs text-muted-foreground">{promoSettings.single_shop_promo_days} gün</div>
-              <div className="text-xl font-extrabold text-primary mt-1">{formatAZN(promoSettings.single_shop_promo_price)}</div>
-            </button>
+              <div className="text-xs text-muted-foreground">{shopBaseDays} gün</div>
+              <div className="text-xl font-extrabold text-primary mt-1">{formatAZN(shopBasePrice)}</div>
+            </button>}
           </div>
         </div>
       )}
@@ -742,7 +802,7 @@ export function SellerAdvertising() {
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mt-5">
               {!activeSub && (
                 <div className="text-xs text-muted-foreground">
-                  Ödəniş: <b className="text-foreground">{Number(promoSettings?.single_banner_price ?? 5)} AZN</b> ({Number(promoSettings?.single_banner_days ?? 30)} gün)
+                  Ödəniş: <b className="text-foreground">{bannerBasePrice} AZN</b> ({bannerBaseDays} gün)
                 </div>
               )}
               <div className="flex justify-end gap-2 sm:ml-auto">
@@ -890,14 +950,14 @@ export function SellerAdvertising() {
               <h3 className="text-xl font-bold flex items-center gap-2"><Package className="h-5 w-5 text-warning" /> Ödənişli reklam — məhsul seç</h3>
               <button onClick={() => setOneOffPickProduct(false)} className="p-1 hover:bg-secondary rounded"><X className="h-5 w-5" /></button>
             </div>
-            <p className="text-xs text-muted-foreground mb-4">Qiymət: <b>{formatAZN(promoSettings.single_product_promo_price)}</b> • Müddət: <b>{promoSettings.single_product_promo_days} gün</b></p>
+            <p className="text-xs text-muted-foreground mb-4">Qiymət: <b>{formatAZN(productBasePrice)}</b> • Müddət: <b>{productBaseDays} gün</b></p>
             {myProducts.length === 0 ? (
               <div className="text-center py-10 text-muted-foreground"><Package className="h-10 w-10 mx-auto mb-2" /><p>Aktiv məhsul yoxdur.</p></div>
             ) : (
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 {myProducts.map((p) => (
                   <button key={p.id}
-                    onClick={() => { setOneOffPickProduct(false); setCheckout({ kind: "one_product", productId: p.id, productTitle: p.title, price: promoSettings.single_product_promo_price, days: promoSettings.single_product_promo_days }); }}
+                    onClick={() => { setOneOffPickProduct(false); setCheckout({ kind: "one_product", productId: p.id, productTitle: p.title, price: productBasePrice, days: productBaseDays }); }}
                     className="border border-border rounded-xl overflow-hidden text-left hover:border-warning transition">
                     <div className="aspect-square bg-secondary">
                       {p.image_url && <img src={p.image_url} alt={p.title} className="w-full h-full object-cover" />}
