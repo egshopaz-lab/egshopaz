@@ -10,7 +10,7 @@ const VisualSearchDialog = lazy(() =>
 );
 import { useTranslation } from "react-i18next";
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import egLogo from "@/assets/eg-logo.png";
+import egLogo from "@/assets/eg-logo.svg";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { portalUrl } from "@/lib/portals";
 import {
@@ -38,7 +38,7 @@ export function SiteHeader() {
           <SidebarTrigger className="shrink-0 text-white" />
 
           <Link to="/" className="flex items-center gap-2 sm:gap-3 shrink-0 hover:scale-105 transition-transform" aria-label="EG Shop">
-            <img src={egLogo} alt="EG Shop logo" width={256} height={256} className="h-11 w-11 sm:h-14 sm:w-14 md:h-16 md:w-16 rounded-full object-cover ring-2 ring-white/30 shadow-lg" />
+            <img src={egLogo} alt="EG Shop logo" width={512} height={512} className="h-11 w-11 sm:h-14 sm:w-14 md:h-16 md:w-16 rounded-full object-contain ring-2 ring-white/35 shadow-lg bg-white/10" />
             <span className="text-xl sm:text-2xl md:text-3xl uppercase tracking-wide text-white whitespace-nowrap" style={{ fontFamily: "'Bebas Neue', sans-serif" }}>
               EG Shop
             </span>
