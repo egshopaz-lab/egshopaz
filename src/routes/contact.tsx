@@ -1,7 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Mail, MapPin, Clock } from "lucide-react";
+import { Clock, ExternalLink, Instagram, Mail, MapPin, Phone } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { absoluteUrl } from "@/lib/site";
+
+const SUPPORT_PHONE = "+994105287946";
+const SUPPORT_PHONE_DISPLAY = "+994 10 528 79 46";
+const INSTAGRAM_URL = "https://www.instagram.com/egshop.az?utm_source=qr&igsh=MW54N25wZmU0Nm42Mw%3D%3D";
+const FACEBOOK_URL = "https://www.facebook.com/share/1BWiaWT6hx/";
 
 export const Route = createFileRoute("/contact")({
   head: () => ({
@@ -22,10 +27,40 @@ function ContactPage() {
   const { i18n } = useTranslation();
   const language = i18n.resolvedLanguage?.split("-")[0] ?? "az";
   const copy = language === "ru"
-    ? { title: "Контакты", email: "Служба поддержки", address: "Баку, Азербайджан", hours: "Поддержка: пн–пт, 09:00–18:00", note: "По вопросам заказов укажите номер заказа в письме." }
+    ? {
+        title: "Контакты",
+        email: "Служба поддержки",
+        phone: "Телефон поддержки",
+        social: "Социальные сети",
+        instagram: "Instagram",
+        facebook: "Facebook",
+        address: "Баку, Азербайджан",
+        hours: "Поддержка: пн–пт, 09:00–18:00",
+        note: "По вопросам заказов укажите номер заказа в письме.",
+      }
     : language === "en"
-      ? { title: "Contact", email: "Customer support", address: "Baku, Azerbaijan", hours: "Support: Mon–Fri, 09:00–18:00", note: "Please include your order number when contacting support." }
-      : { title: "Əlaqə", email: "Müştəri dəstəyi", address: "Bakı, Azərbaycan", hours: "Dəstək: B.e.–Cümə, 09:00–18:00", note: "Sifarişlə bağlı müraciətdə sifariş nömrəsini qeyd edin." };
+      ? {
+          title: "Contact",
+          email: "Customer support",
+          phone: "Support phone",
+          social: "Social media",
+          instagram: "Instagram",
+          facebook: "Facebook",
+          address: "Baku, Azerbaijan",
+          hours: "Support: Mon–Fri, 09:00–18:00",
+          note: "Please include your order number when contacting support.",
+        }
+      : {
+          title: "Əlaqə",
+          email: "Müştəri dəstəyi",
+          phone: "Dəstək telefonu",
+          social: "Sosial şəbəkələr",
+          instagram: "Instagram",
+          facebook: "Facebook",
+          address: "Bakı, Azərbaycan",
+          hours: "Dəstək: B.e.–Cümə, 09:00–18:00",
+          note: "Sifarişlə bağlı müraciətdə sifariş nömrəsini qeyd edin.",
+        };
 
   return (
     <div className="container mx-auto px-4 py-10 max-w-2xl">
@@ -35,6 +70,24 @@ function ContactPage() {
           <Mail className="h-5 w-5 text-primary" />
           <span><strong>{copy.email}:</strong> info@egshop.az</span>
         </a>
+        <a href={`tel:${SUPPORT_PHONE}`} className="flex items-center gap-3 hover:text-primary">
+          <Phone className="h-5 w-5 text-primary" />
+          <span><strong>{copy.phone}:</strong> {SUPPORT_PHONE_DISPLAY}</span>
+        </a>
+        <div className="flex items-start gap-3">
+          <Instagram className="h-5 w-5 text-primary mt-0.5" />
+          <div>
+            <div className="font-semibold">{copy.social}</div>
+            <div className="mt-1 flex flex-wrap gap-3 text-sm">
+              <a href={INSTAGRAM_URL} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 hover:text-primary">
+                {copy.instagram} <ExternalLink className="h-3.5 w-3.5" />
+              </a>
+              <a href={FACEBOOK_URL} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 hover:text-primary">
+                {copy.facebook} <ExternalLink className="h-3.5 w-3.5" />
+              </a>
+            </div>
+          </div>
+        </div>
         <div className="flex items-center gap-3"><MapPin className="h-5 w-5 text-primary" /><span>{copy.address}</span></div>
         <div className="flex items-center gap-3"><Clock className="h-5 w-5 text-primary" /><span>{copy.hours}</span></div>
         <p className="text-sm text-muted-foreground border-t border-border pt-4">{copy.note}</p>
