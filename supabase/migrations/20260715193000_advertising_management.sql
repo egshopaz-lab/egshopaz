@@ -110,8 +110,13 @@ security invoker
 set search_path = public
 as $$
 declare
-  target_package uuid := coalesce(new.package_id, old.package_id);
+  target_package uuid;
 begin
+  if tg_op = 'DELETE' then
+    target_package := old.package_id;
+  else
+    target_package := new.package_id;
+  end if;
   update public.ad_packages p set
     banner_slots = coalesce((
       select ps.usage_limit from public.ad_package_services ps
