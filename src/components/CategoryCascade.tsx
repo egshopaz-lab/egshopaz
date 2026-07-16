@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { catName } from "@/lib/catName";
-import { categoryIcon } from "@/lib/categoryIcon";
+import { CategoryIcon } from "@/components/CategoryIcon";
 
 interface Category {
   id: string;
@@ -63,7 +63,7 @@ export function CategoryCascade({ categories, value, onChange }: Props) {
         <option value="">{t("categoryBar.selectRoot")}</option>
         {roots.map((c) => (
           <option key={c.id} value={c.id}>
-            {categoryIcon(c)} {catName(c)}
+            <span className="flex items-center gap-2"><CategoryIcon category={c} className="h-4 w-4" />{catName(c)}</span>
           </option>
         ))}
       </select>

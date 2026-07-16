@@ -6,7 +6,7 @@ import { ProductCard, type ProductCardData } from "@/components/ProductCard";
 import { SponsoredProducts } from "@/components/SponsoredProducts";
 import { CatalogFilters, type Filters } from "@/components/CatalogFilters";
 import { catName } from "@/lib/catName";
-import { categoryIcon } from "@/lib/categoryIcon";
+import { CategoryIcon } from "@/components/CategoryIcon";
 import i18n from "@/i18n";
 import { absoluteUrl } from "@/lib/site";
 import { z } from "zod";
@@ -51,6 +51,7 @@ function Catalog() {
   const { q, cat, brand } = Route.useSearch();
   const [categories, setCategories] = useState<Category[]>([]);
   const [products, setProducts] = useState<ProductCardData[]>([]);
+  const [availableBrands, setAvailableBrands] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [openParents, setOpenParents] = useState<Record<string, boolean>>({});
   const [filters, setFilters] = useState<Filters>({ sort: "newest", brand });
@@ -62,6 +63,10 @@ function Catalog() {
 
   useEffect(() => {
     supabase.from("categories").select("id,name,name_ru,name_en,slug,icon,parent_id,sort_order").order("sort_order").then(({ data }) => setCategories((data ?? []) as Category[]));
+    supabase.from("products").select("brand").eq("is_active", true).not("brand", "is", null).limit(1000).then(({ data }) => {
+      const brands = [...new Set((data ?? []).map((row) => row.brand?.trim()).filter((value): value is string => Boolean(value)))];
+      setAvailableBrands(brands.sort((a, b) => a.localeCompare(b, "az")));
+    });
   }, []);
 
   useEffect(() => {
@@ -141,11 +146,7 @@ function Catalog() {
     });
   }, [q, cat, filters, categories]);
 
-  const allBrandsList = useMemo(() => {
-    const s = new Set<string>();
-    products.forEach((p) => p.brand && s.add(p.brand));
-    return [...s].sort();
-  }, [products]);
+  const allBrandsList = useMemo(() => availableBrands, [availableBrands]);
 
   const parents = categories.filter((c) => !c.parent_id);
   const childrenOf = (pid: string) => categories.filter((c) => c.parent_id === pid);
@@ -171,7 +172,7 @@ function Catalog() {
 
       <div className="mb-6 overflow-hidden rounded-3xl border border-violet-100 bg-gradient-to-br from-violet-50 via-white to-fuchsia-50 px-5 py-6 sm:px-7 sm:py-8">
         <div className="flex items-center gap-4">
-          <span className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-white text-2xl shadow-sm ring-1 ring-violet-100">{activeCat ? categoryIcon(activeCat) : <Grid2X2 className="h-6 w-6 text-violet-700" />}</span>
+          <span className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-white text-violet-700 shadow-sm ring-1 ring-violet-100">{activeCat ? <CategoryIcon category={activeCat} className="h-7 w-7" /> : <Grid2X2 className="h-6 w-6" />}</span>
           <div className="min-w-0">
             <h1 className="text-2xl sm:text-3xl font-black tracking-tight">
               {activeCat ? catName(activeCat) : (q ? t("catalog.searchResults", { q }) : t("catalog.allProducts"))}
@@ -203,7 +204,7 @@ function Catalog() {
                   <button
                     onClick={() => setOpenParents((p) => ({ ...p, [c.id]: !isOpen }))}
                     className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm transition hover:bg-secondary text-left ${cat === c.slug ? "bg-primary/10 font-bold text-primary" : ""}`}>
-                    <span>{categoryIcon(c)} {catName(c)}</span>
+                    <span className="flex items-center gap-2"><CategoryIcon category={c} className="h-4 w-4 shrink-0" /> {catName(c)}</span>
                     {kids.length > 0 && <span className="text-xs">{isOpen ? "−" : "+"}</span>}
                   </button>
                   {isOpen && kids.length > 0 && (
@@ -224,7 +225,7 @@ function Catalog() {
                                 <button
                                   onClick={() => setOpenParents((p) => ({ ...p, [k.id]: !kOpen }))}
                                   className={`w-full flex items-center justify-between px-2 py-1 rounded text-xs hover:bg-secondary text-left ${cat === k.slug ? "font-semibold text-primary" : ""}`}>
-                                  <span>{categoryIcon(k)} {catName(k)}</span>
+                                  <span className="flex items-center gap-1.5"><CategoryIcon category={k} className="h-3.5 w-3.5 shrink-0" /> {catName(k)}</span>
                                   <span className="text-[10px]">{kOpen ? "−" : "+"}</span>
                                 </button>
                                 {kOpen && (
@@ -249,7 +250,7 @@ function Catalog() {
                             ) : (
                               <Link to="/catalog" search={{ q, cat: k.slug } as never}
                                     className={`block px-2 py-1 rounded text-xs hover:bg-secondary ${cat === k.slug ? "font-semibold text-primary" : ""}`}>
-                                {categoryIcon(k)} {catName(k)}
+                                <span className="flex items-center gap-1.5"><CategoryIcon category={k} className="h-3.5 w-3.5 shrink-0" /> {catName(k)}</span>
                               </Link>
                             )}
                           </li>

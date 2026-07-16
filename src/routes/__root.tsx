@@ -46,7 +46,9 @@ export const Route = createRootRoute({
       { property: "og:site_name", content: "EG Shop" },
       { property: "og:type", content: "website" },
       { property: "og:locale", content: "az_AZ" },
+      { property: "og:image", content: absoluteUrl("/eg-logo.png") },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:image", content: absoluteUrl("/eg-logo.png") },
     ],
     links: [
       { rel: "icon", type: "image/svg+xml", href: "/eg-logo.svg" },

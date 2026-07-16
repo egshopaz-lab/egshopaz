@@ -51,6 +51,8 @@ import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ShopIdRouteImport } from './routes/shop.$id'
 import { Route as ProductIdRouteImport } from './routes/product.$id'
+import { Route as PaymentSuccessRouteImport } from './routes/payment.success'
+import { Route as PaymentErrorRouteImport } from './routes/payment.error'
 import { Route as CheckoutPayOrderIdRouteImport } from './routes/checkout-pay.$orderId'
 
 const TrendsRoute = TrendsRouteImport.update({
@@ -263,6 +265,16 @@ const ProductIdRoute = ProductIdRouteImport.update({
   path: '/product/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PaymentSuccessRoute = PaymentSuccessRouteImport.update({
+  id: '/payment/success',
+  path: '/payment/success',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PaymentErrorRoute = PaymentErrorRouteImport.update({
+  id: '/payment/error',
+  path: '/payment/error',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CheckoutPayOrderIdRoute = CheckoutPayOrderIdRouteImport.update({
   id: '/checkout-pay/$orderId',
   path: '/checkout-pay/$orderId',
@@ -311,6 +323,8 @@ export interface FileRoutesByFullPath {
   '/terms': typeof TermsRoute
   '/trends': typeof TrendsRoute
   '/checkout-pay/$orderId': typeof CheckoutPayOrderIdRoute
+  '/payment/error': typeof PaymentErrorRoute
+  '/payment/success': typeof PaymentSuccessRoute
   '/product/$id': typeof ProductIdRoute
   '/shop/$id': typeof ShopIdRoute
 }
@@ -356,6 +370,8 @@ export interface FileRoutesByTo {
   '/terms': typeof TermsRoute
   '/trends': typeof TrendsRoute
   '/checkout-pay/$orderId': typeof CheckoutPayOrderIdRoute
+  '/payment/error': typeof PaymentErrorRoute
+  '/payment/success': typeof PaymentSuccessRoute
   '/product/$id': typeof ProductIdRoute
   '/shop/$id': typeof ShopIdRoute
 }
@@ -402,6 +418,8 @@ export interface FileRoutesById {
   '/terms': typeof TermsRoute
   '/trends': typeof TrendsRoute
   '/checkout-pay/$orderId': typeof CheckoutPayOrderIdRoute
+  '/payment/error': typeof PaymentErrorRoute
+  '/payment/success': typeof PaymentSuccessRoute
   '/product/$id': typeof ProductIdRoute
   '/shop/$id': typeof ShopIdRoute
 }
@@ -449,6 +467,8 @@ export interface FileRouteTypes {
     | '/terms'
     | '/trends'
     | '/checkout-pay/$orderId'
+    | '/payment/error'
+    | '/payment/success'
     | '/product/$id'
     | '/shop/$id'
   fileRoutesByTo: FileRoutesByTo
@@ -494,6 +514,8 @@ export interface FileRouteTypes {
     | '/terms'
     | '/trends'
     | '/checkout-pay/$orderId'
+    | '/payment/error'
+    | '/payment/success'
     | '/product/$id'
     | '/shop/$id'
   id:
@@ -539,6 +561,8 @@ export interface FileRouteTypes {
     | '/terms'
     | '/trends'
     | '/checkout-pay/$orderId'
+    | '/payment/error'
+    | '/payment/success'
     | '/product/$id'
     | '/shop/$id'
   fileRoutesById: FileRoutesById
@@ -585,6 +609,8 @@ export interface RootRouteChildren {
   TermsRoute: typeof TermsRoute
   TrendsRoute: typeof TrendsRoute
   CheckoutPayOrderIdRoute: typeof CheckoutPayOrderIdRoute
+  PaymentErrorRoute: typeof PaymentErrorRoute
+  PaymentSuccessRoute: typeof PaymentSuccessRoute
   ProductIdRoute: typeof ProductIdRoute
   ShopIdRoute: typeof ShopIdRoute
 }
@@ -885,6 +911,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProductIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/payment/success': {
+      id: '/payment/success'
+      path: '/payment/success'
+      fullPath: '/payment/success'
+      preLoaderRoute: typeof PaymentSuccessRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/payment/error': {
+      id: '/payment/error'
+      path: '/payment/error'
+      fullPath: '/payment/error'
+      preLoaderRoute: typeof PaymentErrorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/checkout-pay/$orderId': {
       id: '/checkout-pay/$orderId'
       path: '/checkout-pay/$orderId'
@@ -937,6 +977,8 @@ const rootRouteChildren: RootRouteChildren = {
   TermsRoute: TermsRoute,
   TrendsRoute: TrendsRoute,
   CheckoutPayOrderIdRoute: CheckoutPayOrderIdRoute,
+  PaymentErrorRoute: PaymentErrorRoute,
+  PaymentSuccessRoute: PaymentSuccessRoute,
   ProductIdRoute: ProductIdRoute,
   ShopIdRoute: ShopIdRoute,
 }

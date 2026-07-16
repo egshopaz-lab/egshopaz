@@ -71,27 +71,6 @@ type TabKey =
   | "settings"
   | "support";
 
-// ---------------- MOCK DATA ----------------
-const mockExpected = [
-  { id: "WB-10234", buyer: "Aysel M.", items: 3, eta: "12:30", status: "Yolda" },
-  { id: "WB-10235", buyer: "Rauf K.", items: 1, eta: "13:10", status: "Yolda" },
-  { id: "WB-10236", buyer: "Nigar S.", items: 2, eta: "14:00", status: "Çatıb" },
-];
-const mockPending = [
-  { id: "WB-10220", buyer: "Elvin H.", phone: "+994 50 111 22 33", days: 1, code: "4821" },
-  { id: "WB-10221", buyer: "Səbinə Ə.", phone: "+994 55 222 33 44", days: 2, code: "9930" },
-  { id: "WB-10222", buyer: "Tural Q.", phone: "+994 70 333 44 55", days: 5, code: "1145" },
-];
-const mockReturns = [
-  { id: "RT-501", buyer: "Aytac R.", reason: "Ölçü uyğun deyil", state: "sağlam" },
-  { id: "RT-502", buyer: "Murad B.", reason: "Zədəli", state: "zədəli" },
-];
-const mockStorage = [
-  { id: "WB-10100", buyer: "Lalə M.", days: 8, expires: "2 gün qalıb" },
-  { id: "WB-10101", buyer: "Cavid A.", days: 14, expires: "Vaxtı keçib" },
-  { id: "WB-10102", buyer: "Ülviyyə N.", days: 3, expires: "7 gün qalıb" },
-];
-
 function PvzPanel() {
   const { t } = useTranslation();
   const { user, isPvz, loading: authLoading } = useAuth();
@@ -154,7 +133,6 @@ function PvzPanel() {
       icon: PackageOpen,
       active: tab === "intake",
       onClick: () => setTab("intake"),
-      badge: mockExpected.length,
     },
     {
       key: "delivery",
@@ -162,7 +140,6 @@ function PvzPanel() {
       icon: ShoppingBag,
       active: tab === "delivery",
       onClick: () => setTab("delivery"),
-      badge: mockPending.length,
     },
     {
       key: "returns",
@@ -177,7 +154,6 @@ function PvzPanel() {
       icon: Archive,
       active: tab === "storage",
       onClick: () => setTab("storage"),
-      badge: 1,
     },
     {
       key: "reports",
@@ -1527,15 +1503,15 @@ function Shift({ open, setOpen }: { open: boolean; setOpen: (v: boolean) => void
           </li>
           <li className="flex justify-between">
             <span>Nağd qəbul</span>
-            <b>{formatAZN(420)}</b>
+            <b>{formatAZN(0)}</b>
           </li>
           <li className="flex justify-between">
             <span>Qaytarma (nağd)</span>
-            <b className="text-rose-600">- {formatAZN(35)}</b>
+            <b className="text-rose-600">- {formatAZN(0)}</b>
           </li>
           <li className="flex justify-between border-t pt-2 mt-2">
             <span className="font-bold">Cari balans</span>
-            <b className="text-emerald-600">{formatAZN(385)}</b>
+            <b className="text-emerald-600">{formatAZN(0)}</b>
           </li>
         </ul>
       </div>

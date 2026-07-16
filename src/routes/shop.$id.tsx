@@ -148,7 +148,7 @@ function ShopPage() {
       {/* Banner */}
       <div className="relative h-48 md:h-72 md:rounded-3xl overflow-hidden bg-gradient-to-br from-primary via-primary/80 to-primary/40">
         {profile.shop_banner_url && (
-          <img src={profile.shop_banner_url} alt="" className="w-full h-full object-cover" />
+          <img src={profile.shop_banner_url} alt={`${name} mağaza banneri`} loading="eager" decoding="async" fetchPriority="high" className="w-full h-full object-cover" />
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
         <button onClick={share} className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/90 hover:bg-white text-foreground flex items-center justify-center shadow-lg backdrop-blur transition">
@@ -163,7 +163,7 @@ function ShopPage() {
             <div className="relative shrink-0">
               <div className="w-24 h-24 md:w-28 md:h-28 rounded-2xl bg-secondary border-4 border-card shadow-lg overflow-hidden flex items-center justify-center">
                 {profile.shop_logo_url
-                  ? <img src={profile.shop_logo_url} alt={name} className="w-full h-full object-cover" />
+                  ? <img src={profile.shop_logo_url} alt={`${name} loqosu`} loading="eager" decoding="async" className="w-full h-full object-cover" />
                   : <Store className="h-10 w-10 text-muted-foreground" />}
               </div>
               <div className={`absolute -bottom-2 -right-2 px-2 py-0.5 rounded-full text-[10px] font-black text-white bg-gradient-to-r ${tier.color} shadow-md inline-flex items-center gap-1`}>

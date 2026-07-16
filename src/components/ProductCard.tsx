@@ -91,7 +91,7 @@ export function ProductCard({ p, enableFavorite = true }: { p: ProductCardData; 
     >
       <div ref={wrapRef} className="relative aspect-[3/4.2] bg-secondary overflow-hidden rounded-xl">
         {p.image_url ? (
-          <img src={p.image_url} alt={p.title} loading="lazy"
+          <img src={p.image_url} alt={p.title} loading="lazy" decoding="async" sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
                className="w-full h-full object-cover" />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-muted-foreground text-xs">—</div>
@@ -142,10 +142,10 @@ export function ProductCard({ p, enableFavorite = true }: { p: ProductCardData; 
         </div>
         <button
           onClick={addToCart}
-          disabled={adding}
+          disabled={adding || (p.stock != null && p.stock <= 0)}
           className="mt-1 w-full h-10 flex items-center justify-center bg-gradient-brand text-primary-foreground disabled:opacity-60 rounded-lg text-sm font-bold transition hover:opacity-95"
         >
-          {t("product.addToCart")}
+          {p.stock != null && p.stock <= 0 ? t("product.outOfStock") : t("product.addToCart")}
         </button>
       </div>
     </Link>

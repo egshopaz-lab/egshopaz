@@ -2,182 +2,82 @@ import { createFileRoute, useNavigate, useParams, Link } from "@tanstack/react-r
 import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { CreditCard, Lock, Plus, ShieldCheck, Loader2 } from "lucide-react";
+import { ArrowLeft, CreditCard, ExternalLink, Loader2, Lock, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
+import { formatAZN } from "@/lib/format";
 
 export const Route = createFileRoute("/checkout-pay/$orderId")({
-  head: () => ({ meta: [{ title: "Ödəniş — EG Shop" }] }),
+  head: () => ({ meta: [{ title: "Təhlükəsiz ödəniş — EG Shop" }, { name: "robots", content: "noindex,nofollow" }] }),
   component: CheckoutPayPage,
 });
 
-interface SavedCard {
-  id: string;
-  brand: string;
-  last4: string;
-  exp_month: number;
-  exp_year: number;
-  holder: string;
-  is_default: boolean;
-}
-
-function detectBrand(num: string) {
-  if (num.startsWith("4")) return "Visa";
-  if (/^5[1-5]/.test(num)) return "MasterCard";
-  if (/^3[47]/.test(num)) return "Amex";
-  return "Card";
-}
+type OrderSummary = { id: string; total: number; payment_status: string; recipient_name: string | null };
 
 function CheckoutPayPage() {
   const { orderId } = useParams({ from: "/checkout-pay/$orderId" });
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
-
-  const [order, setOrder] = useState<{ id: string; total: number; payment_status: string } | null>(null);
-  const [cards, setCards] = useState<SavedCard[]>([]);
-  const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
-  const [useNewCard, setUseNewCard] = useState(false);
-  const [form, setForm] = useState({ number: "", exp: "", cvv: "", holder: "", save: true });
+  const [order, setOrder] = useState<OrderSummary | null>(null);
   const [paying, setPaying] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => { if (!authLoading && !user) navigate({ to: "/auth" }); }, [user, authLoading, navigate]);
+  useEffect(() => {
+    if (!authLoading && !user) navigate({ to: "/auth", search: { role: "buyer" } as never });
+  }, [user, authLoading, navigate]);
 
   useEffect(() => {
     if (!user) return;
-    (async () => {
-      const [{ data: o }, { data: c }] = await Promise.all([
-        supabase.from("orders").select("id,total,payment_status").eq("id", orderId).maybeSingle(),
-        supabase.from("customer_cards" as never).select("*").order("is_default", { ascending: false }).order("created_at", { ascending: false }),
-      ]);
-      setOrder(o as never);
-      const list = (c as unknown as SavedCard[]) ?? [];
-      setCards(list);
-      if (list.length > 0) setSelectedCardId(list[0].id);
-      else setUseNewCard(true);
-      setLoading(false);
-    })();
+    supabase.from("orders").select("id,total,payment_status,recipient_name").eq("id", orderId).eq("buyer_id", user.id).maybeSingle()
+      .then(({ data, error }) => {
+        if (error) toast.error("Sifariş məlumatı yüklənmədi");
+        setOrder(data as OrderSummary | null);
+        setLoading(false);
+      });
   }, [user, orderId]);
 
-  const pay = async () => {
-    if (!order) return;
+  const startEpointPayment = async () => {
+    if (!order || paying) return;
     setPaying(true);
     try {
-      let payload: { _order_id: string; _card_id?: string; _new_card?: unknown } = { _order_id: orderId };
-      if (!useNewCard && selectedCardId) {
-        payload._card_id = selectedCardId;
-      } else {
-        const num = form.number.replace(/\s/g, "");
-        if (num.length < 13 || num.length > 19) throw new Error("Kart nömrəsi yanlışdır");
-        if (!/^\d{2}\/\d{2}$/.test(form.exp)) throw new Error("Etibar tarixi MM/YY formatında olmalıdır");
-        if (form.cvv.length < 3) throw new Error("CVV yanlışdır");
-        if (!form.holder.trim()) throw new Error("Kart sahibinin adını daxil edin");
-        const [mm, yy] = form.exp.split("/");
-        payload._new_card = {
-          brand: detectBrand(num),
-          last4: num.slice(-4),
-          exp_month: parseInt(mm, 10),
-          exp_year: 2000 + parseInt(yy, 10),
-          holder: form.holder.toUpperCase().slice(0, 50),
-          save: form.save,
-        };
-      }
-      const { error } = await supabase.rpc("process_card_payment" as never, payload as never);
+      const { data, error } = await supabase.functions.invoke("payment-init", {
+        body: { service_type: "product_order", resource_id: order.id, language: "az" },
+      });
       if (error) throw error;
-      toast.success("✅ Ödəniş uğurla tamamlandı");
-      navigate({ to: "/orders" });
-    } catch (e) {
-      toast.error((e as Error).message ?? "Ödəniş alınmadı");
-    } finally {
+      const target = new URL(typeof data?.redirect_url === "string" ? data.redirect_url : "");
+      if (target.protocol !== "https:" || (target.hostname !== "epoint.az" && !target.hostname.endsWith(".epoint.az"))) {
+        throw new Error("Ödəniş ünvanı etibarsızdır");
+      }
+      window.location.assign(target.toString());
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Epoint ödənişi başladılmadı");
       setPaying(false);
     }
   };
 
-  if (!user || loading) {
-    return <div className="container mx-auto p-8 text-center"><Loader2 className="h-8 w-8 animate-spin mx-auto" /></div>;
-  }
-  if (!order) {
-    return <div className="container mx-auto p-8 text-center">Sifariş tapılmadı.</div>;
-  }
-  if (order.payment_status === "paid") {
-    return (
-      <div className="container mx-auto p-8 max-w-md text-center">
-        <ShieldCheck className="h-16 w-16 text-green-600 mx-auto mb-3" />
-        <h1 className="text-2xl font-bold mb-2">Bu sifariş artıq ödənilib</h1>
-        <Link to="/orders" className="inline-block mt-4 bg-primary text-primary-foreground px-6 py-3 rounded-xl font-bold">Sifarişlərə qayıt</Link>
-      </div>
-    );
-  }
+  if (!user || loading) return <div className="container mx-auto p-10 text-center"><Loader2 className="mx-auto h-8 w-8 animate-spin text-primary" /></div>;
+  if (!order) return <div className="container mx-auto max-w-md px-4 py-16 text-center"><h1 className="text-2xl font-black">Sifariş tapılmadı</h1><Link to="/orders" className="mt-5 inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-3 font-bold text-primary-foreground"><ArrowLeft className="h-4 w-4" /> Sifarişlərə qayıt</Link></div>;
+  if (order.payment_status === "paid") return <div className="container mx-auto max-w-md px-4 py-16 text-center"><ShieldCheck className="mx-auto mb-4 h-16 w-16 text-emerald-600" /><h1 className="text-2xl font-black">Bu sifariş artıq ödənilib</h1><Link to="/orders" className="mt-5 inline-flex rounded-xl bg-primary px-6 py-3 font-bold text-primary-foreground">Sifarişlərə qayıt</Link></div>;
 
   return (
-    <div className="container mx-auto p-4 max-w-lg">
-      <div className="bg-gradient-brand text-primary-foreground rounded-2xl p-6 mb-4 shadow-elegant">
-        <div className="text-sm opacity-80">Ödəniləcək məbləğ</div>
-        <div className="text-4xl font-extrabold mt-1">{order.total.toFixed(2)} AZN</div>
-        <div className="text-xs opacity-80 mt-2 flex items-center gap-1.5">
-          <Lock className="h-3 w-3" /> Test rejim — kart məlumatınız təhlükəsizdir
+    <main className="container mx-auto max-w-xl px-4 py-8 sm:py-12">
+      <Link to="/cart" className="mb-5 inline-flex items-center gap-2 text-sm font-semibold text-muted-foreground hover:text-primary"><ArrowLeft className="h-4 w-4" /> Səbətə qayıt</Link>
+      <section className="overflow-hidden rounded-3xl border border-border bg-card shadow-lg">
+        <div className="bg-gradient-brand px-6 py-7 text-primary-foreground sm:px-8">
+          <div className="flex items-center gap-2 text-sm font-semibold opacity-90"><Lock className="h-4 w-4" /> Təhlükəsiz ödəniş</div>
+          <div className="mt-3 text-4xl font-black">{formatAZN(Number(order.total))}</div>
+          <div className="mt-2 text-xs opacity-80">Sifariş #{order.id.slice(0, 8).toUpperCase()}</div>
         </div>
-      </div>
-
-      <div className="bg-card border border-border rounded-2xl p-4">
-        <h2 className="font-bold mb-3 flex items-center gap-2"><CreditCard className="h-5 w-5 text-primary" /> Kart seçin</h2>
-
-        {cards.length > 0 && (
-          <div className="space-y-2 mb-3">
-            {cards.map((c) => (
-              <label key={c.id} className={`flex items-center justify-between p-3 rounded-xl border-2 cursor-pointer ${selectedCardId === c.id && !useNewCard ? "border-primary bg-primary/5" : "border-border"}`}>
-                <div className="flex items-center gap-3">
-                  <input type="radio" checked={selectedCardId === c.id && !useNewCard} onChange={() => { setSelectedCardId(c.id); setUseNewCard(false); }} />
-                  <div>
-                    <div className="font-bold text-sm">{c.brand} •• {c.last4}</div>
-                    <div className="text-xs text-muted-foreground">{c.holder} · {String(c.exp_month).padStart(2,"0")}/{String(c.exp_year).slice(-2)}</div>
-                  </div>
-                </div>
-                {c.is_default && <span className="text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded">Default</span>}
-              </label>
-            ))}
-            <label className={`flex items-center gap-3 p-3 rounded-xl border-2 cursor-pointer ${useNewCard ? "border-primary bg-primary/5" : "border-border"}`}>
-              <input type="radio" checked={useNewCard} onChange={() => setUseNewCard(true)} />
-              <Plus className="h-4 w-4" /> <span className="font-semibold text-sm">Yeni kart ilə ödə</span>
-            </label>
+        <div className="space-y-5 p-6 sm:p-8">
+          <div className="flex gap-4 rounded-2xl bg-secondary/60 p-4">
+            <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-background text-primary shadow-sm"><CreditCard className="h-5 w-5" /></span>
+            <div><h2 className="font-extrabold">Epoint ilə kart ödənişi</h2><p className="mt-1 text-sm leading-6 text-muted-foreground">Kart nömrəsi və CVV EG Shop-da daxil edilmir və saxlanmır. Ödəniş Epoint-in qorunan səhifəsində tamamlanır.</p></div>
           </div>
-        )}
-
-        {useNewCard && (
-          <div className="space-y-3 mt-3 pt-3 border-t">
-            <input placeholder="Kart nömrəsi" value={form.number} maxLength={23}
-              onChange={(e) => setForm({ ...form, number: e.target.value.replace(/\D/g, "").replace(/(\d{4})/g, "$1 ").trim() })}
-              className="w-full h-11 px-3 rounded-lg border border-input bg-background tracking-widest" />
-            <div className="grid grid-cols-2 gap-3">
-              <input placeholder="MM/YY" value={form.exp} maxLength={5}
-                onChange={(e) => {
-                  let v = e.target.value.replace(/\D/g, "");
-                  if (v.length >= 3) v = v.slice(0, 2) + "/" + v.slice(2, 4);
-                  setForm({ ...form, exp: v });
-                }}
-                className="h-11 px-3 rounded-lg border border-input bg-background" />
-              <input placeholder="CVV" value={form.cvv} maxLength={4} type="password"
-                onChange={(e) => setForm({ ...form, cvv: e.target.value.replace(/\D/g, "") })}
-                className="h-11 px-3 rounded-lg border border-input bg-background" />
-            </div>
-            <input placeholder="Kart sahibinin adı" value={form.holder}
-              onChange={(e) => setForm({ ...form, holder: e.target.value })}
-              className="w-full h-11 px-3 rounded-lg border border-input bg-background uppercase" />
-            <label className="flex items-center gap-2 text-sm">
-              <input type="checkbox" checked={form.save} onChange={(e) => setForm({ ...form, save: e.target.checked })} />
-              Növbəti dəfə üçün bu kartı yadda saxla
-            </label>
-          </div>
-        )}
-
-        <button disabled={paying} onClick={pay}
-          className="w-full mt-4 h-12 bg-primary text-primary-foreground rounded-xl font-bold disabled:opacity-60 flex items-center justify-center gap-2">
-          {paying ? <><Loader2 className="h-4 w-4 animate-spin" /> Ödənilir...</> : <><Lock className="h-4 w-4" /> {order.total.toFixed(2)} AZN ödə</>}
-        </button>
-
-        <div className="text-[11px] text-muted-foreground text-center mt-3">
-          🔒 SSL şifrələnməsi · Kart məlumatı yalnız ödəniş üçün istifadə olunur · Tam nömrə və CVV heç vaxt saxlanmır
+          <button onClick={startEpointPayment} disabled={paying} className="flex h-13 w-full items-center justify-center gap-2 rounded-xl bg-primary px-5 font-extrabold text-primary-foreground transition hover:bg-primary/90 disabled:opacity-60">
+            {paying ? <><Loader2 className="h-4 w-4 animate-spin" /> Epoint açılır...</> : <>Ödənişə keç <ExternalLink className="h-4 w-4" /></>}
+          </button>
+          <div className="flex items-center justify-center gap-5 text-xs font-semibold text-muted-foreground"><span className="flex items-center gap-1.5"><ShieldCheck className="h-4 w-4 text-emerald-600" /> İmzalanmış ödəniş</span><span className="flex items-center gap-1.5"><Lock className="h-4 w-4 text-emerald-600" /> SSL qoruması</span></div>
         </div>
-      </div>
-    </div>
+      </section>
+    </main>
   );
 }

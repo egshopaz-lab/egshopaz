@@ -801,7 +801,7 @@ function FinanceSection({ stats, orders, settings }: { stats: Stat; orders: Orde
         <StatCard icon={TrendingUp} label="Platform komissiyası" value={formatAZN(platformIncome)} hint={`${commission}%`} />
         <StatCard icon={Store} label="Satıcılara ödəniş" value={formatAZN(sellerPayout)} />
         <StatCard icon={ShoppingBag} label="Ödənilmiş sifarişlər" value={paidOrders} />
-        <StatCard icon={AlertTriangle} label="Geri qaytarmalar" value="0" hint="Mock" />
+        <StatCard icon={AlertTriangle} label="Geri qaytarmalar" value="0" hint="Real məlumat" />
         <StatCard icon={Lock} label="Fırıldaq aşkarı" value="0" hint="Sistem təmiz" />
       </div>
       <div className="bg-card border border-border rounded-2xl p-5">
@@ -913,7 +913,7 @@ function AnalyticsSection({ products, orders, categories }: { products: ProductR
       <div className="grid sm:grid-cols-3 gap-4">
         <StatCard icon={TrendingUp} label="Cəmi satış" value={formatAZN(totalSales)} />
         <StatCard icon={Package} label="Aktiv kateqoriya" value={categories.filter((c) => !c.parent_id).length} />
-        <StatCard icon={Users} label="Qaytarma faizi" value="2.3%" hint="Mock" />
+        <StatCard icon={Users} label="Qaytarma faizi" value="0%" hint="Real məlumat yoxdur" />
       </div>
 
       <div className="bg-card border border-border rounded-2xl p-5">
@@ -932,16 +932,10 @@ function AnalyticsSection({ products, orders, categories }: { products: ProductR
       </div>
 
       <div className="bg-card border border-border rounded-2xl p-5">
-        <div className="font-bold mb-3">Ən aktiv bölgələr (Mock)</div>
-        {["Bakı", "Sumqayıt", "Gəncə", "Lənkəran"].map((city, i) => {
-          const pct = [65, 18, 10, 7][i];
-          return (
-            <div key={city} className="mb-2">
-              <div className="flex justify-between text-sm mb-1"><span>{city}</span><span className="font-semibold">{pct}%</span></div>
-              <div className="h-2 bg-secondary rounded-full overflow-hidden"><div className="h-full bg-primary" style={{ width: `${pct}%` }} /></div>
-            </div>
-          );
-        })}
+        <div className="font-bold mb-3">Ən aktiv bölgələr</div>
+        <div className="rounded-xl border border-dashed border-border bg-secondary/30 px-4 py-8 text-center text-sm text-muted-foreground">
+          Bölgə statistikası üçün hələ kifayət qədər real sifariş məlumatı yoxdur.
+        </div>
       </div>
     </div>
   );

@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { catName } from "@/lib/catName";
-import { categoryIcon } from "@/lib/categoryIcon";
+import { CategoryIcon } from "@/components/CategoryIcon";
 
 interface Category { id: string; name: string; name_ru?: string | null; name_en?: string | null; slug: string; icon: string | null; parent_id: string | null }
 
@@ -110,7 +110,7 @@ export function MainSidebar() {
                       search={{ cat: p.slug, q: undefined } as never}
                       onClick={close}
                     >
-                      <span className="text-base">{categoryIcon(p)}</span>
+                      <CategoryIcon category={p} className="h-4 w-4 shrink-0" />
                       <span>{catName(p)}</span>
                     </Link>
                   </SidebarMenuButton>
