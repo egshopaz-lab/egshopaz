@@ -16,6 +16,7 @@ import { AdminTrends } from "@/components/AdminTrends";
 import { AdminDashboardStats } from "@/components/AdminDashboardStats";
 import { AdminAccountManagement } from "@/components/AdminAccountManagement";
 import { AdminAuditLog } from "@/components/AdminAuditLog";
+import { AdminDeliveryManagement } from "@/components/AdminDeliveryManagement";
 import { toast } from "sonner";
 import { PanelLayout, type PanelNavItem } from "@/components/PanelLayout";
 import { AZ_CITY_NAMES, findCity } from "@/lib/azCities";
@@ -26,7 +27,7 @@ export const Route = createFileRoute("/admin")({
 });
 
 type TabKey =
-  | "dashboard" | "customers" | "sellers" | "couriers" | "pvz_staff"
+  | "dashboard" | "customers" | "sellers" | "couriers" | "deliveries" | "pvz_staff"
   | "categories" | "products" | "shops" | "warehouses" | "pickup_points"
   | "orders" | "returns" | "finance" | "treasury" | "payouts" | "marketing" | "banners" | "packages" | "trends" | "promo" | "analytics"
   | "security" | "audit" | "disputes" | "content" | "settings" | "support" | "ai_bot";
@@ -43,7 +44,7 @@ interface PickupRow { id: string; name: string; city: string; address: string; p
 interface BannerRow { id: string; title: string; image_url: string | null; link_url: string | null; position: string; is_active: boolean; clicks: number; impressions: number }
 interface DisputeRow { id: string; order_id: string | null; buyer_id: string; seller_id: string | null; reason: string; status: string; compensation: number | null; created_at: string }
 interface PromoRow { id: string; code: string; discount_percent: number | null; discount_amount: number | null; is_active: boolean; used_count: number; usage_limit: number | null; min_order: number }
-interface SettingsRow { id: string; commission_percent: number; delivery_base_fee: number; storage_fee_per_day: number; maintenance_mode: boolean; min_payout: number; single_product_promo_price: number; single_product_promo_days: number; single_shop_promo_price: number; single_shop_promo_days: number; single_banner_price: number; single_banner_days: number; promo_terms_text: string; seller_signup_fee: number; acquisition_source_enabled: boolean; acquisition_source_required: boolean }
+interface SettingsRow { id: string; commission_percent: number; delivery_base_fee: number; delivery_confirmation_hours: number; storage_fee_per_day: number; maintenance_mode: boolean; min_payout: number; single_product_promo_price: number; single_product_promo_days: number; single_shop_promo_price: number; single_shop_promo_days: number; single_banner_price: number; single_banner_days: number; promo_terms_text: string; seller_signup_fee: number; acquisition_source_enabled: boolean; acquisition_source_required: boolean }
 interface TicketRow { id: string; subject: string; category: string; status: string; user_id: string; created_at: string; admin_reply: string | null }
 interface AdPackageRow {
   id: string; name: string; tier: string; price: number; duration_days: number;
@@ -353,6 +354,7 @@ function AdminPanel() {
     { key: "customers", label: "Müştərilər", icon: Users, active: tab === "customers", onClick: () => setTab("customers") },
     { key: "sellers", label: "Satıcılar", icon: Store, active: tab === "sellers", onClick: () => setTab("sellers") },
     { key: "couriers", label: "Kuryerlər", icon: Truck, badge: couriers.filter((c) => c.is_active).length, active: tab === "couriers", onClick: () => setTab("couriers") },
+    { key: "deliveries", label: "Çatdırılmalar", icon: Truck, active: tab === "deliveries", onClick: () => setTab("deliveries") },
     { key: "pvz_staff", label: "PVZ işçiləri", icon: Users, active: tab === "pvz_staff", onClick: () => setTab("pvz_staff") },
     { key: "categories", label: "Kateqoriyalar", icon: LayoutDashboard, active: tab === "categories", onClick: () => setTab("categories") },
     { key: "products", label: "Məhsullar", icon: Package, active: tab === "products", onClick: () => setTab("products") },
@@ -392,6 +394,7 @@ function AdminPanel() {
       {tab === "customers" && <AdminAccountManagement initialRole="buyer" />}
       {tab === "sellers" && <AdminAccountManagement initialRole="seller" />}
       {tab === "couriers" && <CouriersSection couriers={couriers} addCourier={addCourier} toggleCourier={toggleCourier} />}
+      {tab === "deliveries" && <AdminDeliveryManagement />}
       {tab === "pvz_staff" && <AdminAccountManagement initialRole="pvz" />}
       {tab === "categories" && <CategoriesSection categories={categories} addCategory={addCategory} deleteCategory={deleteCategory} />}
       {tab === "products" && <ProductsSection products={products} toggleProductActive={toggleProductActive} />}
@@ -1039,6 +1042,13 @@ function SettingsSection({ settings, updateSettings }: { settings: SettingsRow |
           <label className="text-sm font-semibold">Çatdırılma əsas tarifi (AZN)</label>
           <input type="number" step="0.1" defaultValue={settings.delivery_base_fee} onBlur={(e) => updateSettings({ delivery_base_fee: Number(e.target.value) })}
             className="mt-1 w-full h-10 px-3 rounded-lg border border-input bg-background" />
+        </div>
+        <div>
+          <label className="text-sm font-semibold">Müştəri təsdiqi üçün gözləmə müddəti (saat)</label>
+          <input type="number" min="1" max="720" defaultValue={settings.delivery_confirmation_hours ?? 48}
+            onBlur={(e) => updateSettings({ delivery_confirmation_hours: Math.min(720, Math.max(1, Number(e.target.value) || 48)) })}
+            className="mt-1 w-full h-10 px-3 rounded-lg border border-input bg-background" />
+          <div className="text-xs text-muted-foreground mt-1">Cavab gəlməzsə, bu müddətdən sonra sifariş avtomatik tamamlanır.</div>
         </div>
         <div>
           <label className="text-sm font-semibold">Saxlama haqqı / gün (AZN)</label>

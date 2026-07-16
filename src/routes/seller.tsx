@@ -52,6 +52,7 @@ import { CitySelect } from "@/components/CitySelect";
 import { CategoryCascade } from "@/components/CategoryCascade";
 import { findCity } from "@/lib/azCities";
 import { DateRangeFilter, emptyRange, inRange, type DateRange } from "@/components/DateRangeFilter";
+import { SellerExternalDelivery } from "@/components/SellerExternalDelivery";
 
 export const Route = createFileRoute("/seller")({
   head: () => ({ meta: [{ title: "Satıcı paneli — EG Shop" }] }),
@@ -162,10 +163,16 @@ const productSchema = z.object({
 });
 
 const ORDER_STATUSES = [
-  { v: "pending", l: "Gözləyir", c: "bg-warning/10 text-warning" },
+  { v: "pending", l: "Yeni sifariş", c: "bg-warning/10 text-warning" },
+  { v: "preparing", l: "Hazırlanır", c: "bg-warning/10 text-warning" },
   { v: "packed", l: "Paketləndi", c: "bg-purple-500/10 text-purple-600" },
   { v: "shipped", l: "Göndərildi", c: "bg-primary/10 text-primary" },
-  { v: "delivered", l: "Çatdırıldı", c: "bg-success/10 text-success" },
+  { v: "handed_to_courier", l: "Kuryerə təhvil", c: "bg-primary/10 text-primary" },
+  { v: "in_transit", l: "Çatdırılır", c: "bg-primary/10 text-primary" },
+  { v: "delivered", l: "Müştəriyə təhvil", c: "bg-success/10 text-success" },
+  { v: "completed", l: "Tamamlandı", c: "bg-success/10 text-success" },
+  { v: "disputed", l: "Mübahisədə", c: "bg-destructive/10 text-destructive" },
+  { v: "returned", l: "Geri qaytarıldı", c: "bg-warning/10 text-warning" },
   { v: "cancelled", l: "Ləğv edildi", c: "bg-destructive/10 text-destructive" },
 ];
 
@@ -1088,7 +1095,7 @@ function SellerPanel() {
             }
             return visibleOrders.map((i) => {
               const st = ORDER_STATUSES.find((s) => s.v === i.status) ?? ORDER_STATUSES[0];
-              const canPack = i.status === "pending";
+              const canPack = i.status === "pending" || i.status === "preparing";
               const canShip =
                 !i.accepted_at &&
                 !i.delivered_at &&
@@ -1132,10 +1139,10 @@ function SellerPanel() {
                     <select
                       value={i.status}
                       onChange={(e) => updateOrderStatus(i, e.target.value)}
-                      disabled={!!i.accepted_at || !!i.delivered_at}
+                      disabled={!!i.accepted_at || !!i.delivered_at || !["pending", "preparing", "packed", "shipped"].includes(i.status)}
                       className={`text-xs px-3 py-2 rounded-lg font-semibold border-0 ${st.c} cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed`}
                     >
-                      {ORDER_STATUSES.map((s) => (
+                      {ORDER_STATUSES.filter((s) => ["pending", "preparing", "packed", "shipped"].includes(s.v) || s.v === i.status).map((s) => (
                         <option key={s.v} value={s.v}>
                           {s.l}
                         </option>
@@ -1169,6 +1176,7 @@ function SellerPanel() {
                       </button>
                     </div>
                   </div>
+                  <SellerExternalDelivery orderItemId={i.id} itemStatus={i.status} onChanged={load} />
                   {i.pickup_point ? (
                     <div className="bg-primary/5 border border-primary/20 rounded-lg p-3 text-xs">
                       <div className="font-bold text-primary mb-1">

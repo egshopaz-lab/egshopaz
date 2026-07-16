@@ -13,6 +13,7 @@ import { OrderQRDialog } from "@/components/OrderQRDialog";
 import { OrderTrackDialog } from "@/components/OrderTrackDialog";
 import { ReturnRequestDialog } from "@/components/ReturnRequestDialog";
 import { DateRangeFilter, emptyRange, inRange, type DateRange } from "@/components/DateRangeFilter";
+import { CustomerDeliveryConfirmation } from "@/components/CustomerDeliveryConfirmation";
 
 export const Route = createFileRoute("/orders")({
   head: () => ({ meta: [{ title: "Sifarişlərim — EG Shop" }] }),
@@ -28,7 +29,13 @@ const statusColor: Record<string, string> = {
   paid: "bg-blue-100 text-blue-800",
   packed: "bg-purple-100 text-purple-800",
   shipped: "bg-purple-100 text-purple-800",
+  preparing: "bg-yellow-100 text-yellow-800",
+  handed_to_courier: "bg-blue-100 text-blue-800",
+  in_transit: "bg-blue-100 text-blue-800",
   delivered: "bg-green-100 text-green-800",
+  completed: "bg-green-100 text-green-800",
+  disputed: "bg-red-100 text-red-800",
+  returned: "bg-orange-100 text-orange-800",
   cancelled: "bg-red-100 text-red-800",
 };
 
@@ -53,7 +60,9 @@ function OrdersPage() {
 
   const statusLabel: Record<string, string> = {
     pending: t("orders.pending"), paid: t("orders.paid"), packed: "Paketləndi", shipped: t("orders.shipped"),
-    delivered: t("orders.delivered"), cancelled: t("orders.cancelled"),
+    preparing: "Satıcı tərəfindən hazırlanır", handed_to_courier: "Kuryerə təhvil verildi",
+    in_transit: "Çatdırılır", delivered: "Müştəriyə təhvil verildi", completed: "Tamamlandı",
+    disputed: "Mübahisədə", returned: "Geri qaytarıldı", cancelled: t("orders.cancelled"),
   };
 
   const sendMessage = async () => {
@@ -163,7 +172,11 @@ function OrdersPage() {
     ["paid", t("orders.paid")],
     ["packed", "Paketləndi"],
     ["shipped", t("orders.shipped")],
+    ["handed_to_courier", "Kuryerə təhvil"],
+    ["in_transit", "Çatdırılır"],
     ["delivered", t("orders.delivered")],
+    ["completed", "Tamamlandı"],
+    ["disputed", "Mübahisədə"],
     ["cancelled", t("orders.cancelShort")],
   ];
 
@@ -201,7 +214,8 @@ function OrdersPage() {
                 <OrderTimeline status={o.status} />
                 <div className="space-y-2 mt-3">
                   {o.order_items?.map((it) => (
-                    <div key={it.id} className="flex items-start gap-3 text-sm">
+                    <div key={it.id} className="space-y-2">
+                      <div className="flex items-start gap-3 text-sm">
                       <div className="w-12 h-12 rounded-lg bg-secondary overflow-hidden shrink-0">
                         {it.image_url && <img src={it.image_url} alt="" className="w-full h-full object-cover" />}
                       </div>
@@ -248,6 +262,10 @@ function OrdersPage() {
                           </button>
                         )}
                       </div>
+                      </div>
+                      {["delivered", "completed", "disputed"].includes(it.status) && (
+                        <CustomerDeliveryConfirmation orderItemId={it.id} onChanged={load} />
+                      )}
                     </div>
                   ))}
                 </div>
