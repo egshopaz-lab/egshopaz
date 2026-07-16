@@ -46,12 +46,12 @@ export const Route = createRootRoute({
       { property: "og:site_name", content: "EG Shop" },
       { property: "og:type", content: "website" },
       { property: "og:locale", content: "az_AZ" },
-      { property: "og:image", content: absoluteUrl("/eg-logo.png") },
+      { property: "og:image", content: absoluteUrl("/brand/eg-social.svg") },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:image", content: absoluteUrl("/eg-logo.png") },
+      { name: "twitter:image", content: absoluteUrl("/brand/eg-social.svg") },
     ],
     links: [
-      { rel: "icon", type: "image/svg+xml", href: "/eg-logo.svg" },
+      { rel: "icon", type: "image/svg+xml", href: "/brand/eg-icon.svg" },
     ],
     scripts: [
       {
@@ -61,7 +61,7 @@ export const Route = createRootRoute({
           "@type": "Organization",
           name: "EG Shop",
           url: SITE_URL,
-          logo: absoluteUrl("/eg-logo.svg"),
+          logo: absoluteUrl("/brand/eg-icon.svg"),
           sameAs: [],
         }),
       },

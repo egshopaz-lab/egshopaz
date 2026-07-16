@@ -524,7 +524,8 @@
     "selectRoot": "Ana kateqoriya seçin...",
     "selectSub": "Alt kateqoriya seçin (opsional)...",
     "selectSub2": "Alt-alt kateqoriya seçin (opsional)...",
-    "searchPlaceholder": "Kateqoriya axtar..."
+    "searchPlaceholder": "Kateqoriya axtar...",
+    "popularCategories": "Populyar kateqoriyalar"
   },
   "ads": {
     "label": "Reklam",

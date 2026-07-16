@@ -10,7 +10,7 @@ import { SponsoredProducts } from "@/components/SponsoredProducts";
 import { HomeCategoryBrowser } from "@/components/HomeCategoryBrowser";
 import { FeaturedShops } from "@/components/FeaturedShops";
 import { TrendsFeed } from "@/components/TrendsFeed";
-import { MarketplacePromoHero } from "@/components/MarketplacePromoHero";
+import { HomeBannerCarousel } from "@/components/HomeBannerCarousel";
 import i18n from "@/i18n";
 import { absoluteUrl } from "@/lib/site";
 
@@ -179,7 +179,7 @@ function Index() {
         </div>
       )}
 
-      <MarketplacePromoHero />
+        <HomeBannerCarousel />
       <HomeCategoryBrowser />
 
       {productsLoaded && allProducts.length === 0 ? (

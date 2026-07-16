@@ -1,0 +1,10 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs><linearGradient id="c" x1="70" y1="40" x2="1100" y2="620" gradientUnits="userSpaceOnUse"><stop stop-color="#9B5CFF"/><stop offset=".55" stop-color="#6D28D9"/><stop offset="1" stop-color="#42148C"/></linearGradient></defs>
+  <rect width="1200" height="630" rx="48" fill="url(#c)"/>
+  <circle cx="1040" cy="90" r="230" fill="white" fill-opacity=".06"/><circle cx="105" cy="600" r="270" fill="white" fill-opacity=".05"/>
+  <rect x="104" y="148" width="280" height="280" rx="84" fill="white" fill-opacity=".16"/>
+  <text x="244" y="340" text-anchor="middle" fill="white" font-family="Inter,Arial,sans-serif" font-size="142" font-weight="900" letter-spacing="-10">EG</text>
+  <text x="446" y="286" fill="white" font-family="Inter,Arial,sans-serif" font-size="104" font-weight="900" letter-spacing="-5">EG Shop</text>
+  <text x="452" y="354" fill="white" fill-opacity=".82" font-family="Inter,Arial,sans-serif" font-size="34" font-weight="600">Azərbaycanın onlayn marketplace-i</text>
+  <rect x="452" y="395" width="238" height="52" rx="26" fill="white"/><text x="571" y="430" text-anchor="middle" fill="#6D28D9" font-family="Inter,Arial,sans-serif" font-size="22" font-weight="800">egshop.az</text>
+</svg>

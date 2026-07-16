@@ -22,7 +22,6 @@ const VisualSearchDialog = lazy(() =>
 );
 import { useTranslation } from "react-i18next";
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import egLogo from "@/assets/eg-logo.svg";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { portalUrl } from "@/lib/portals";
 import {
@@ -58,17 +57,8 @@ export function SiteHeader() {
             className="flex shrink-0 items-center gap-2 transition-opacity hover:opacity-90"
             aria-label="EG Shop"
           >
-            <img
-              src={egLogo}
-              alt="EG Shop logo"
-              width={512}
-              height={512}
-              className="h-9 w-9 shrink-0 object-contain sm:h-11 sm:w-11"
-            />
-            <span className="hidden items-baseline whitespace-nowrap text-xl leading-none tracking-tight text-white sm:flex sm:text-2xl">
-              <strong className="font-black">EG</strong>
-              <span className="font-semibold ml-1">Shop</span>
-            </span>
+            <img src="/brand/eg-icon.svg" alt="EG Shop" width={512} height={512} className="h-9 w-9 shrink-0 object-contain sm:hidden" />
+            <img src="/brand/eg-wordmark-light.svg" alt="EG Shop" width={420} height={112} className="hidden h-11 w-[165px] object-contain object-left sm:block" />
           </Link>
 
           <form onSubmit={onSearch} className="hidden max-w-3xl flex-1 lg:flex">

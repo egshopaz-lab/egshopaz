@@ -220,6 +220,8 @@ export type Database = {
       }
       banners: {
         Row: {
+          ad_label: string
+          alt_text: string | null
           clicks: number
           created_at: string
           ends_at: string | null
@@ -228,7 +230,9 @@ export type Database = {
           impressions: number
           is_active: boolean
           link_url: string | null
+          mobile_image_url: string | null
           position: string
+          priority: number
           seller_id: string | null
           starts_at: string | null
           subscription_id: string | null
@@ -237,6 +241,8 @@ export type Database = {
           video_url: string | null
         }
         Insert: {
+          ad_label?: string
+          alt_text?: string | null
           clicks?: number
           created_at?: string
           ends_at?: string | null
@@ -245,7 +251,9 @@ export type Database = {
           impressions?: number
           is_active?: boolean
           link_url?: string | null
+          mobile_image_url?: string | null
           position?: string
+          priority?: number
           seller_id?: string | null
           starts_at?: string | null
           subscription_id?: string | null
@@ -254,6 +262,8 @@ export type Database = {
           video_url?: string | null
         }
         Update: {
+          ad_label?: string
+          alt_text?: string | null
           clicks?: number
           created_at?: string
           ends_at?: string | null
@@ -262,7 +272,9 @@ export type Database = {
           impressions?: number
           is_active?: boolean
           link_url?: string | null
+          mobile_image_url?: string | null
           position?: string
+          priority?: number
           seller_id?: string | null
           starts_at?: string | null
           subscription_id?: string | null
@@ -333,35 +345,47 @@ export type Database = {
       }
       categories: {
         Row: {
+          background_color: string | null
           created_at: string
           icon: string | null
           id: string
+          image_url: string | null
+          is_featured: boolean
           name: string
           name_en: string | null
           name_ru: string | null
           parent_id: string | null
+          popularity_score: number
           slug: string
           sort_order: number
         }
         Insert: {
+          background_color?: string | null
           created_at?: string
           icon?: string | null
           id?: string
+          image_url?: string | null
+          is_featured?: boolean
           name: string
           name_en?: string | null
           name_ru?: string | null
           parent_id?: string | null
+          popularity_score?: number
           slug: string
           sort_order?: number
         }
         Update: {
+          background_color?: string | null
           created_at?: string
           icon?: string | null
           id?: string
+          image_url?: string | null
+          is_featured?: boolean
           name?: string
           name_en?: string | null
           name_ru?: string | null
           parent_id?: string | null
+          popularity_score?: number
           slug?: string
           sort_order?: number
         }
@@ -2369,6 +2393,8 @@ export type Database = {
       }
     }
     Functions: {
+      record_banner_click: { Args: { p_banner_id: string }; Returns: undefined }
+      record_banner_impression: { Args: { p_banner_id: string }; Returns: undefined }
       add_manual_treasury: {
         Args: { _amount: number; _direction: string; _note: string }
         Returns: string

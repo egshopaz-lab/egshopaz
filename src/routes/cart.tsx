@@ -338,7 +338,7 @@ function CartPage() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-6">
+    <div className="container mx-auto px-4 pb-36 pt-6 md:py-6">
       <h1 className="text-2xl md:text-3xl font-extrabold mb-6">{t("cart.title")}</h1>
       {loading ? (
         <div className="text-muted-foreground">{t("common.loading")}</div>
@@ -672,6 +672,14 @@ function CartPage() {
               </button>
             )}
           </aside>
+        </div>
+      )}
+      {!loading && items.length > 0 && (
+        <div className="fixed inset-x-0 bottom-[60px] z-40 border-t border-border bg-card/95 px-3 py-2 shadow-[0_-8px_28px_rgba(15,23,42,0.12)] backdrop-blur lg:hidden">
+          <div className="mx-auto flex max-w-lg items-center gap-3">
+            <div className="min-w-0 flex-1"><span className="block text-[10px] font-bold uppercase text-muted-foreground">{t("cart.total")}</span><strong className="block truncate text-lg leading-tight">{formatAZN(finalTotal)}</strong></div>
+            {!user ? <Link to="/auth" search={{ role: "buyer" } as never} className="flex min-h-11 flex-[1.5] items-center justify-center rounded-xl bg-primary px-4 text-center text-sm font-extrabold text-primary-foreground">Daxil ol və tamamla</Link> : <button onClick={checkout} disabled={placing} className="min-h-11 flex-[1.5] rounded-xl bg-primary px-4 text-sm font-extrabold text-primary-foreground disabled:opacity-50">{placing ? t("cart.placing") : t("cart.checkout")}</button>}
+          </div>
         </div>
       )}
     </div>

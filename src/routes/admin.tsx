@@ -17,6 +17,8 @@ import { AdminDashboardStats } from "@/components/AdminDashboardStats";
 import { AdminAccountManagement } from "@/components/AdminAccountManagement";
 import { AdminAuditLog } from "@/components/AdminAuditLog";
 import { AdminDeliveryManagement } from "@/components/AdminDeliveryManagement";
+import { AdminBannerManager } from "@/components/AdminBannerManager";
+import { AdminCategoryManager } from "@/components/AdminCategoryManager";
 import { toast } from "sonner";
 import { PanelLayout, type PanelNavItem } from "@/components/PanelLayout";
 import { AZ_CITY_NAMES, findCity } from "@/lib/azCities";
@@ -396,7 +398,7 @@ function AdminPanel() {
       {tab === "couriers" && <CouriersSection couriers={couriers} addCourier={addCourier} toggleCourier={toggleCourier} />}
       {tab === "deliveries" && <AdminDeliveryManagement />}
       {tab === "pvz_staff" && <AdminAccountManagement initialRole="pvz" />}
-      {tab === "categories" && <CategoriesSection categories={categories} addCategory={addCategory} deleteCategory={deleteCategory} />}
+      {tab === "categories" && <AdminCategoryManager />}
       {tab === "products" && <ProductsSection products={products} toggleProductActive={toggleProductActive} />}
       {tab === "shops" && <ShopsSection profiles={profiles} userRoles={userRoles} />}
       {tab === "warehouses" && <WarehousesSection warehouses={warehouses} addWarehouse={addWarehouse} />}
@@ -407,7 +409,7 @@ function AdminPanel() {
       {tab === "treasury" && <AdminTreasury />}
       {tab === "payouts" && <AdminPayouts />}
       {tab === "marketing" && <MarketingSection />}
-      {tab === "banners" && <BannersSection banners={banners} addBanner={addBanner} toggleBanner={toggleBanner} deleteBanner={deleteBanner} />}
+      {tab === "banners" && <AdminBannerManager />}
       {tab === "packages" && <AdminAdvertisingPackages />}
       {tab === "trends" && <AdminTrends />}
       {tab === "promo" && <PromoSection promos={promos} addPromo={addPromo} togglePromo={togglePromo} />}

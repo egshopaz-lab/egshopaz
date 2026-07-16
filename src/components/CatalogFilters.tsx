@@ -84,7 +84,7 @@ export function CatalogFilters({
   }, [value]);
 
   const Body = (
-    <div className="space-y-5 max-h-[70vh] overflow-y-auto pr-1">
+    <div className="space-y-5 overflow-y-auto pr-1 md:max-h-[70vh]">
       <div>
         <label className="text-xs font-bold uppercase text-muted-foreground">{t("catalog.priceRange")} (₼)</label>
         <div className="flex gap-2 mt-2">
@@ -448,9 +448,9 @@ export function CatalogFilters({
       )}
 
       {open && (
-        <div className="fixed inset-0 z-50 bg-foreground/40 backdrop-blur-sm flex items-end md:items-center justify-center p-4" onClick={() => setOpen(false)}>
-          <div className="bg-card rounded-2xl shadow-elegant w-full max-w-md p-5" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between mb-4">
+        <div className="fixed inset-0 z-[80] flex items-end justify-center bg-foreground/40 p-0 backdrop-blur-sm md:items-center md:p-4" onClick={() => setOpen(false)}>
+          <div className="h-[100dvh] w-full overflow-y-auto bg-card p-5 shadow-elegant md:h-auto md:max-h-[92dvh] md:max-w-md md:rounded-2xl" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
+            <div className="sticky top-0 z-10 mb-4 flex items-center justify-between border-b bg-card py-3">
               <h3 className="font-bold text-lg">{t("catalog.filters")}</h3>
               <button onClick={() => setOpen(false)}><X className="h-5 w-5" /></button>
             </div>

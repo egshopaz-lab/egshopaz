@@ -1,10 +1,10 @@
 import { Link } from "@tanstack/react-router";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { ChevronRight, Grid3X3 } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { CategoryIcon } from "@/components/CategoryIcon";
 import { supabase } from "@/integrations/supabase/client";
 import { catName } from "@/lib/catName";
-import { CategoryIcon } from "@/components/CategoryIcon";
-import { ChevronRight, ArrowLeft, ChevronLeft } from "lucide-react";
 
 interface Category {
   id: string;
@@ -14,250 +14,206 @@ interface Category {
   slug: string;
   icon: string | null;
   parent_id: string | null;
+  sort_order: number;
+  image_url: string | null;
+  background_color: string | null;
+  is_featured: boolean;
+  popularity_score: number;
 }
 
 export function HomeCategoryBrowser() {
   const { t } = useTranslation();
-  const [cats, setCats] = useState<Category[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loading, setLoading] = useState(true);
   const [activeRootId, setActiveRootId] = useState<string | null>(null);
-  const [activeSubId, setActiveSubId] = useState<string | null>(null);
 
   useEffect(() => {
     supabase
       .from("categories")
-      .select("id,name,name_ru,name_en,slug,icon,parent_id,sort_order")
+      .select(
+        "id,name,name_ru,name_en,slug,icon,parent_id,sort_order,image_url,background_color,is_featured,popularity_score",
+      )
       .order("sort_order")
-      .then(({ data }) => {
-        const list = (data ?? []) as Category[];
-        setCats(list);
-        const firstRoot = list.find((c) => !c.parent_id);
-        if (firstRoot) setActiveRootId(firstRoot.id);
+      .then(({ data }: { data: Category[] | null }) => {
+        const list = data ?? [];
+        setCategories(list);
+        const preferred = [...list]
+          .filter((item) => !item.parent_id)
+          .sort(
+            (a, b) =>
+              Number(b.is_featured) - Number(a.is_featured) ||
+              b.popularity_score - a.popularity_score ||
+              a.sort_order - b.sort_order,
+          )[0];
+        setActiveRootId(preferred?.id ?? null);
+        setLoading(false);
       });
   }, []);
 
-  const roots = useMemo(() => cats.filter((c) => !c.parent_id), [cats]);
-  const activeRoot = useMemo(
-    () => cats.find((c) => c.id === activeRootId) || null,
-    [cats, activeRootId],
+  const roots = useMemo(
+    () =>
+      categories
+        .filter((item) => !item.parent_id)
+        .sort(
+          (a, b) =>
+            Number(b.is_featured) - Number(a.is_featured) ||
+            b.popularity_score - a.popularity_score ||
+            a.sort_order - b.sort_order,
+        ),
+    [categories],
   );
-  const activeSub = useMemo(
-    () => (activeSubId ? cats.find((c) => c.id === activeSubId) || null : null),
-    [cats, activeSubId],
+  const activeRoot = roots.find((item) => item.id === activeRootId) ?? roots[0];
+  const children = useMemo(
+    () => categories.filter((item) => item.parent_id === activeRoot?.id),
+    [activeRoot?.id, categories],
   );
 
-  const subCats = useMemo(
-    () => (activeRoot ? cats.filter((c) => c.parent_id === activeRoot.id) : []),
-    [cats, activeRoot],
-  );
-  const leafCats = useMemo(
-    () => (activeSub ? cats.filter((c) => c.parent_id === activeSub.id) : []),
-    [cats, activeSub],
-  );
-
-  const selectRoot = (id: string) => {
-    setActiveRootId(id);
-    setActiveSubId(null);
-  };
-
-  const rootScrollRef = useRef<HTMLDivElement>(null);
-  const subScrollRef = useRef<HTMLDivElement>(null);
-
-  const scrollBy = (ref: React.RefObject<HTMLDivElement | null>, dir: "left" | "right") => {
-    const el = ref.current;
-    if (!el) return;
-    el.scrollBy({ left: dir === "left" ? -240 : 240, behavior: "smooth" });
-  };
-
-  if (roots.length === 0) return null;
-
-  const featuredTitle = t("categoryBar.featuredCategories");
-  const typesTitle = t("categoryBar.productTypes");
-  const seeAll = t("common.all");
-  const backLabel = t("common.back");
+  if (loading) return <CategorySkeleton />;
+  if (!roots.length) return null;
 
   return (
-    <section className="space-y-4 min-w-0 max-w-full overflow-hidden">
-      {/* TAB BAR — Trendyol stil (narıncı seçilmiş, fon dolu) */}
-      <div className="bg-card rounded-2xl border border-border/70 shadow-sm overflow-hidden min-w-0 max-w-full">
-        <div className="flex items-center gap-1 px-1">
-          <button
-            type="button"
-            onClick={() => scrollBy(rootScrollRef, "left")}
-            className="hidden lg:inline-flex shrink-0 items-center justify-center w-8 h-8 rounded-full bg-secondary hover:bg-primary/10 text-foreground transition"
-            aria-label={t("common.back")}
+    <section className="min-w-0 space-y-4" aria-labelledby="popular-categories-title">
+      <div className="flex items-end justify-between gap-3 px-1">
+        <div>
+          <p className="text-xs font-extrabold uppercase tracking-[0.18em] text-primary">EG Shop</p>
+          <h2
+            id="popular-categories-title"
+            className="text-xl font-black tracking-tight sm:text-2xl"
           >
-            <ChevronLeft className="h-4 w-4" />
-          </button>
-          <div ref={rootScrollRef} className="flex-1 flex w-full max-w-full gap-2 px-2 py-3 overflow-x-auto overscroll-x-contain scrollbar-hide">
-            {roots.map((c) => {
-              const isActive = c.id === activeRootId;
-              return (
-                <button
-                  key={c.id}
-                  onClick={() => selectRoot(c.id)}
-                  className={`shrink-0 inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-full text-sm font-bold whitespace-nowrap transition ${
-                    isActive
-                      ? "bg-primary text-primary-foreground shadow-sm"
-                      : "bg-secondary/50 text-foreground hover:bg-secondary"
-                  }`}
-                >
-                  <CategoryIcon category={c} className="h-4 w-4" />
-                  <span>{catName(c)}</span>
-                </button>
-              );
-            })}
-          </div>
-          <button
-            type="button"
-            onClick={() => scrollBy(rootScrollRef, "right")}
-            className="hidden lg:inline-flex shrink-0 items-center justify-center w-8 h-8 rounded-full bg-secondary hover:bg-primary/10 text-foreground transition"
-            aria-label={t("common.next")}
-          >
-            <ChevronRight className="h-4 w-4" />
-          </button>
+            {t("categoryBar.popularCategories", "Populyar kateqoriyalar")}
+          </h2>
         </div>
+        <Link
+          to="/catalog"
+          search={{ q: undefined, cat: undefined } as never}
+          className="inline-flex items-center gap-1 text-sm font-bold text-primary hover:underline"
+        >
+          {t("common.all")} <ChevronRight className="h-4 w-4" />
+        </Link>
+      </div>
+
+      <div className="-mx-3 flex snap-x snap-mandatory gap-3 overflow-x-auto px-3 pb-2 scrollbar-hide sm:mx-0 sm:px-0 lg:grid lg:grid-cols-8 lg:overflow-visible">
+        {roots.slice(0, 16).map((category) => {
+          const selected = category.id === activeRoot?.id;
+          return (
+            <button
+              key={category.id}
+              type="button"
+              onClick={() => setActiveRootId(category.id)}
+              onMouseEnter={() => setActiveRootId(category.id)}
+              className="group w-[92px] shrink-0 snap-start text-center sm:w-[108px] lg:w-auto"
+              aria-pressed={selected}
+            >
+              <span
+                className={`relative mx-auto grid aspect-square w-full place-items-center overflow-hidden rounded-3xl border transition duration-200 group-hover:-translate-y-1 group-hover:shadow-lg ${selected ? "border-primary ring-2 ring-primary/20 shadow-md" : "border-white/70"}`}
+                style={{ backgroundColor: category.background_color || "#f3e8ff" }}
+              >
+                {category.image_url ? (
+                  <img
+                    src={category.image_url}
+                    alt=""
+                    loading="lazy"
+                    className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+                  />
+                ) : (
+                  <CategoryIcon
+                    category={category}
+                    className="h-9 w-9 text-primary sm:h-11 sm:w-11"
+                  />
+                )}
+                {category.is_featured && (
+                  <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-amber-400 ring-2 ring-white" />
+                )}
+              </span>
+              <span
+                className={`mt-2 block line-clamp-2 text-xs font-extrabold leading-tight sm:text-sm ${selected ? "text-primary" : "text-foreground"}`}
+              >
+                {catName(category)}
+              </span>
+            </button>
+          );
+        })}
       </div>
 
       {activeRoot && (
-        <>
-          {/* Breadcrumb / Back */}
-          {activeSub && (
-            <div className="flex items-center gap-2 text-sm bg-card rounded-xl border border-border px-3 py-2">
-              <button
-                onClick={() => setActiveSubId(null)}
-                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-secondary hover:bg-secondary/70 font-bold text-xs transition"
+        <div className="rounded-3xl border border-border/70 bg-card p-4 shadow-sm sm:p-5">
+          <div className="mb-4 flex items-center justify-between gap-3 border-b pb-3">
+            <div className="flex min-w-0 items-center gap-3">
+              <span
+                className="grid h-10 w-10 shrink-0 place-items-center rounded-xl text-primary"
+                style={{ backgroundColor: activeRoot.background_color || "#f3e8ff" }}
               >
-                <ArrowLeft className="h-3 w-3" /> {backLabel}
-              </button>
-              <span className="font-semibold text-muted-foreground">{catName(activeRoot)}</span>
-              <ChevronRight className="h-3 w-3 text-muted-foreground" />
-              <span className="font-extrabold text-primary">{catName(activeSub)}</span>
+                <CategoryIcon category={activeRoot} className="h-5 w-5" />
+              </span>
+              <h3 className="truncate text-lg font-black">{catName(activeRoot)}</h3>
             </div>
-          )}
+            <Link
+              to="/catalog"
+              search={{ cat: activeRoot.slug, q: undefined } as never}
+              className="shrink-0 rounded-xl bg-primary/10 px-3 py-2 text-xs font-bold text-primary hover:bg-primary/15"
+            >
+              {t("common.all")}
+            </Link>
+          </div>
 
-          {/* SƏVIYYƏ 2: Öne Çıxan Kateqoriyalar — Yalnız 1 cərgə, kompakt */}
-          {!activeSub && (
-            <div>
-              <div className="flex items-end justify-between mb-2 px-1">
-                <h3 className="text-sm md:text-base font-bold text-foreground">
-                  {featuredTitle}
-                </h3>
-                <Link
-                  to="/catalog"
-                  search={{ cat: activeRoot.slug, q: undefined } as never}
-                  className="text-xs font-bold text-primary hover:underline inline-flex items-center gap-1"
-                >
-                  {seeAll} <ChevronRight className="h-3 w-3" />
-                </Link>
-              </div>
-
-              {subCats.length === 0 ? (
-                <Link
-                  to="/catalog"
-                  search={{ cat: activeRoot.slug, q: undefined } as never}
-                  className="block rounded-xl bg-card border border-border px-4 py-2 text-center text-sm font-bold hover:shadow-elegant transition"
-                >
-                  {catName(activeRoot)} — {seeAll}
-                </Link>
-              ) : (
-                <div className="flex items-center gap-1">
-                  <button
-                    type="button"
-                    onClick={() => scrollBy(subScrollRef, "left")}
-                    className="hidden lg:inline-flex shrink-0 items-center justify-center w-8 h-8 rounded-full bg-secondary hover:bg-primary/10 text-foreground transition"
-                    aria-label={t("common.back")}
-                  >
-                    <ChevronLeft className="h-4 w-4" />
-                  </button>
-                  <div ref={subScrollRef} className="flex-1 flex w-full max-w-full gap-2 pb-1 overflow-x-auto overscroll-x-contain scrollbar-hide">
-                    {subCats.slice(0, 12).map((s) => {
-                      const hasChildren = cats.some((c) => c.parent_id === s.id);
-                      return (
-                        <div key={s.id} className="shrink-0 w-36 sm:w-40">
-                          {hasChildren ? (
-                            <button
-                              onClick={() => setActiveSubId(s.id)}
-                              className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-card border border-border hover:border-primary/50 hover:shadow-sm text-sm font-bold transition"
-                            >
-                              <CategoryIcon category={s} className="h-4 w-4" />
-                              <span className="truncate">{catName(s)}</span>
-                            </button>
-                          ) : (
-                            <Link
-                              to="/catalog"
-                              search={{ cat: s.slug, q: undefined } as never}
-                              className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-card border border-border hover:border-primary/50 hover:shadow-sm text-sm font-bold transition"
-                            >
-                              <CategoryIcon category={s} className="h-4 w-4" />
-                              <span className="truncate">{catName(s)}</span>
-                            </Link>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => scrollBy(subScrollRef, "right")}
-                    className="hidden lg:inline-flex shrink-0 items-center justify-center w-8 h-8 rounded-full bg-secondary hover:bg-primary/10 text-foreground transition"
-                    aria-label={t("common.next")}
-                  >
-                    <ChevronRight className="h-4 w-4" />
-                  </button>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* SƏVIYYƏ 3: Məhsul tipləri */}
-          {activeSub && (
-            <div>
-              <div className="flex items-end justify-between mb-3 px-1">
-                <h3 className="text-lg md:text-xl font-black text-foreground">
-                  {typesTitle}
-                </h3>
-                <Link
-                  to="/catalog"
-                  search={{ cat: activeSub.slug, q: undefined } as never}
-                  className="text-xs font-bold text-primary hover:underline inline-flex items-center gap-1"
-                >
-                  {seeAll} <ChevronRight className="h-3 w-3" />
-                </Link>
-              </div>
-
-              {leafCats.length === 0 ? (
-                <Link
-                  to="/catalog"
-                  search={{ cat: activeSub.slug, q: undefined } as never}
-                  className="block rounded-2xl bg-card border border-border p-6 text-center font-bold hover:shadow-elegant transition"
-                >
-                  <CategoryIcon category={activeSub} className="mx-auto mb-2 h-10 w-10 text-primary" />
-                  {catName(activeSub)} — {seeAll}
-                </Link>
-              ) : (
-                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2.5 md:gap-3">
-                  {leafCats.slice(0, 10).map((l) => (
+          {children.length ? (
+            <div className="grid grid-cols-2 gap-x-5 gap-y-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+              {children.slice(0, 15).map((child) => {
+                const leaves = categories.filter((item) => item.parent_id === child.id);
+                return (
+                  <div key={child.id} className="min-w-0">
                     <Link
-                      key={l.id}
                       to="/catalog"
-                      search={{ cat: l.slug, q: undefined } as never}
-                      className="flex flex-col items-center gap-2"
+                      search={{ cat: child.slug, q: undefined } as never}
+                      className="mb-1.5 flex items-center gap-2 font-extrabold hover:text-primary"
                     >
-                      <div className="w-full aspect-square rounded-2xl bg-card border border-border hover:border-primary/50 hover:shadow-elegant flex items-center justify-center text-5xl md:text-6xl hover:scale-[1.02] transition">
-                        <CategoryIcon category={l} className="h-10 w-10 text-primary md:h-12 md:w-12" />
-                      </div>
-                      <span className="text-[11px] md:text-xs text-center font-bold leading-tight line-clamp-2 text-foreground">
-                        {catName(l)}
-                      </span>
+                      <CategoryIcon category={child} className="h-4 w-4 shrink-0 text-primary" />
+                      <span className="truncate">{catName(child)}</span>
                     </Link>
-                  ))}
-                </div>
-              )}
+                    <div className="space-y-1">
+                      {leaves.slice(0, 5).map((leaf) => (
+                        <Link
+                          key={leaf.id}
+                          to="/catalog"
+                          search={{ cat: leaf.slug, q: undefined } as never}
+                          className="block truncate text-xs text-muted-foreground hover:text-primary"
+                        >
+                          {catName(leaf)}
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
+          ) : (
+            <Link
+              to="/catalog"
+              search={{ cat: activeRoot.slug, q: undefined } as never}
+              className="flex items-center justify-center gap-2 rounded-2xl bg-secondary/60 p-6 font-bold hover:text-primary"
+            >
+              <Grid3X3 className="h-5 w-5" /> {catName(activeRoot)}
+            </Link>
           )}
-
-        </>
+        </div>
       )}
+    </section>
+  );
+}
+
+function CategorySkeleton() {
+  return (
+    <section className="space-y-4" aria-hidden="true">
+      <div className="h-7 w-64 animate-pulse rounded-lg bg-secondary" />
+      <div className="flex gap-3 overflow-hidden">
+        {Array.from({ length: 8 }, (_, i) => (
+          <div key={i} className="w-24 shrink-0">
+            <div className="aspect-square animate-pulse rounded-3xl bg-secondary" />
+            <div className="mx-auto mt-2 h-3 w-16 animate-pulse rounded bg-secondary" />
+          </div>
+        ))}
+      </div>
+      <div className="h-44 animate-pulse rounded-3xl bg-secondary" />
     </section>
   );
 }

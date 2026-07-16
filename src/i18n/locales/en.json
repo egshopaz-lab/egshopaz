@@ -524,7 +524,8 @@
     "selectRoot": "Select main category...",
     "selectSub": "Select subcategory (optional)...",
     "selectSub2": "Select sub-subcategory (optional)...",
-    "searchPlaceholder": "Search category..."
+    "searchPlaceholder": "Search category...",
+    "popularCategories": "Popular categories"
   },
   "ads": {
     "label": "Ad",

@@ -1,0 +1,7 @@
+<svg width="420" height="112" viewBox="0 0 420 112" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="EG Shop">
+  <defs><linearGradient id="b" x1="8" y1="5" x2="108" y2="108" gradientUnits="userSpaceOnUse"><stop stop-color="#9B5CFF"/><stop offset="1" stop-color="#5B21B6"/></linearGradient></defs>
+  <rect x="4" y="4" width="104" height="104" rx="32" fill="url(#b)"/>
+  <path d="M24 29h29v12H37v9h14v11H37v10h17v12H24V29Z" fill="white"/>
+  <path d="M62 31c11-6 27-4 37 1l-5 11c-7-3-15-4-20 0-6 4-8 10-8 18 0 10 6 17 15 17 2 0 4 0 6-1v-9H77V57h23v28c-6 4-13 6-20 6-18 0-30-12-30-31 0-13 4-23 12-29Z" fill="white"/>
+  <text x="128" y="76" fill="#17112B" font-family="Inter,Arial,sans-serif" font-size="56" font-weight="800" letter-spacing="-2">EG Shop</text>
+</svg>
