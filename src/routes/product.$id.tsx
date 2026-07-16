@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { formatAZN, calcDiscount } from "@/lib/format";
 import { useAuth } from "@/contexts/AuthContext";
-import { Star, ShoppingCart, Heart, Truck, ShieldCheck, MessageCircle, Send, Store, MapPin, X, ZoomIn, ChevronLeft, ChevronRight, Plus, Minus } from "lucide-react";
+import { Star, ShoppingCart, Heart, Truck, ShieldCheck, MessageCircle, Send, Store, MapPin, X, ZoomIn, ChevronLeft, ChevronRight, PackageSearch, Home, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
 import { ProductReviews } from "@/components/ProductReviews";
 import { CompareButton } from "@/components/CompareButton";
@@ -203,27 +203,57 @@ function ProductPage() {
     toast.success(t("product.addedToCart"));
   };
 
-  if (loading) return <div className="container mx-auto px-4 py-10 text-muted-foreground">{t("common.loading")}</div>;
-  if (!p) return <div className="container mx-auto px-4 py-10">{t("product.notFound")}. <Link to="/" className="text-primary">{t("product.home")}</Link></div>;
+  if (loading) return (
+    <div className="container mx-auto px-3 sm:px-4 py-6">
+      <div className="mb-5 h-4 w-48 rounded bg-secondary animate-pulse" />
+      <div className="grid gap-7 lg:grid-cols-2 lg:gap-10">
+        <div className="aspect-square rounded-3xl bg-secondary animate-pulse" />
+        <div className="space-y-4 pt-2">
+          <div className="h-4 w-24 rounded bg-secondary animate-pulse" />
+          <div className="h-9 w-4/5 rounded bg-secondary animate-pulse" />
+          <div className="h-4 w-44 rounded bg-secondary animate-pulse" />
+          <div className="mt-8 h-48 rounded-3xl bg-secondary animate-pulse" />
+          <div className="h-28 rounded-2xl bg-secondary animate-pulse" />
+        </div>
+      </div>
+    </div>
+  );
+  if (!p) return (
+    <div className="container mx-auto px-4 py-16 sm:py-24">
+      <div className="mx-auto max-w-xl rounded-3xl border border-dashed border-violet-200 bg-violet-50/30 px-6 py-14 text-center">
+        <span className="mx-auto grid h-16 w-16 place-items-center rounded-2xl bg-white text-violet-600 shadow-sm"><PackageSearch className="h-7 w-7" /></span>
+        <h1 className="mt-5 text-2xl font-black">{t("product.notFound")}</h1>
+        <p className="mt-2 text-sm text-muted-foreground">{t("product.notFoundDesc")}</p>
+        <div className="mt-6 flex flex-wrap justify-center gap-2">
+          <Link to="/" className="inline-flex h-11 items-center gap-2 rounded-xl border border-border bg-card px-4 text-sm font-bold hover:border-primary hover:text-primary"><Home className="h-4 w-4" /> {t("product.home")}</Link>
+          <Link to="/catalog" search={{ q: undefined, cat: undefined } as never} className="inline-flex h-11 items-center gap-2 rounded-xl bg-primary px-4 text-sm font-bold text-primary-foreground"><RotateCcw className="h-4 w-4" /> {t("product.backToCatalog")}</Link>
+        </div>
+      </div>
+    </div>
+  );
 
   const discount = calcDiscount(Number(p.price), p.old_price ? Number(p.old_price) : undefined);
 
   return (
-    <div className="container mx-auto px-4 py-6">
-      <div className="text-sm text-muted-foreground mb-4">
-        <Link to="/" className="hover:text-primary">{t("product.home")}</Link> / <span>{p.title}</span>
+    <div className="container mx-auto px-3 sm:px-4 py-5 sm:py-7">
+      <div className="flex items-center gap-1.5 text-xs sm:text-sm text-muted-foreground mb-5">
+        <Link to="/" className="hover:text-primary">{t("product.home")}</Link>
+        <ChevronRight className="h-3.5 w-3.5" />
+        <Link to="/catalog" search={{ q: undefined, cat: undefined } as never} className="hover:text-primary">{t("catalog.title")}</Link>
+        <ChevronRight className="h-3.5 w-3.5" />
+        <span className="truncate text-foreground font-medium">{p.title}</span>
       </div>
-      <div className="grid md:grid-cols-2 gap-8">
+      <div className="grid gap-7 lg:grid-cols-[minmax(0,1.05fr)_minmax(380px,0.95fr)] lg:gap-10 xl:gap-14">
         <div className="space-y-3">
           <button
             type="button"
             onClick={() => activeImage && setZoomOpen(true)}
-            className="block w-full aspect-square bg-secondary rounded-2xl overflow-hidden relative group"
+            className="block w-full aspect-square bg-white border border-border rounded-3xl overflow-hidden relative group shadow-sm"
           >
             {activeImage ? (
               <>
-                <img src={activeImage} alt={p.title} className="w-full h-full object-cover" />
-                <span className="absolute bottom-3 right-3 bg-black/60 text-white rounded-full p-2 opacity-0 group-hover:opacity-100 transition">
+                <img src={activeImage} alt={p.title} className="w-full h-full object-contain p-3 sm:p-5" />
+                <span className="absolute bottom-4 right-4 bg-slate-950/75 text-white rounded-xl p-2.5 opacity-100 sm:opacity-0 group-hover:opacity-100 transition">
                   <ZoomIn className="h-4 w-4" />
                 </span>
               </>
@@ -241,15 +271,15 @@ function ProductPage() {
             const all = p.image_url && !imgs.includes(p.image_url) ? [p.image_url, ...imgs] : imgs;
             if (all.length < 2) return null;
             return (
-              <div className="grid grid-cols-6 gap-2">
+              <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
                 {all.map((url) => (
                   <button
                     key={url}
                     type="button"
                     onClick={() => setActiveImage(url)}
-                    className={`aspect-square rounded-lg overflow-hidden border-2 transition ${activeImage === url ? "border-primary" : "border-transparent hover:border-border"}`}
+                    className={`h-16 w-16 sm:h-20 sm:w-20 shrink-0 rounded-xl overflow-hidden border-2 bg-white transition ${activeImage === url ? "border-primary" : "border-border hover:border-primary/50"}`}
                   >
-                    <img src={url} alt="" className="w-full h-full object-cover" />
+                    <img src={url} alt="" className="w-full h-full object-contain p-1" />
                   </button>
                 ))}
               </div>
@@ -326,18 +356,20 @@ function ProductPage() {
         })()}
 
 
-        <div className="space-y-4">
-          {p.brand && <div className="text-sm text-muted-foreground font-semibold uppercase">{p.brand}</div>}
-          <h1 className="text-2xl md:text-3xl font-extrabold">{p.title}</h1>
-          <div className="flex items-center gap-2 text-sm">
-            <Star className="h-4 w-4 fill-warning text-warning" />
+        <div className="space-y-5 self-start">
+          {p.brand && <div className="inline-flex rounded-full bg-violet-50 px-3 py-1.5 text-xs font-extrabold uppercase tracking-wide text-violet-700">{p.brand}</div>}
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight leading-tight">{p.title}</h1>
+          <div className="flex flex-wrap items-center gap-2 text-sm">
+            <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2.5 py-1 font-bold text-amber-700"><Star className="h-4 w-4 fill-amber-500 text-amber-500" />
             <span className="font-bold">{Number(p.rating).toFixed(1)}</span>
-            <span className="text-muted-foreground">· {t("product.reviewsShort", { count: p.reviews_count })}</span>
+            </span>
+            <span className="text-muted-foreground">{t("product.reviewsShort", { count: p.reviews_count })}</span>
+            <span className={`rounded-full px-2.5 py-1 text-xs font-bold ${p.stock > 0 ? "bg-emerald-50 text-emerald-700" : "bg-red-50 text-red-700"}`}>{p.stock > 0 ? t("product.inStock") : t("product.outOfStock")}</span>
           </div>
 
-          <div className="bg-secondary/50 rounded-2xl p-5 space-y-3">
+          <div className="rounded-3xl border border-violet-100 bg-gradient-to-br from-white to-violet-50/70 p-5 sm:p-6 space-y-4 shadow-sm">
             <div className="flex items-baseline gap-3">
-              <span className="text-4xl font-extrabold text-discount">{formatAZN(p.price)}</span>
+              <span className="text-3xl sm:text-4xl font-black text-slate-950">{formatAZN(p.price)}</span>
               {p.old_price && Number(p.old_price) > Number(p.price) && (
                 <span className="text-lg text-muted-foreground line-through">{formatAZN(p.old_price)}</span>
               )}
@@ -346,7 +378,7 @@ function ProductPage() {
               <button
                 onClick={addToCart}
                 disabled={p.stock === 0}
-                className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl py-3 font-bold flex items-center justify-center gap-2 disabled:opacity-50 transition"
+                className="flex-1 min-h-[52px] bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl px-4 py-3.5 font-extrabold flex items-center justify-center gap-2 disabled:opacity-50 transition shadow-lg shadow-primary/15"
               >
                 <ShoppingCart className="h-5 w-5" />
                 {p.stock === 0 ? t("product.outOfStock") : t("product.addToCart")}
@@ -354,13 +386,14 @@ function ProductPage() {
               <button
                 onClick={toggleFavorite}
                 disabled={favoriteBusy}
-                className="w-12 h-12 rounded-xl border border-border hover:border-primary hover:text-primary flex items-center justify-center transition"
+                className="w-[52px] h-[52px] rounded-xl border border-border bg-white hover:border-primary hover:text-primary flex items-center justify-center transition"
                 aria-label={t("product.favoriteAria")}
               >
                 <Heart className={`h-5 w-5 ${isFav ? "fill-discount text-discount" : ""}`} />
               </button>
             </div>
-            <div className="text-xs text-muted-foreground">
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <ShieldCheck className="h-4 w-4 text-emerald-600" /> {t("product.securePurchase")} ·
               {t("product.stockLabel")}: <span className="font-semibold text-success">{t("product.stockUnits", { count: p.stock })}</span>
             </div>
           </div>
@@ -372,7 +405,7 @@ function ProductPage() {
             </div>
             <div className="flex items-center gap-2 p-3 bg-card border border-border rounded-xl">
               <ShieldCheck className="h-5 w-5 text-primary shrink-0" />
-              <span>{t("product.originalProduct")}</span>
+              <span>{t("product.securePurchase")}</span>
             </div>
           </div>
 

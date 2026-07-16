@@ -10,6 +10,7 @@ import { categoryIcon } from "@/lib/categoryIcon";
 import i18n from "@/i18n";
 import { absoluteUrl } from "@/lib/site";
 import { z } from "zod";
+import { ChevronRight, Grid2X2, RotateCcw, SearchX } from "lucide-react";
 
 const searchSchema = z.object({
   q: z.string().optional(),
@@ -149,22 +150,18 @@ function Catalog() {
   const parents = categories.filter((c) => !c.parent_id);
   const childrenOf = (pid: string) => categories.filter((c) => c.parent_id === pid);
   const activeCat = categories.find((c) => c.slug === cat);
-  const currentLanguage = i18n.resolvedLanguage?.split("-")[0] ?? "az";
-  const productCountLabel = currentLanguage === "ru"
-    ? `${products.length} товаров`
-    : currentLanguage === "en"
-      ? `${products.length} products`
-      : `${products.length} məhsul`;
+  const productCountLabel = t("catalog.productCount", { count: products.length });
+  const hasActiveFilters = Object.entries(filters).some(([key, value]) => key !== "sort" && value != null && value !== false && value !== "");
 
   useEffect(() => {
     if (activeCat?.parent_id) setOpenParents((p) => ({ ...p, [activeCat.parent_id!]: true }));
   }, [activeCat?.parent_id]);
 
   return (
-    <div className="container mx-auto px-4 py-6">
-      <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
+    <div className="container mx-auto px-3 sm:px-4 py-5 sm:py-7">
+      <div className="flex items-center gap-1.5 text-xs sm:text-sm text-muted-foreground mb-4">
         <Link to="/" className="hover:text-primary">{t("home.breadcrumbHome")}</Link>
-        <span>/</span>
+        <ChevronRight className="h-3.5 w-3.5" />
         <span className="text-foreground font-medium">{activeCat ? catName(activeCat) : (q ? t("catalog.searchBreadcrumb", { q }) : t("catalog.title"))}</span>
       </div>
 
@@ -172,13 +169,26 @@ function Catalog() {
         <SponsoredProducts limit={6} />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-[240px_1fr] gap-6">
+      <div className="mb-6 overflow-hidden rounded-3xl border border-violet-100 bg-gradient-to-br from-violet-50 via-white to-fuchsia-50 px-5 py-6 sm:px-7 sm:py-8">
+        <div className="flex items-center gap-4">
+          <span className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-white text-2xl shadow-sm ring-1 ring-violet-100">{activeCat ? categoryIcon(activeCat) : <Grid2X2 className="h-6 w-6 text-violet-700" />}</span>
+          <div className="min-w-0">
+            <h1 className="text-2xl sm:text-3xl font-black tracking-tight">
+              {activeCat ? catName(activeCat) : (q ? t("catalog.searchResults", { q }) : t("catalog.allProducts"))}
+            </h1>
+            <p className="mt-1 text-sm text-muted-foreground">{productCountLabel} · {t("catalog.headerDescription")}</p>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-[250px_minmax(0,1fr)] gap-5 lg:gap-7">
         <aside className="hidden md:block">
-          <h2 className="font-bold mb-3">{t("catalog.categories")}</h2>
-          <ul className="space-y-1">
+          <div className="sticky top-40 rounded-2xl border border-border bg-card p-3 shadow-sm">
+          <h2 className="flex items-center gap-2 px-2 py-2 font-extrabold"><Grid2X2 className="h-4 w-4 text-primary" />{t("catalog.categories")}</h2>
+          <ul className="max-h-[calc(100vh-13rem)] space-y-1 overflow-y-auto pr-1 scrollbar-hide">
             <li>
               <Link to="/catalog" search={{ q, cat: undefined } as never}
-                    className={`block px-3 py-2 rounded-lg text-sm hover:bg-secondary ${!cat ? "bg-secondary font-semibold text-primary" : ""}`}>
+                    className={`block px-3 py-2.5 rounded-xl text-sm transition hover:bg-secondary ${!cat ? "bg-primary/10 font-bold text-primary" : ""}`}>
                 {t("catalog.all")}
               </Link>
             </li>
@@ -192,7 +202,7 @@ function Catalog() {
                 <li key={c.id}>
                   <button
                     onClick={() => setOpenParents((p) => ({ ...p, [c.id]: !isOpen }))}
-                    className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm hover:bg-secondary text-left ${cat === c.slug ? "bg-secondary font-semibold text-primary" : ""}`}>
+                    className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm transition hover:bg-secondary text-left ${cat === c.slug ? "bg-primary/10 font-bold text-primary" : ""}`}>
                     <span>{categoryIcon(c)} {catName(c)}</span>
                     {kids.length > 0 && <span className="text-xs">{isOpen ? "−" : "+"}</span>}
                   </button>
@@ -251,30 +261,37 @@ function Catalog() {
               );
             })}
           </ul>
+          </div>
         </aside>
 
-        <div>
-          <h1 className="text-2xl md:text-3xl font-extrabold mb-4">
-            {activeCat ? catName(activeCat) : (q ? t("catalog.searchResults", { q }) : t("catalog.allProducts"))}
-            <span className="ml-2 text-sm text-muted-foreground font-normal">{productCountLabel}</span>
-          </h1>
-
-          <div className="mb-4">
+        <div className="min-w-0">
+          <div className="mb-5 rounded-2xl border border-border bg-card p-3 shadow-sm">
             <CatalogFilters brands={allBrandsList} value={filters} onChange={setFilters} />
           </div>
 
           {loading ? (
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4">
               {Array.from({ length: 8 }).map((_, i) => (
-                <div key={i} className="aspect-[3/4] bg-secondary rounded-xl animate-pulse" />
+                <div key={i} className="overflow-hidden rounded-2xl border border-border bg-card p-2 animate-pulse">
+                  <div className="aspect-square rounded-xl bg-secondary" />
+                  <div className="mt-3 h-3 w-4/5 rounded bg-secondary" />
+                  <div className="mt-2 h-3 w-1/2 rounded bg-secondary" />
+                  <div className="mt-4 h-5 w-2/5 rounded bg-secondary" />
+                </div>
               ))}
             </div>
           ) : products.length === 0 ? (
-            <div className="text-center py-20 bg-secondary/40 rounded-2xl">
-              <p className="text-muted-foreground">{t("catalog.noResults")}</p>
+            <div className="rounded-3xl border border-dashed border-violet-200 bg-violet-50/30 px-5 py-14 text-center sm:py-20">
+              <span className="mx-auto grid h-16 w-16 place-items-center rounded-2xl bg-white text-violet-600 shadow-sm ring-1 ring-violet-100"><SearchX className="h-7 w-7" /></span>
+              <h2 className="mt-5 text-xl font-black">{t("catalog.noResults")}</h2>
+              <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-muted-foreground">{t("catalog.noResultsDesc")}</p>
+              <div className="mt-6 flex flex-wrap justify-center gap-2">
+                {hasActiveFilters && <button onClick={() => setFilters({ sort: "newest" })} className="inline-flex h-10 items-center gap-2 rounded-xl border border-border bg-card px-4 text-sm font-bold transition hover:border-primary hover:text-primary"><RotateCcw className="h-4 w-4" /> {t("catalog.resetFilters")}</button>}
+                <Link to="/catalog" search={{ q: undefined, cat: undefined, brand: undefined } as never} className="inline-flex h-10 items-center gap-2 rounded-xl bg-primary px-4 text-sm font-bold text-primary-foreground transition hover:bg-primary/90">{t("catalog.viewAllProducts")} <ChevronRight className="h-4 w-4" /></Link>
+              </div>
             </div>
           ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4 mobile-product-grid">
+            <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4 mobile-product-grid">
               {products.map((p) => <ProductCard key={p.id} p={p} />)}
             </div>
           )}

@@ -47,7 +47,7 @@ export function CategoryBar() {
           >
             <ChevronLeft className="h-4 w-4" />
           </button>
-          <div ref={scrollRef} className="flex-1 flex gap-2 md:gap-3 overflow-x-auto py-3 scrollbar-responsive">
+          <div ref={scrollRef} className="flex-1 flex gap-2 md:gap-3 overflow-x-auto py-3 scrollbar-hide">
             <Link
               to="/catalog"
               search={{ cat: undefined, q: undefined } as never}
