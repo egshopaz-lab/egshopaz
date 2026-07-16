@@ -548,6 +548,11 @@
     "disabled": "AI support is currently disabled",
     "noReply": "AI did not respond"
   },
+  "trendsFeed": {
+    "description": "Store updates, campaigns, and selected posts.",
+    "empty": "There are no EG Trends posts yet",
+    "sellerFallback": "EG Shop seller"
+  },
   "seo": {
     "homeTitle": "EG Shop — Azerbaijan online market",
     "homeDescription": "Clothing, electronics, home goods — at great prices. Delivery across Azerbaijan.",

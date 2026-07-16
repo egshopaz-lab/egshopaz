@@ -155,6 +155,16 @@ function syncTextNodes(lang: Lang) {
 
   for (const node of nodes) {
     const current = node.nodeValue ?? "";
+    const storedOriginal = textOriginals.get(node);
+    if (
+      storedOriginal
+      && current !== storedOriginal
+      && current !== translateValue(storedOriginal, lang)
+    ) {
+      // React/i18next has rendered a newer localized value (for example a
+      // translated category from the database). Do not restore stale text.
+      textOriginals.delete(node);
+    }
     if (isKnownAzerbaijaniUiText(current)) textOriginals.set(node, current);
     const original = textOriginals.get(node);
     if (!original) continue;
@@ -173,6 +183,14 @@ function syncAttributes(lang: Lang) {
     for (const attr of ATTRS) {
       const current = el.getAttribute(attr);
       if (!current) continue;
+      const storedOriginal = stored[attr];
+      if (
+        storedOriginal
+        && current !== storedOriginal
+        && current !== translateValue(storedOriginal, lang)
+      ) {
+        delete stored[attr];
+      }
       if (isKnownAzerbaijaniUiText(current)) {
         stored[attr] = current;
         changed = true;

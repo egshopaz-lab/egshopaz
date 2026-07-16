@@ -3,6 +3,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { catName } from "@/lib/catName";
+import { categoryIcon } from "@/lib/categoryIcon";
 import { ChevronRight, ArrowLeft, ChevronLeft } from "lucide-react";
 
 interface Category {
@@ -100,7 +101,7 @@ export function HomeCategoryBrowser() {
                       : "bg-secondary/50 text-foreground hover:bg-secondary"
                   }`}
                 >
-                  <span>{c.icon}</span>
+                  <span>{categoryIcon(c)}</span>
                   <span>{catName(c)}</span>
                 </button>
               );
@@ -178,7 +179,7 @@ export function HomeCategoryBrowser() {
                               onClick={() => setActiveSubId(s.id)}
                               className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-card border border-border hover:border-primary/50 hover:shadow-sm text-sm font-bold transition"
                             >
-                              <span className="text-base">{s.icon || activeRoot.icon || "🛍️"}</span>
+                              <span className="text-base">{categoryIcon(s)}</span>
                               <span className="truncate">{catName(s)}</span>
                             </button>
                           ) : (
@@ -187,7 +188,7 @@ export function HomeCategoryBrowser() {
                               search={{ cat: s.slug, q: undefined } as never}
                               className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-card border border-border hover:border-primary/50 hover:shadow-sm text-sm font-bold transition"
                             >
-                              <span className="text-base">{s.icon || activeRoot.icon || "🛍️"}</span>
+                              <span className="text-base">{categoryIcon(s)}</span>
                               <span className="truncate">{catName(s)}</span>
                             </Link>
                           )}
@@ -230,7 +231,7 @@ export function HomeCategoryBrowser() {
                   search={{ cat: activeSub.slug, q: undefined } as never}
                   className="block rounded-2xl bg-card border border-border p-6 text-center font-bold hover:shadow-elegant transition"
                 >
-                  <span className="text-4xl block mb-2">{activeSub.icon}</span>
+                  <span className="text-4xl block mb-2">{categoryIcon(activeSub)}</span>
                   {catName(activeSub)} — {seeAll}
                 </Link>
               ) : (
@@ -243,7 +244,7 @@ export function HomeCategoryBrowser() {
                       className="flex flex-col items-center gap-2"
                     >
                       <div className="w-full aspect-square rounded-2xl bg-card border border-border hover:border-primary/50 hover:shadow-elegant flex items-center justify-center text-5xl md:text-6xl hover:scale-[1.02] transition">
-                        {l.icon || activeSub.icon || "🛍️"}
+                        {categoryIcon(l)}
                       </div>
                       <span className="text-[11px] md:text-xs text-center font-bold leading-tight line-clamp-2 text-foreground">
                         {catName(l)}

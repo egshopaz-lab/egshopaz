@@ -6,6 +6,7 @@ import { ProductCard, type ProductCardData } from "@/components/ProductCard";
 import { SponsoredProducts } from "@/components/SponsoredProducts";
 import { CatalogFilters, type Filters } from "@/components/CatalogFilters";
 import { catName } from "@/lib/catName";
+import { categoryIcon } from "@/lib/categoryIcon";
 import i18n from "@/i18n";
 import { absoluteUrl } from "@/lib/site";
 import { z } from "zod";
@@ -192,7 +193,7 @@ function Catalog() {
                   <button
                     onClick={() => setOpenParents((p) => ({ ...p, [c.id]: !isOpen }))}
                     className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm hover:bg-secondary text-left ${cat === c.slug ? "bg-secondary font-semibold text-primary" : ""}`}>
-                    <span>{c.icon} {catName(c)}</span>
+                    <span>{categoryIcon(c)} {catName(c)}</span>
                     {kids.length > 0 && <span className="text-xs">{isOpen ? "−" : "+"}</span>}
                   </button>
                   {isOpen && kids.length > 0 && (
@@ -213,7 +214,7 @@ function Catalog() {
                                 <button
                                   onClick={() => setOpenParents((p) => ({ ...p, [k.id]: !kOpen }))}
                                   className={`w-full flex items-center justify-between px-2 py-1 rounded text-xs hover:bg-secondary text-left ${cat === k.slug ? "font-semibold text-primary" : ""}`}>
-                                  <span>{k.icon} {catName(k)}</span>
+                                  <span>{categoryIcon(k)} {catName(k)}</span>
                                   <span className="text-[10px]">{kOpen ? "−" : "+"}</span>
                                 </button>
                                 {kOpen && (
@@ -238,7 +239,7 @@ function Catalog() {
                             ) : (
                               <Link to="/catalog" search={{ q, cat: k.slug } as never}
                                     className={`block px-2 py-1 rounded text-xs hover:bg-secondary ${cat === k.slug ? "font-semibold text-primary" : ""}`}>
-                                {k.icon} {catName(k)}
+                                {categoryIcon(k)} {catName(k)}
                               </Link>
                             )}
                           </li>

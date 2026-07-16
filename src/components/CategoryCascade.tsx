@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { catName } from "@/lib/catName";
+import { categoryIcon } from "@/lib/categoryIcon";
 
 interface Category {
   id: string;
@@ -62,7 +63,7 @@ export function CategoryCascade({ categories, value, onChange }: Props) {
         <option value="">{t("categoryBar.selectRoot")}</option>
         {roots.map((c) => (
           <option key={c.id} value={c.id}>
-            {c.icon ? `${c.icon} ` : ""}{catName(c)}
+            {categoryIcon(c)} {catName(c)}
           </option>
         ))}
       </select>

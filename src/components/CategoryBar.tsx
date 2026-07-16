@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { catName } from "@/lib/catName";
+import { categoryIcon } from "@/lib/categoryIcon";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 interface Category { id: string; name: string; name_ru?: string | null; name_en?: string | null; slug: string; icon: string | null }
@@ -62,7 +63,7 @@ export function CategoryBar() {
                 search={{ cat: c.slug, q: undefined } as never}
                 className="shrink-0 inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-secondary hover:bg-primary/10 hover:text-primary font-semibold text-sm transition border border-transparent hover:border-primary/30"
               >
-                <span className="text-lg">{c.icon}</span>
+                <span className="text-lg">{categoryIcon(c)}</span>
                 <span className="whitespace-nowrap">{catName(c)}</span>
               </Link>
             ))}

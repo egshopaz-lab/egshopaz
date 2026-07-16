@@ -548,6 +548,11 @@
     "disabled": "AI dəstək hazırda deaktivdir",
     "noReply": "AI cavab vermədi"
   },
+  "trendsFeed": {
+    "description": "Mağazalardan yeniliklər, kampaniyalar və seçilmiş paylaşımlar.",
+    "empty": "Hələ EG Trends paylaşımı yoxdur",
+    "sellerFallback": "EG Shop satıcısı"
+  },
   "seo": {
     "homeTitle": "EG Shop — Azərbaycanın onlayn marketi",
     "homeDescription": "Geyim, texnika, ev üçün mallar — sərfəli qiymətlərlə. Azərbaycan üzrə çatdırılma.",
