@@ -69,6 +69,21 @@ interface Assignment {
 
 type ViewKey = "packages" | "services" | "assignments";
 
+const BUILTIN_SERVICE_COPY: Record<string, { name: string; description: string }> = {
+  shop_promotion: {
+    name: "Mağazanı reklam et",
+    description: "Mağazanı ana səhifədə və seçilmiş vitrinlərdə göstərir.",
+  },
+  product_promotion: {
+    name: "Məhsulu irəli çək",
+    description: "Məhsulu kataloqda və ana səhifədə ön sıralara çıxarır.",
+  },
+  banner_promotion: {
+    name: "Banner reklamı",
+    description: "Şəkil və ya video bannerini seçilmiş reklam mövqeyində göstərir.",
+  },
+};
+
 const inputClass = "w-full h-10 px-3 rounded-md border border-input bg-background text-sm";
 const labelClass = "block text-xs font-bold text-muted-foreground mb-1";
 
@@ -78,7 +93,7 @@ function parseObject(value: string, label: string) {
     if (!parsed || Array.isArray(parsed) || typeof parsed !== "object") throw new Error();
     return parsed as Record<string, unknown>;
   } catch {
-    throw new Error(`${label} dÃ¼zgÃ¼n JSON obyekti olmalÄ±dÄ±r`);
+    throw new Error(`${label} düzgün JSON obyekti olmalıdır`);
   }
 }
 
@@ -114,7 +129,12 @@ export function AdminAdvertisingPackages() {
     if (error) toast.error(error.message);
     const sellerIds = new Set((roleRows.data ?? []).map((row: { user_id: string }) => row.user_id));
     setPackages((pkg.data ?? []) as AdPackage[]);
-    setServiceTypes((types.data ?? []) as ServiceType[]);
+    setServiceTypes(
+      ((types.data ?? []) as ServiceType[]).map((service) => ({
+        ...service,
+        ...(BUILTIN_SERVICE_COPY[service.slug] ?? {}),
+      })),
+    );
     setPackageServices((links.data ?? []) as PackageService[]);
     setSellers(((profileRows.data ?? []) as Seller[]).filter((row) => sellerIds.has(row.id)));
     setAssignments((subs.data ?? []) as Assignment[]);
@@ -147,7 +167,7 @@ export function AdminAdvertisingPackages() {
       price: Number(draft.price), duration_days: Number(draft.duration_days), color: draft.color,
       is_active: draft.is_active, sort_order: Number(draft.sort_order),
     };
-    if (!payload.name || !payload.tier) { toast.error("Paket adÄ± vÉ™ kodu vacibdir"); return; }
+    if (!payload.name || !payload.tier) { toast.error("Paket adı və kodu vacibdir"); return; }
     let savedId = draft.id;
     if (draft.id) {
       const { error } = await db.from("ad_packages").update(payload).eq("id", draft.id);
@@ -170,7 +190,7 @@ export function AdminAdvertisingPackages() {
       const { error } = await db.from("ad_package_services").upsert(rows, { onConflict: "package_id,service_type_id" });
       if (error) { toast.error(error.message); return; }
     }
-    toast.success(draft.id ? "Paket yenilÉ™ndi" : "Paket yaradÄ±ldÄ±");
+    toast.success(draft.id ? "Paket yeniləndi" : "Paket yaradıldı");
     setPackageDraft(null);
     await load();
   };
@@ -181,7 +201,7 @@ export function AdminAdvertisingPackages() {
   };
 
   const deletePackage = async (pkg: AdPackage) => {
-    if (!confirm(`${pkg.name} paketi silinsin? Aktiv tÉ™yinat varsa silinmÉ™yÉ™cÉ™k.`)) return;
+    if (!confirm(`${pkg.name} paketi silinsin? Aktiv təyinat varsa silinməyəcək.`)) return;
     const { error } = await db.from("ad_packages").delete().eq("id", pkg.id);
     if (error) toast.error(error.message); else toast.success("Paket silindi");
   };
@@ -194,13 +214,13 @@ export function AdminAdvertisingPackages() {
       display_rules: draft.display_rules, priority: Number(draft.priority), settings: draft.settings,
       is_active: draft.is_active, sort_order: Number(draft.sort_order),
     };
-    if (!payload.slug || !payload.name) { toast.error("Funksiya adÄ± vÉ™ kodu vacibdir"); return; }
+    if (!payload.slug || !payload.name) { toast.error("Funksiya adı və kodu vacibdir"); return; }
     const query = draft.id
       ? db.from("ad_service_types").update(payload).eq("id", draft.id)
       : db.from("ad_service_types").insert(payload);
     const { error } = await query;
     if (error) { toast.error(error.message); return; }
-    toast.success(draft.id ? "Reklam funksiyasÄ± yenilÉ™ndi" : "Yeni reklam funksiyasÄ± yaradÄ±ldÄ±");
+    toast.success(draft.id ? "Reklam funksiyası yeniləndi" : "Yeni reklam funksiyası yaradıldı");
     setServiceDraft(null);
     await load();
   };
@@ -211,18 +231,18 @@ export function AdminAdvertisingPackages() {
   };
 
   const deleteServiceType = async (service: ServiceType) => {
-    if (!confirm(`${service.name} funksiyasÄ± silinsin? PaketlÉ™rdÉ™ istifadÉ™ olunursa silinmÉ™yÉ™cÉ™k.`)) return;
+    if (!confirm(`${service.name} funksiyası silinsin? Paketlərdə istifadə olunursa silinməyəcək.`)) return;
     const { error } = await db.from("ad_service_types").delete().eq("id", service.id);
-    if (error) toast.error(error.message); else toast.success("Reklam funksiyasÄ± silindi");
+    if (error) toast.error(error.message); else toast.success("Reklam funksiyası silindi");
   };
 
   const assignPackage = async () => {
     const pkg = packages.find((item) => item.id === packageId);
-    if (!sellerId || !pkg) { toast.error("SatÄ±cÄ± vÉ™ paket seÃ§in"); return; }
+    if (!sellerId || !pkg) { toast.error("Satıcı və paket seçin"); return; }
     const now = new Date();
     const ends = new Date(now); ends.setDate(ends.getDate() + Math.max(1, assignmentDays || pkg.duration_days));
     await db.from("seller_subscriptions").update({
-      is_active: false, cancelled_at: now.toISOString(), admin_note: "Yeni admin tÉ™yinatÄ± ilÉ™ É™vÉ™zlÉ™ndi",
+      is_active: false, cancelled_at: now.toISOString(), admin_note: "Yeni admin təyinatı ilə əvəzləndi",
     }).eq("seller_id", sellerId).eq("is_active", true);
     const { data: authData } = await supabase.auth.getUser();
     const { error } = await db.from("seller_subscriptions").insert({
@@ -231,7 +251,7 @@ export function AdminAdvertisingPackages() {
       source: "admin", admin_note: assignmentNote.trim() || null, assigned_by: authData.user?.id ?? null,
     });
     if (error) { toast.error(error.message); return; }
-    toast.success("Paket satÄ±cÄ±ya tÉ™yin edildi");
+    toast.success("Paket satıcıya təyin edildi");
     setAssignmentNote("");
     await load();
   };
@@ -240,30 +260,30 @@ export function AdminAdvertisingPackages() {
     const base = Math.max(Date.now(), new Date(assignment.ends_at).getTime());
     const ends = new Date(base); ends.setDate(ends.getDate() + days);
     const { error } = await db.from("seller_subscriptions").update({ ends_at: ends.toISOString(), is_active: true, cancelled_at: null }).eq("id", assignment.id);
-    if (error) toast.error(error.message); else toast.success(`Paket ${days} gÃ¼n uzadÄ±ldÄ±`);
+    if (error) toast.error(error.message); else toast.success(`Paket ${days} gün uzadıldı`);
   };
 
   const cancelAssignment = async (assignment: Assignment) => {
-    if (!confirm("SatÄ±cÄ±nÄ±n reklam paketi lÉ™ÄŸv edilsin?")) return;
+    if (!confirm("Satıcının reklam paketi ləğv edilsin?")) return;
     const { data: authData } = await supabase.auth.getUser();
     const { error } = await db.from("seller_subscriptions").update({
       is_active: false, cancelled_at: new Date().toISOString(), cancelled_by: authData.user?.id ?? null,
     }).eq("id", assignment.id);
-    if (error) toast.error(error.message); else toast.success("Paket lÉ™ÄŸv edildi");
+    if (error) toast.error(error.message); else toast.success("Paket ləğv edildi");
   };
 
-  if (loading) return <div className="py-16 text-center text-muted-foreground">Reklam idarÉ™etmÉ™si yÃ¼klÉ™nir...</div>;
+  if (loading) return <div className="py-16 text-center text-muted-foreground">Reklam idarəetməsi yüklənir...</div>;
 
   return (
     <div className="space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm text-muted-foreground max-w-2xl">
-          PaketlÉ™ri, reklam funksiyalarÄ±nÄ± vÉ™ satÄ±cÄ± tÉ™yinatlarÄ±nÄ± bir yerdÉ™n idarÉ™ edin. DÉ™yiÅŸikliklÉ™r satÄ±cÄ± panelinÉ™ real vaxtda Ã¶tÃ¼rÃ¼lÃ¼r.
+          Paketləri, reklam funksiyalarını və satıcı təyinatlarını bir yerdən idarə edin. Dəyişikliklər satıcı panelinə real vaxtda ötürülür.
         </p>
         <div className="inline-flex rounded-md border border-border bg-card p-1">
-          <ViewButton active={view === "packages"} icon={Layers3} label="PaketlÉ™r" onClick={() => setView("packages")} />
+          <ViewButton active={view === "packages"} icon={Layers3} label="Paketlər" onClick={() => setView("packages")} />
           <ViewButton active={view === "services"} icon={Settings2} label="Funksiyalar" onClick={() => setView("services")} />
-          <ViewButton active={view === "assignments"} icon={Store} label="SatÄ±cÄ±lar" onClick={() => setView("assignments")} />
+          <ViewButton active={view === "assignments"} icon={Store} label="Satıcılar" onClick={() => setView("assignments")} />
         </div>
       </div>
 
@@ -285,17 +305,17 @@ export function AdminAdvertisingPackages() {
                       <div><h3 className="font-black text-lg">{pkg.name}</h3><div className="text-xs text-muted-foreground">{pkg.tier}</div></div>
                       <span className={`text-xs px-2 py-1 rounded-full font-bold ${pkg.is_active ? "bg-success/10 text-success" : "bg-muted text-muted-foreground"}`}>{pkg.is_active ? "Aktiv" : "Deaktiv"}</span>
                     </div>
-                    <div className="mt-3 text-2xl font-black">{formatAZN(pkg.price)} <span className="text-xs font-normal text-muted-foreground">/ {pkg.duration_days} gÃ¼n</span></div>
+                    <div className="mt-3 text-2xl font-black">{formatAZN(pkg.price)} <span className="text-xs font-normal text-muted-foreground">/ {pkg.duration_days} gün</span></div>
                     <div className="mt-3 space-y-1">
-                      {enabled.length === 0 && <div className="text-xs text-muted-foreground">Aktiv xidmÉ™t yoxdur</div>}
+                      {enabled.length === 0 && <div className="text-xs text-muted-foreground">Aktiv xidmət yoxdur</div>}
                       {enabled.map((link) => {
                         const service = serviceTypes.find((type) => type.id === link.service_type_id);
-                        return <div key={link.service_type_id} className="text-xs flex justify-between gap-2"><span>{service?.name ?? "Reklam funksiyasÄ±"}</span><b>{link.usage_limit} istifadÉ™</b></div>;
+                        return <div key={link.service_type_id} className="text-xs flex justify-between gap-2"><span>{service?.name ?? "Reklam funksiyası"}</span><b>{link.usage_limit} istifadə</b></div>;
                       })}
                     </div>
                   </div>
                   <div className="border-t border-border p-3 flex gap-2">
-                    <button onClick={() => setPackageDraft(pkg)} title="RedaktÉ™ et" className="h-9 flex-1 rounded-md border border-border font-semibold inline-flex items-center justify-center gap-1"><Edit3 className="h-4 w-4" /> RedaktÉ™</button>
+                    <button onClick={() => setPackageDraft(pkg)} title="Redaktə et" className="h-9 flex-1 rounded-md border border-border font-semibold inline-flex items-center justify-center gap-1"><Edit3 className="h-4 w-4" /> Redaktə</button>
                     <button onClick={() => void togglePackage(pkg)} title={pkg.is_active ? "Deaktiv et" : "Aktiv et"} className="h-9 w-9 rounded-md border border-border inline-flex items-center justify-center"><Power className="h-4 w-4" /></button>
                     <button onClick={() => void deletePackage(pkg)} title="Sil" className="h-9 w-9 rounded-md border border-destructive/30 text-destructive inline-flex items-center justify-center"><Trash2 className="h-4 w-4" /></button>
                   </div>
@@ -309,7 +329,7 @@ export function AdminAdvertisingPackages() {
       {view === "services" && (
         <div className="space-y-4">
           <div className="flex items-center justify-between gap-3">
-            <p className="text-sm text-muted-foreground">Yeni reklam nÃ¶vÃ¼ yaradÄ±ldÄ±qda avtomatik olaraq bÃ¼tÃ¼n paket redaktorlarÄ±nda gÃ¶rÃ¼nÉ™cÉ™k.</p>
+            <p className="text-sm text-muted-foreground">Yeni reklam növü yaradıldıqda avtomatik olaraq bütün paket redaktorlarında görünəcək.</p>
             <button onClick={() => setServiceDraft({
               id: "", slug: "", name: "", description: "", base_price: 0,
               default_duration_days: 7, default_usage_limit: 1, display_rules: {}, priority: 100,
@@ -320,13 +340,13 @@ export function AdminAdvertisingPackages() {
           </div>
           <div className="border border-border rounded-lg overflow-x-auto bg-card">
             <table className="w-full min-w-[860px] text-sm">
-              <thead className="bg-secondary/50 text-left"><tr><th className="p-3">Funksiya</th><th className="p-3">QiymÉ™t</th><th className="p-3">MÃ¼ddÉ™t</th><th className="p-3">Limit</th><th className="p-3">Prioritet</th><th className="p-3">Status</th><th className="p-3 text-right">ÆmÉ™liyyat</th></tr></thead>
+              <thead className="bg-secondary/50 text-left"><tr><th className="p-3">Funksiya</th><th className="p-3">Qiymət</th><th className="p-3">Müddət</th><th className="p-3">Limit</th><th className="p-3">Prioritet</th><th className="p-3">Status</th><th className="p-3 text-right">Əməliyyat</th></tr></thead>
               <tbody>{serviceTypes.map((service) => (
                 <tr key={service.id} className="border-t border-border">
                   <td className="p-3"><div className="font-bold">{service.name}</div><code className="text-xs text-muted-foreground">{service.slug}</code></td>
-                  <td className="p-3">{formatAZN(service.base_price)}</td><td className="p-3">{service.default_duration_days} gÃ¼n</td><td className="p-3">{service.default_usage_limit}</td><td className="p-3">{service.priority}</td>
+                  <td className="p-3">{formatAZN(service.base_price)}</td><td className="p-3">{service.default_duration_days} gün</td><td className="p-3">{service.default_usage_limit}</td><td className="p-3">{service.priority}</td>
                   <td className="p-3"><button onClick={() => void toggleServiceType(service)} className={`text-xs px-2 py-1 rounded-full font-bold ${service.is_active ? "bg-success/10 text-success" : "bg-muted text-muted-foreground"}`}>{service.is_active ? "Aktiv" : "Deaktiv"}</button></td>
-                  <td className="p-3"><div className="flex justify-end gap-2"><button onClick={() => setServiceDraft(service)} title="RedaktÉ™ et" className="p-2 rounded-md border border-border"><Edit3 className="h-4 w-4" /></button><button onClick={() => void deleteServiceType(service)} title="Sil" className="p-2 rounded-md border border-destructive/30 text-destructive"><Trash2 className="h-4 w-4" /></button></div></td>
+                  <td className="p-3"><div className="flex justify-end gap-2"><button onClick={() => setServiceDraft(service)} title="Redaktə et" className="p-2 rounded-md border border-border"><Edit3 className="h-4 w-4" /></button><button onClick={() => void deleteServiceType(service)} title="Sil" className="p-2 rounded-md border border-destructive/30 text-destructive"><Trash2 className="h-4 w-4" /></button></div></td>
                 </tr>
               ))}</tbody>
             </table>
@@ -337,22 +357,22 @@ export function AdminAdvertisingPackages() {
       {view === "assignments" && (
         <div className="space-y-5">
           <div className="border border-border rounded-lg bg-card p-4">
-            <div className="font-black mb-3">SatÄ±cÄ±ya paket tÉ™yin et vÉ™ ya dÉ™yiÅŸdir</div>
+            <div className="font-black mb-3">Satıcıya paket təyin et və ya dəyişdir</div>
             <div className="grid md:grid-cols-[1.2fr_1fr_120px_1fr_auto] gap-3 items-end">
-              <Field label="SatÄ±cÄ±"><select value={sellerId} onChange={(e) => setSellerId(e.target.value)} className={inputClass}><option value="">SatÄ±cÄ± seÃ§in</option>{sellers.map((seller) => <option key={seller.id} value={seller.id}>{seller.shop_name || seller.full_name || seller.id}</option>)}</select></Field>
-              <Field label="Paket"><select value={packageId} onChange={(e) => { setPackageId(e.target.value); const p = packages.find((item) => item.id === e.target.value); if (p) setAssignmentDays(p.duration_days); }} className={inputClass}><option value="">Paket seÃ§in</option>{packages.map((pkg) => <option key={pkg.id} value={pkg.id}>{pkg.name}</option>)}</select></Field>
-              <Field label="MÃ¼ddÉ™t"><input type="number" min={1} value={assignmentDays} onChange={(e) => setAssignmentDays(Number(e.target.value))} className={inputClass} /></Field>
+              <Field label="Satıcı"><select value={sellerId} onChange={(e) => setSellerId(e.target.value)} className={inputClass}><option value="">Satıcı seçin</option>{sellers.map((seller) => <option key={seller.id} value={seller.id}>{seller.shop_name || seller.full_name || seller.id}</option>)}</select></Field>
+              <Field label="Paket"><select value={packageId} onChange={(e) => { setPackageId(e.target.value); const p = packages.find((item) => item.id === e.target.value); if (p) setAssignmentDays(p.duration_days); }} className={inputClass}><option value="">Paket seçin</option>{packages.map((pkg) => <option key={pkg.id} value={pkg.id}>{pkg.name}</option>)}</select></Field>
+              <Field label="Müddət"><input type="number" min={1} value={assignmentDays} onChange={(e) => setAssignmentDays(Number(e.target.value))} className={inputClass} /></Field>
               <Field label="Admin qeydi"><input value={assignmentNote} onChange={(e) => setAssignmentNote(e.target.value)} className={inputClass} placeholder="Opsional" /></Field>
-              <button onClick={() => void assignPackage()} className="h-10 px-4 rounded-md bg-primary text-primary-foreground font-bold inline-flex items-center gap-2"><Check className="h-4 w-4" /> TÉ™yin et</button>
+              <button onClick={() => void assignPackage()} className="h-10 px-4 rounded-md bg-primary text-primary-foreground font-bold inline-flex items-center gap-2"><Check className="h-4 w-4" /> Təyin et</button>
             </div>
           </div>
           <div className="border border-border rounded-lg overflow-x-auto bg-card">
             <table className="w-full min-w-[900px] text-sm">
-              <thead className="bg-secondary/50 text-left"><tr><th className="p-3">SatÄ±cÄ±</th><th className="p-3">Paket</th><th className="p-3">BaÅŸlanÄŸÄ±c</th><th className="p-3">BitmÉ™</th><th className="p-3">Status</th><th className="p-3 text-right">Ä°darÉ™etmÉ™</th></tr></thead>
-              <tbody>{assignments.length === 0 ? <tr><td colSpan={6} className="p-8 text-center text-muted-foreground">Paket tÉ™yinatÄ± yoxdur</td></tr> : assignments.map((assignment) => {
+              <thead className="bg-secondary/50 text-left"><tr><th className="p-3">Satıcı</th><th className="p-3">Paket</th><th className="p-3">Başlanğıc</th><th className="p-3">Bitmə</th><th className="p-3">Status</th><th className="p-3 text-right">İdarəetmə</th></tr></thead>
+              <tbody>{assignments.length === 0 ? <tr><td colSpan={6} className="p-8 text-center text-muted-foreground">Paket təyinatı yoxdur</td></tr> : assignments.map((assignment) => {
                 const seller = sellerById.get(assignment.seller_id);
                 const active = assignment.is_active && new Date(assignment.ends_at) > new Date();
-                return <tr key={assignment.id} className="border-t border-border"><td className="p-3"><div className="font-bold">{seller?.shop_name || seller?.full_name || "SatÄ±cÄ±"}</div><div className="text-xs text-muted-foreground">{assignment.source}</div></td><td className="p-3 font-semibold" style={{ color: assignment.ad_packages?.color }}>{assignment.ad_packages?.name ?? "â€”"}</td><td className="p-3">{formatDate(assignment.starts_at)}</td><td className="p-3">{formatDate(assignment.ends_at)}</td><td className="p-3"><span className={`text-xs px-2 py-1 rounded-full font-bold ${active ? "bg-success/10 text-success" : "bg-muted text-muted-foreground"}`}>{active ? "Aktiv" : "Bitib / lÉ™ÄŸv edilib"}</span></td><td className="p-3"><div className="flex justify-end gap-2"><button onClick={() => void extendAssignment(assignment, 7)} className="h-8 px-2 rounded-md border border-border text-xs font-bold">+7 gÃ¼n</button><button onClick={() => void extendAssignment(assignment, 30)} className="h-8 px-2 rounded-md border border-border text-xs font-bold inline-flex items-center gap-1"><CalendarPlus className="h-3.5 w-3.5" /> +30 gÃ¼n</button>{active && <button onClick={() => void cancelAssignment(assignment)} className="h-8 px-2 rounded-md border border-destructive/30 text-destructive text-xs font-bold">LÉ™ÄŸv et</button>}</div></td></tr>;
+                return <tr key={assignment.id} className="border-t border-border"><td className="p-3"><div className="font-bold">{seller?.shop_name || seller?.full_name || "Satıcı"}</div><div className="text-xs text-muted-foreground">{assignment.source}</div></td><td className="p-3 font-semibold" style={{ color: assignment.ad_packages?.color }}>{assignment.ad_packages?.name ?? "—"}</td><td className="p-3">{formatDate(assignment.starts_at)}</td><td className="p-3">{formatDate(assignment.ends_at)}</td><td className="p-3"><span className={`text-xs px-2 py-1 rounded-full font-bold ${active ? "bg-success/10 text-success" : "bg-muted text-muted-foreground"}`}>{active ? "Aktiv" : "Bitib / ləğv edilib"}</span></td><td className="p-3"><div className="flex justify-end gap-2"><button onClick={() => void extendAssignment(assignment, 7)} className="h-8 px-2 rounded-md border border-border text-xs font-bold">+7 gün</button><button onClick={() => void extendAssignment(assignment, 30)} className="h-8 px-2 rounded-md border border-border text-xs font-bold inline-flex items-center gap-1"><CalendarPlus className="h-3.5 w-3.5" /> +30 gün</button>{active && <button onClick={() => void cancelAssignment(assignment)} className="h-8 px-2 rounded-md border border-destructive/30 text-destructive text-xs font-bold">Ləğv et</button>}</div></td></tr>;
               })}</tbody>
             </table>
           </div>
@@ -389,8 +409,8 @@ function PackageModal({ pkg, serviceTypes, current, onClose, onSave }: { pkg: Ad
     try {
       const parsed = services.map((row) => ({
         ...row,
-        display_rules: parseObject(rulesText[row.service_type_id], "GÃ¶stÉ™rilmÉ™ qaydalarÄ±"),
-        settings: parseObject(settingsText[row.service_type_id], "ParametrlÉ™r"),
+        display_rules: parseObject(rulesText[row.service_type_id], "Göstərilmə qaydaları"),
+        settings: parseObject(settingsText[row.service_type_id], "Parametrlər"),
       }));
       setSaving(true);
       await onSave(draft, parsed);
@@ -401,32 +421,32 @@ function PackageModal({ pkg, serviceTypes, current, onClose, onSave }: { pkg: Ad
     }
   };
 
-  return <Modal title={pkg.id ? "Reklam paketini redaktÉ™ et" : "Yeni reklam paketi"} onClose={onClose}>
+  return <Modal title={pkg.id ? "Reklam paketini redaktə et" : "Yeni reklam paketi"} onClose={onClose}>
     <div className="space-y-5">
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
-        <Field label="Paket adÄ±"><input value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} className={inputClass} /></Field>
+        <Field label="Paket adı"><input value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} className={inputClass} /></Field>
         <Field label="Paket kodu"><input value={draft.tier} onChange={(e) => setDraft({ ...draft, tier: e.target.value })} className={inputClass} /></Field>
-        <Field label="QiymÉ™t (â‚¼)"><input type="number" min={0} step="0.01" value={draft.price} onChange={(e) => setDraft({ ...draft, price: Number(e.target.value) })} className={inputClass} /></Field>
-        <Field label="Paket mÃ¼ddÉ™ti (gÃ¼n)"><input type="number" min={1} value={draft.duration_days} onChange={(e) => setDraft({ ...draft, duration_days: Number(e.target.value) })} className={inputClass} /></Field>
-        <Field label="SÄ±ralama"><input type="number" value={draft.sort_order} onChange={(e) => setDraft({ ...draft, sort_order: Number(e.target.value) })} className={inputClass} /></Field>
-        <Field label="RÉ™ng"><input type="color" value={draft.color} onChange={(e) => setDraft({ ...draft, color: e.target.value })} className="w-full h-10 rounded-md border border-input bg-background p-1" /></Field>
+        <Field label="Qiymət (₼)"><input type="number" min={0} step="0.01" value={draft.price} onChange={(e) => setDraft({ ...draft, price: Number(e.target.value) })} className={inputClass} /></Field>
+        <Field label="Paket müddəti (gün)"><input type="number" min={1} value={draft.duration_days} onChange={(e) => setDraft({ ...draft, duration_days: Number(e.target.value) })} className={inputClass} /></Field>
+        <Field label="Sıralama"><input type="number" value={draft.sort_order} onChange={(e) => setDraft({ ...draft, sort_order: Number(e.target.value) })} className={inputClass} /></Field>
+        <Field label="Rəng"><input type="color" value={draft.color} onChange={(e) => setDraft({ ...draft, color: e.target.value })} className="w-full h-10 rounded-md border border-input bg-background p-1" /></Field>
       </div>
       <label className="flex items-center gap-2 text-sm font-bold"><input type="checkbox" checked={draft.is_active} onChange={(e) => setDraft({ ...draft, is_active: e.target.checked })} /> Paket aktivdir</label>
-      <div><h4 className="font-black mb-3">PaketÉ™ daxil olan reklam funksiyalarÄ±</h4><div className="space-y-3">{serviceTypes.map((type) => {
+      <div><h4 className="font-black mb-3">Paketə daxil olan reklam funksiyaları</h4><div className="space-y-3">{serviceTypes.map((type) => {
         const row = services.find((item) => item.service_type_id === type.id)!;
         return <div key={type.id} className="border border-border rounded-md p-4">
           <div className="flex items-start justify-between gap-3 mb-3"><div><div className="font-bold">{type.name}</div><div className="text-xs text-muted-foreground">{type.description}</div></div><label className="flex items-center gap-2 text-sm font-bold"><input type="checkbox" checked={row.is_active} onChange={(e) => updateService(type.id, { is_active: e.target.checked })} /> Aktiv</label></div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
-            <Field label="Aktivasiya qiymÉ™ti"><input type="number" min={0} step="0.01" value={row.activation_price} onChange={(e) => updateService(type.id, { activation_price: Number(e.target.value) })} className={inputClass} /></Field>
-            <Field label="MÃ¼ddÉ™t (gÃ¼n)"><input type="number" min={1} value={row.duration_days} onChange={(e) => updateService(type.id, { duration_days: Number(e.target.value) })} className={inputClass} /></Field>
-            <Field label="Ä°stifadÉ™ limiti"><input type="number" min={0} value={row.usage_limit} onChange={(e) => updateService(type.id, { usage_limit: Number(e.target.value) })} className={inputClass} /></Field>
+            <Field label="Aktivasiya qiyməti"><input type="number" min={0} step="0.01" value={row.activation_price} onChange={(e) => updateService(type.id, { activation_price: Number(e.target.value) })} className={inputClass} /></Field>
+            <Field label="Müddət (gün)"><input type="number" min={1} value={row.duration_days} onChange={(e) => updateService(type.id, { duration_days: Number(e.target.value) })} className={inputClass} /></Field>
+            <Field label="İstifadə limiti"><input type="number" min={0} value={row.usage_limit} onChange={(e) => updateService(type.id, { usage_limit: Number(e.target.value) })} className={inputClass} /></Field>
             <Field label="Prioritet"><input type="number" value={row.priority} onChange={(e) => updateService(type.id, { priority: Number(e.target.value) })} className={inputClass} /></Field>
-            <div className="sm:col-span-2"><Field label="GÃ¶stÉ™rilmÉ™ qaydalarÄ± (JSON)"><textarea rows={4} value={rulesText[type.id] ?? "{}"} onChange={(e) => setRulesText((text) => ({ ...text, [type.id]: e.target.value }))} className="w-full p-3 rounded-md border border-input bg-background text-xs font-mono" /></Field></div>
-            <div className="sm:col-span-2"><Field label="DigÉ™r parametrlÉ™r (JSON)"><textarea rows={4} value={settingsText[type.id] ?? "{}"} onChange={(e) => setSettingsText((text) => ({ ...text, [type.id]: e.target.value }))} className="w-full p-3 rounded-md border border-input bg-background text-xs font-mono" /></Field></div>
+            <div className="sm:col-span-2"><Field label="Göstərilmə qaydaları (JSON)"><textarea rows={4} value={rulesText[type.id] ?? "{}"} onChange={(e) => setRulesText((text) => ({ ...text, [type.id]: e.target.value }))} className="w-full p-3 rounded-md border border-input bg-background text-xs font-mono" /></Field></div>
+            <div className="sm:col-span-2"><Field label="Digər parametrlər (JSON)"><textarea rows={4} value={settingsText[type.id] ?? "{}"} onChange={(e) => setSettingsText((text) => ({ ...text, [type.id]: e.target.value }))} className="w-full p-3 rounded-md border border-input bg-background text-xs font-mono" /></Field></div>
           </div>
         </div>;
       })}</div></div>
-      <div className="flex justify-end gap-2"><button onClick={onClose} className="h-10 px-4 rounded-md border border-border font-bold">LÉ™ÄŸv et</button><button disabled={saving} onClick={() => void submit()} className="h-10 px-4 rounded-md bg-primary text-primary-foreground font-bold inline-flex items-center gap-2"><Check className="h-4 w-4" />{saving ? "SaxlanÄ±lÄ±r..." : "Yadda saxla"}</button></div>
+      <div className="flex justify-end gap-2"><button onClick={onClose} className="h-10 px-4 rounded-md border border-border font-bold">Ləğv et</button><button disabled={saving} onClick={() => void submit()} className="h-10 px-4 rounded-md bg-primary text-primary-foreground font-bold inline-flex items-center gap-2"><Check className="h-4 w-4" />{saving ? "Saxlanılır..." : "Yadda saxla"}</button></div>
     </div>
   </Modal>;
 }
@@ -436,22 +456,22 @@ function ServiceModal({ service, onClose, onSave }: { service: ServiceType; onCl
   const [rulesText, setRulesText] = useState(json(service.display_rules));
   const [settingsText, setSettingsText] = useState(json(service.settings));
   const submit = async () => {
-    try { await onSave({ ...draft, display_rules: parseObject(rulesText, "GÃ¶stÉ™rilmÉ™ qaydalarÄ±"), settings: parseObject(settingsText, "ParametrlÉ™r") }); }
+    try { await onSave({ ...draft, display_rules: parseObject(rulesText, "Göstərilmə qaydaları"), settings: parseObject(settingsText, "Parametrlər") }); }
     catch (error) { toast.error((error as Error).message); }
   };
-  return <Modal title={service.id ? "Reklam funksiyasÄ±nÄ± redaktÉ™ et" : "Yeni reklam funksiyasÄ±"} onClose={onClose}>
+  return <Modal title={service.id ? "Reklam funksiyasını redaktə et" : "Yeni reklam funksiyası"} onClose={onClose}>
     <div className="space-y-4">
-      <div className="grid sm:grid-cols-2 gap-3"><Field label="Funksiya adÄ±"><input value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} className={inputClass} /></Field><Field label="Sistem kodu"><input value={draft.slug} disabled={Boolean(service.id)} onChange={(e) => setDraft({ ...draft, slug: e.target.value })} className={inputClass} placeholder="new_ad_type" /></Field></div>
-      <Field label="TÉ™svir"><textarea rows={2} value={draft.description ?? ""} onChange={(e) => setDraft({ ...draft, description: e.target.value })} className="w-full p-3 rounded-md border border-input bg-background text-sm" /></Field>
-      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3"><Field label="QiymÉ™t (â‚¼)"><input type="number" min={0} step="0.01" value={draft.base_price} onChange={(e) => setDraft({ ...draft, base_price: Number(e.target.value) })} className={inputClass} /></Field><Field label="MÃ¼ddÉ™t (gÃ¼n)"><input type="number" min={1} value={draft.default_duration_days} onChange={(e) => setDraft({ ...draft, default_duration_days: Number(e.target.value) })} className={inputClass} /></Field><Field label="Ä°stifadÉ™ limiti"><input type="number" min={0} value={draft.default_usage_limit} onChange={(e) => setDraft({ ...draft, default_usage_limit: Number(e.target.value) })} className={inputClass} /></Field><Field label="Prioritet"><input type="number" value={draft.priority} onChange={(e) => setDraft({ ...draft, priority: Number(e.target.value) })} className={inputClass} /></Field></div>
-      <div className="grid sm:grid-cols-2 gap-3"><Field label="GÃ¶stÉ™rilmÉ™ qaydalarÄ± (JSON)"><textarea rows={7} value={rulesText} onChange={(e) => setRulesText(e.target.value)} className="w-full p-3 rounded-md border border-input bg-background text-xs font-mono" /></Field><Field label="DigÉ™r parametrlÉ™r (JSON)"><textarea rows={7} value={settingsText} onChange={(e) => setSettingsText(e.target.value)} className="w-full p-3 rounded-md border border-input bg-background text-xs font-mono" /></Field></div>
-      <div className="flex items-center justify-between"><label className="flex items-center gap-2 text-sm font-bold"><input type="checkbox" checked={draft.is_active} onChange={(e) => setDraft({ ...draft, is_active: e.target.checked })} /> Aktivdir</label><Field label="SÄ±ralama"><input type="number" value={draft.sort_order} onChange={(e) => setDraft({ ...draft, sort_order: Number(e.target.value) })} className="h-9 w-28 px-3 rounded-md border border-input bg-background" /></Field></div>
-      <div className="flex justify-end gap-2"><button onClick={onClose} className="h-10 px-4 rounded-md border border-border font-bold">LÉ™ÄŸv et</button><button onClick={() => void submit()} className="h-10 px-4 rounded-md bg-primary text-primary-foreground font-bold inline-flex items-center gap-2"><Check className="h-4 w-4" /> Yadda saxla</button></div>
+      <div className="grid sm:grid-cols-2 gap-3"><Field label="Funksiya adı"><input value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} className={inputClass} /></Field><Field label="Sistem kodu"><input value={draft.slug} disabled={Boolean(service.id)} onChange={(e) => setDraft({ ...draft, slug: e.target.value })} className={inputClass} placeholder="new_ad_type" /></Field></div>
+      <Field label="Təsvir"><textarea rows={2} value={draft.description ?? ""} onChange={(e) => setDraft({ ...draft, description: e.target.value })} className="w-full p-3 rounded-md border border-input bg-background text-sm" /></Field>
+      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3"><Field label="Qiymət (₼)"><input type="number" min={0} step="0.01" value={draft.base_price} onChange={(e) => setDraft({ ...draft, base_price: Number(e.target.value) })} className={inputClass} /></Field><Field label="Müddət (gün)"><input type="number" min={1} value={draft.default_duration_days} onChange={(e) => setDraft({ ...draft, default_duration_days: Number(e.target.value) })} className={inputClass} /></Field><Field label="İstifadə limiti"><input type="number" min={0} value={draft.default_usage_limit} onChange={(e) => setDraft({ ...draft, default_usage_limit: Number(e.target.value) })} className={inputClass} /></Field><Field label="Prioritet"><input type="number" value={draft.priority} onChange={(e) => setDraft({ ...draft, priority: Number(e.target.value) })} className={inputClass} /></Field></div>
+      <div className="grid sm:grid-cols-2 gap-3"><Field label="Göstərilmə qaydaları (JSON)"><textarea rows={7} value={rulesText} onChange={(e) => setRulesText(e.target.value)} className="w-full p-3 rounded-md border border-input bg-background text-xs font-mono" /></Field><Field label="Digər parametrlər (JSON)"><textarea rows={7} value={settingsText} onChange={(e) => setSettingsText(e.target.value)} className="w-full p-3 rounded-md border border-input bg-background text-xs font-mono" /></Field></div>
+      <div className="flex items-center justify-between"><label className="flex items-center gap-2 text-sm font-bold"><input type="checkbox" checked={draft.is_active} onChange={(e) => setDraft({ ...draft, is_active: e.target.checked })} /> Aktivdir</label><Field label="Sıralama"><input type="number" value={draft.sort_order} onChange={(e) => setDraft({ ...draft, sort_order: Number(e.target.value) })} className="h-9 w-28 px-3 rounded-md border border-input bg-background" /></Field></div>
+      <div className="flex justify-end gap-2"><button onClick={onClose} className="h-10 px-4 rounded-md border border-border font-bold">Ləğv et</button><button onClick={() => void submit()} className="h-10 px-4 rounded-md bg-primary text-primary-foreground font-bold inline-flex items-center gap-2"><Check className="h-4 w-4" /> Yadda saxla</button></div>
     </div>
   </Modal>;
 }
 
 function Modal({ title, onClose, children }: { title: string; onClose: () => void; children: React.ReactNode }) {
-  return <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-3" onMouseDown={onClose}><div className="w-full max-w-5xl max-h-[94vh] overflow-y-auto rounded-lg bg-card border border-border shadow-2xl" onMouseDown={(e) => e.stopPropagation()}><div className="sticky top-0 z-10 bg-card border-b border-border px-5 py-4 flex items-center justify-between"><h3 className="text-xl font-black">{title}</h3><button onClick={onClose} title="BaÄŸla" className="h-9 w-9 rounded-md hover:bg-secondary inline-flex items-center justify-center"><X className="h-5 w-5" /></button></div><div className="p-5">{children}</div></div></div>;
+  return <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-3" onMouseDown={onClose}><div className="w-full max-w-5xl max-h-[94vh] overflow-y-auto rounded-lg bg-card border border-border shadow-2xl" onMouseDown={(e) => e.stopPropagation()}><div className="sticky top-0 z-10 bg-card border-b border-border px-5 py-4 flex items-center justify-between"><h3 className="text-xl font-black">{title}</h3><button onClick={onClose} title="Bağla" className="h-9 w-9 rounded-md hover:bg-secondary inline-flex items-center justify-center"><X className="h-5 w-5" /></button></div><div className="p-5">{children}</div></div></div>;
 }
 

@@ -229,7 +229,7 @@ function AppShell() {
   if (isWorkPanel || isSellerTrends || (portal !== "marketplace" && isAuthRoute) || (portal === "seller" && pathname === "/become-seller")) {
     const label = portal === "seller" ? "Satıcı portalı" : portal === "pvz" ? "PVZ PUNKT portalı" : "Admin portalı";
     return (
-      <div className="min-h-screen flex flex-col bg-background w-full">
+      <div className="flex min-h-screen w-full bg-background">
         <WorkHeader label={label} />
         <main className="flex-1">
           <Outlet />

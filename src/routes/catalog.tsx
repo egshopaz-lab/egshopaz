@@ -182,8 +182,8 @@ function Catalog() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-[250px_minmax(0,1fr)] gap-5 lg:gap-7">
-        <aside className="hidden md:block">
+      <div className="grid grid-cols-1 gap-5 xl:grid-cols-[250px_minmax(0,1fr)] xl:gap-7">
+        <aside className="hidden xl:block">
           <div className="sticky top-40 rounded-2xl border border-border bg-card p-3 shadow-sm">
           <h2 className="flex items-center gap-2 px-2 py-2 font-extrabold"><Grid2X2 className="h-4 w-4 text-primary" />{t("catalog.categories")}</h2>
           <ul className="max-h-[calc(100vh-13rem)] space-y-1 overflow-y-auto pr-1 scrollbar-hide">
