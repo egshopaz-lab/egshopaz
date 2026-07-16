@@ -12,12 +12,14 @@ interface ShopRow {
   profiles?: {
     id: string;
     shop_name: string | null;
-    full_name: string | null;
+    full_name?: string | null;
     shop_logo_url: string | null;
     shop_banner_url: string | null;
     shop_city: string | null;
   } | null;
 }
+
+type Storefront = NonNullable<ShopRow["profiles"]>;
 
 export function FeaturedShops() {
   const { user } = useAuth();
@@ -28,14 +30,44 @@ export function FeaturedShops() {
   useEffect(() => {
     void (async () => {
       const nowIso = new Date().toISOString();
-      const { data } = await (supabase as any)
+      const { data: sponsorships, error: sponsorshipsError } = await (supabase as any)
         .from("sponsored_shops")
-        .select("id,seller_id,profiles:seller_id(id,shop_name,full_name,shop_logo_url,shop_banner_url,shop_city)")
+        .select("id,seller_id")
         .eq("is_active", true)
         .gt("ends_at", nowIso)
         .order("priority", { ascending: false })
         .limit(12);
-      setShops((data ?? []) as unknown as ShopRow[]);
+      if (sponsorshipsError) {
+        console.error("Sponsored shops could not be loaded", sponsorshipsError);
+        setShops([]);
+        return;
+      }
+
+      const rows = (sponsorships ?? []) as Array<{ id: string; seller_id: string }>;
+      if (rows.length === 0) {
+        setShops([]);
+        return;
+      }
+
+      const sellerIds = [...new Set(rows.map((row) => row.seller_id))];
+      const { data: storefronts, error: storefrontsError } = await (supabase as any)
+        .from("seller_storefronts")
+        .select("id,shop_name,shop_logo_url,shop_banner_url,shop_city")
+        .in("id", sellerIds);
+      if (storefrontsError) {
+        console.error("Seller storefronts could not be loaded", storefrontsError);
+        setShops([]);
+        return;
+      }
+
+      const storefrontMap = new Map<string, Storefront>(
+        (storefronts ?? []).map((storefront: Storefront) => [storefront.id, storefront]),
+      );
+      setShops(
+        rows
+          .map<ShopRow>((row) => ({ ...row, profiles: storefrontMap.get(row.seller_id) ?? null }))
+          .filter((row) => row.profiles !== null),
+      );
     })();
   }, []);
 
