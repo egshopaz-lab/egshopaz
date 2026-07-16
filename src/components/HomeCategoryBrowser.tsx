@@ -28,26 +28,41 @@ export function HomeCategoryBrowser() {
   const [activeRootId, setActiveRootId] = useState<string | null>(null);
 
   useEffect(() => {
-    supabase
-      .from("categories")
-      .select(
-        "id,name,name_ru,name_en,slug,icon,parent_id,sort_order,image_url,background_color,is_featured,popularity_score",
-      )
-      .order("sort_order")
-      .then(({ data }: { data: Category[] | null }) => {
-        const list = data ?? [];
-        setCategories(list);
-        const preferred = [...list]
-          .filter((item) => !item.parent_id)
-          .sort(
-            (a, b) =>
-              Number(b.is_featured) - Number(a.is_featured) ||
-              b.popularity_score - a.popularity_score ||
-              a.sort_order - b.sort_order,
-          )[0];
-        setActiveRootId(preferred?.id ?? null);
-        setLoading(false);
-      });
+    void (async () => {
+      const visualResult = await supabase
+        .from("categories")
+        .select(
+          "id,name,name_ru,name_en,slug,icon,parent_id,sort_order,image_url,background_color,is_featured,popularity_score",
+        )
+        .order("sort_order");
+
+      let list = (visualResult.data ?? []) as Category[];
+      if (visualResult.error) {
+        const legacyResult = await supabase
+          .from("categories")
+          .select("id,name,name_ru,name_en,slug,icon,parent_id,sort_order")
+          .order("sort_order");
+        list = (legacyResult.data ?? []).map((category) => ({
+          ...category,
+          image_url: null,
+          background_color: null,
+          is_featured: false,
+          popularity_score: 0,
+        }));
+      }
+
+      setCategories(list);
+      const preferred = [...list]
+        .filter((item) => !item.parent_id)
+        .sort(
+          (a, b) =>
+            Number(b.is_featured) - Number(a.is_featured) ||
+            b.popularity_score - a.popularity_score ||
+            a.sort_order - b.sort_order,
+        )[0];
+      setActiveRootId(preferred?.id ?? null);
+      setLoading(false);
+    })();
   }, []);
 
   const roots = useMemo(
