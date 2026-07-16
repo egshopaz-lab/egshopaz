@@ -5,6 +5,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { BadgeCheck, CreditCard, LockKeyhole, Package, Store, TrendingUp } from "lucide-react";
 import { toast } from "sonner";
+import { AcquisitionSourceFields } from "@/components/AcquisitionSourceFields";
+import { ACQUISITION_DETAIL_SOURCES, type AcquisitionSource } from "@/lib/acquisitionSources";
 
 type PaymentSearch = { payment?: "success" | "error" };
 
@@ -37,6 +39,10 @@ function BecomeSeller() {
   const [shopCity, setShopCity] = useState("");
   const [phone, setPhone] = useState("");
   const [voen, setVoen] = useState("");
+  const [acquisitionSource, setAcquisitionSource] = useState("");
+  const [acquisitionDetail, setAcquisitionDetail] = useState("");
+  const [acquisitionEnabled, setAcquisitionEnabled] = useState(true);
+  const [acquisitionRequired, setAcquisitionRequired] = useState(true);
   const [busy, setBusy] = useState(false);
   const [checking, setChecking] = useState(true);
 
@@ -81,6 +87,21 @@ function BecomeSeller() {
   }, [user, loadApplication]);
 
   useEffect(() => {
+    if (!user) return;
+    void Promise.all([
+      supabase.from("profiles").select("acquisition_source,acquisition_detail").eq("id", user.id).maybeSingle(),
+      supabase.from("system_settings").select("acquisition_source_enabled,acquisition_source_required").limit(1).maybeSingle(),
+    ]).then(([profileResult, settingsResult]) => {
+      const profile = profileResult.data as { acquisition_source?: string | null; acquisition_detail?: string | null } | null;
+      const settings = settingsResult.data as { acquisition_source_enabled?: boolean; acquisition_source_required?: boolean } | null;
+      setAcquisitionSource(profile?.acquisition_source ?? "");
+      setAcquisitionDetail(profile?.acquisition_detail ?? "");
+      setAcquisitionEnabled(settings?.acquisition_source_enabled ?? true);
+      setAcquisitionRequired(settings?.acquisition_source_required ?? true);
+    });
+  }, [user]);
+
+  useEffect(() => {
     if (!user || search.payment !== "success" || application?.status === "active") return;
     const interval = window.setInterval(() => void loadApplication(), 2500);
     const timeout = window.setTimeout(() => window.clearInterval(interval), 60_000);
@@ -96,6 +117,25 @@ function BecomeSeller() {
     if (shopName.trim().length < 2) {
       toast.error("Mağaza adı minimum 2 simvol olmalıdır");
       return;
+    }
+
+    if (acquisitionEnabled) {
+      if (acquisitionRequired && !acquisitionSource) {
+        toast.error("Sizi haradan tanıdığımızı seçin");
+        return;
+      }
+      if (ACQUISITION_DETAIL_SOURCES.has(acquisitionSource as AcquisitionSource) && !acquisitionDetail.trim()) {
+        toast.error("Kim tərəfindən cəlb olunduğunuzu qeyd edin");
+        return;
+      }
+      const { error: sourceError } = await supabase.rpc("record_registration_source" as never, {
+        _source: acquisitionSource,
+        _detail: acquisitionDetail.trim() || null,
+      } as never);
+      if (sourceError) {
+        toast.error(sourceError.message);
+        return;
+      }
     }
 
     setBusy(true);
@@ -238,6 +278,15 @@ function BecomeSeller() {
             className="mt-1 w-full h-11 px-3 rounded-lg border border-input bg-background"
           />
         </div>
+
+        <AcquisitionSourceFields
+          source={acquisitionSource}
+          detail={acquisitionDetail}
+          enabled={acquisitionEnabled}
+          required={acquisitionRequired}
+          onSourceChange={setAcquisitionSource}
+          onDetailChange={setAcquisitionDetail}
+        />
 
         <div className="rounded-xl bg-secondary/60 p-4 flex items-center justify-between gap-4">
           <div>

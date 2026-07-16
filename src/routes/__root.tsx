@@ -146,7 +146,10 @@ function AppShell() {
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const portal = usePortal();
-  const { user, isSeller, isAdmin, isPvz, loading } = useAuth();
+  const {
+    user, isSeller, isAdmin, isPvz, loading,
+    accountStatus, blockedUntil, blockReason, signOut,
+  } = useAuth();
   const isSellerPanel = pathname === "/seller" || pathname.startsWith("/seller/");
   const isPvzPanel = pathname === "/pvz" || pathname.startsWith("/pvz/");
   const isAdminPanel = pathname === "/admin" || pathname.startsWith("/admin/");
@@ -195,6 +198,33 @@ function AppShell() {
 
     window.location.replace(portalUrl("marketplace", pathname + query));
   }, [isAdmin, isAdminPanel, isAuthRoute, isPvz, isPvzPanel, isSeller, isSellerPanel, loading, navigate, pathname, portal, user]);
+
+  if (!loading && user && accountStatus !== "active") {
+    const statusLabel = accountStatus === "temporary_blocked"
+      ? "Hesab müvəqqəti bloklanıb"
+      : accountStatus === "permanently_blocked"
+        ? "Hesab daimi bloklanıb"
+        : "Hesab deaktiv edilib";
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-muted/30 px-4">
+        <div className="w-full max-w-lg rounded-2xl border bg-card p-8 text-center shadow-card">
+          <h1 className="text-2xl font-extrabold text-destructive">{statusLabel}</h1>
+          <p className="mt-3 text-sm text-muted-foreground">
+            Bu hesabın sistemə və panellərə girişi dayandırılıb.
+          </p>
+          {blockReason && <p className="mt-4 rounded-lg bg-muted p-3 text-sm">Səbəb: {blockReason}</p>}
+          {blockedUntil && accountStatus === "temporary_blocked" && (
+            <p className="mt-3 text-sm text-muted-foreground">
+              Bitmə vaxtı: {new Date(blockedUntil).toLocaleString("az-AZ")}
+            </p>
+          )}
+          <Button className="mt-6" onClick={() => void signOut()}>
+            <LogOut className="mr-2 h-4 w-4" /> Çıxış
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   if (isWorkPanel || (portal !== "marketplace" && isAuthRoute) || (portal === "seller" && pathname === "/become-seller")) {
     const label = portal === "seller" ? "Satıcı portalı" : portal === "pvz" ? "PVZ PUNKT portalı" : "Admin portalı";

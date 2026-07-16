@@ -12,6 +12,9 @@ interface AuthCtx {
   isSeller: boolean;
   isAdmin: boolean;
   isPvz: boolean;
+  accountStatus: string;
+  blockedUntil: string | null;
+  blockReason: string | null;
   signOut: () => Promise<void>;
   refreshRoles: () => Promise<void>;
 }
@@ -22,11 +25,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [roles, setRoles] = useState<Role[]>([]);
+  const [accountStatus, setAccountStatus] = useState("active");
+  const [blockedUntil, setBlockedUntil] = useState<string | null>(null);
+  const [blockReason, setBlockReason] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   const fetchRoles = async (uid: string) => {
-    const { data } = await supabase.from("user_roles").select("role").eq("user_id", uid);
-    setRoles((data?.map((r) => r.role as Role)) ?? []);
+    const [{ data: roleData }, { data: profileData }] = await Promise.all([
+      supabase.from("user_roles").select("role").eq("user_id", uid),
+      supabase.from("profiles").select("account_status,blocked_until,block_reason").eq("id", uid).maybeSingle(),
+    ]);
+    const profile = profileData as { account_status?: string; blocked_until?: string | null; block_reason?: string | null } | null;
+    const temporaryExpired = profile?.account_status === "temporary_blocked" && profile.blocked_until
+      ? new Date(profile.blocked_until) <= new Date()
+      : false;
+    const effectiveStatus = temporaryExpired ? "active" : (profile?.account_status ?? "active");
+    setAccountStatus(effectiveStatus);
+    setBlockedUntil(profile?.blocked_until ?? null);
+    setBlockReason(profile?.block_reason ?? null);
+    setRoles(effectiveStatus === "active" ? (roleData?.map((r) => r.role as Role) ?? []) : []);
+    if (effectiveStatus === "active") {
+      void supabase.from("profiles").update({ last_active_at: new Date().toISOString() } as never).eq("id", uid);
+    }
   };
 
   useEffect(() => {
@@ -47,6 +67,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         await fetchRoles(s.user.id);
       } else {
         setRoles([]);
+        setAccountStatus("active");
+        setBlockedUntil(null);
+        setBlockReason(null);
       }
       setLoading(false);
     };
@@ -76,6 +99,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isSeller: roles.includes("seller"),
       isAdmin: roles.includes("admin"),
       isPvz: roles.includes("pvz"),
+      accountStatus, blockedUntil, blockReason,
       signOut, refreshRoles,
     }}>
       {children}

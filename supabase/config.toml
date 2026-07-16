@@ -29,3 +29,9 @@ verify_jwt = true
 
 [functions.trends-payment-init]
 verify_jwt = true
+
+[functions.admin-user-management]
+verify_jwt = true
+
+[functions.pvz-registration]
+verify_jwt = true

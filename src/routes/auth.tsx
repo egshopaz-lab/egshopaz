@@ -11,6 +11,8 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import egLogo from "@/assets/eg-logo.png";
 import { AZ_CITIES } from "@/lib/azCities";
+import { AcquisitionSourceFields } from "@/components/AcquisitionSourceFields";
+import { ACQUISITION_DETAIL_SOURCES, type AcquisitionSource } from "@/lib/acquisitionSources";
 
 const authSearchSchema = z.object({
   role: z.enum(["buyer", "seller", "pvz", "admin"]).optional(),
@@ -118,6 +120,10 @@ export function PortalAuthForm({
   const [phone, setPhone] = useState("");
   const [referralCode, setReferralCode] = useState(() => initialReferralCode ?? "");
   const [agree, setAgree] = useState(false);
+  const [acquisitionSource, setAcquisitionSource] = useState("");
+  const [acquisitionDetail, setAcquisitionDetail] = useState("");
+  const [acquisitionEnabled, setAcquisitionEnabled] = useState(true);
+  const [acquisitionRequired, setAcquisitionRequired] = useState(true);
 
   // seller
   const [shopName, setShopName] = useState("");
@@ -141,6 +147,17 @@ export function PortalAuthForm({
 
   useEffect(() => { setMounted(true); }, []);
   useEffect(() => {
+    void supabase.from("system_settings")
+      .select("acquisition_source_enabled,acquisition_source_required")
+      .limit(1)
+      .maybeSingle()
+      .then(({ data }) => {
+        const settings = data as { acquisition_source_enabled?: boolean; acquisition_source_required?: boolean } | null;
+        setAcquisitionEnabled(settings?.acquisition_source_enabled ?? true);
+        setAcquisitionRequired(settings?.acquisition_source_required ?? true);
+      });
+  }, []);
+  useEffect(() => {
     if (role !== "pvz") return;
     supabase.from("pickup_points").select("id,name,city").eq("is_active", true).order("city")
       .then(({ data }) => setPvzList(data ?? []));
@@ -157,17 +174,17 @@ export function PortalAuthForm({
     const metadata = user.user_metadata ?? {};
     if (metadata.onboarding_portal !== "pvz") return;
     const args: Record<string, string> = {
-      _full_name: String(metadata.full_name ?? user.email ?? "PVZ istifadəçisi"),
-      _phone: String(metadata.phone ?? ""),
-      _position: String(metadata.position ?? "operator"),
+      full_name: String(metadata.full_name ?? user.email ?? "PVZ istifadəçisi"),
+      phone: String(metadata.phone ?? ""),
+      position: String(metadata.position ?? "operator"),
     };
-    if (metadata.pickup_point_id) args._pickup_point_id = String(metadata.pickup_point_id);
+    if (metadata.pickup_point_id) args.pickup_point_id = String(metadata.pickup_point_id);
     else {
-      args._new_pvz_name = String(metadata.new_pvz_name ?? "");
-      args._new_pvz_city = String(metadata.new_pvz_city ?? "");
-      args._new_pvz_address = String(metadata.new_pvz_address ?? "");
+      args.new_pvz_name = String(metadata.new_pvz_name ?? "");
+      args.new_pvz_city = String(metadata.new_pvz_city ?? "");
+      args.new_pvz_address = String(metadata.new_pvz_address ?? "");
     }
-    void supabase.rpc("register_pvz_staff", args as never).then(async ({ error }) => {
+    void supabase.functions.invoke("pvz-registration", { body: args }).then(async ({ error }) => {
       if (error) {
         toast.error("PVZ qeydiyyatı tamamlana bilmədi: " + error.message);
         return;
@@ -264,6 +281,19 @@ export function PortalAuthForm({
         if (newPvzAddress.trim().length < 5) { toast.error("PVZ PUNKT-un tam ünvanını daxil edin"); return; }
       }
     }
+    if (acquisitionEnabled && (role === "seller" || role === "pvz")) {
+      if (acquisitionRequired && !acquisitionSource) {
+        toast.error("Sizi haradan tanıdığımızı seçin");
+        return;
+      }
+      if (
+        ACQUISITION_DETAIL_SOURCES.has(acquisitionSource as AcquisitionSource)
+        && !acquisitionDetail.trim()
+      ) {
+        toast.error("Kim tərəfindən cəlb olunduğunuzu qeyd edin");
+        return;
+      }
+    }
 
     setBusy(true);
     const signupMetadata = {
@@ -274,6 +304,8 @@ export function PortalAuthForm({
       full_name: name.trim(),
       phone: phone.trim(),
       referral_code: referralCode.trim().toUpperCase() || undefined,
+      acquisition_source: acquisitionEnabled && acquisitionSource ? acquisitionSource : undefined,
+      acquisition_detail: acquisitionEnabled && acquisitionDetail.trim() ? acquisitionDetail.trim() : undefined,
       ...(role === "seller" ? {
         shop_name: shopName.trim(),
         shop_city: shopCity.trim(),
@@ -313,19 +345,18 @@ export function PortalAuthForm({
 
     if (role === "pvz") {
       const rpcArgs: Record<string, string> = {
-        _full_name: name.trim(),
-        _phone: phone.trim(),
-        _position: position,
+        full_name: name.trim(),
+        phone: phone.trim(),
+        position,
       };
       if (pickupPointId) {
-        rpcArgs._pickup_point_id = pickupPointId;
+        rpcArgs.pickup_point_id = pickupPointId;
       } else {
-        rpcArgs._new_pvz_name = newPvzName.trim();
-        rpcArgs._new_pvz_city = newPvzCity.trim();
-        rpcArgs._new_pvz_address = newPvzAddress.trim();
+        rpcArgs.new_pvz_name = newPvzName.trim();
+        rpcArgs.new_pvz_city = newPvzCity.trim();
+        rpcArgs.new_pvz_address = newPvzAddress.trim();
       }
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { error: e3 } = await supabase.rpc("register_pvz_staff", rpcArgs as any);
+      const { error: e3 } = await supabase.functions.invoke("pvz-registration", { body: rpcArgs });
       if (e3) { setBusy(false); toast.error(e3.message); return; }
       toast.success("PVZ PUNKT qeydiyyatı tamamlandı");
       setBusy(false);
@@ -401,6 +432,16 @@ export function PortalAuthForm({
               {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             </button>
           </div>
+          {mode === "signup" && (role === "seller" || role === "pvz") && (
+            <AcquisitionSourceFields
+              source={acquisitionSource}
+              detail={acquisitionDetail}
+              enabled={acquisitionEnabled}
+              required={acquisitionRequired}
+              onSourceChange={setAcquisitionSource}
+              onDetailChange={setAcquisitionDetail}
+            />
+          )}
           {mode === "signup" && role === "seller" && (
             <div className="space-y-3">
               <input value={shopName} onChange={(e) => setShopName(e.target.value)}

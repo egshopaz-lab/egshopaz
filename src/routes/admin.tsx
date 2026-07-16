@@ -7,12 +7,15 @@ import {
   Users, Package, ShoppingBag, DollarSign, Shield, LayoutDashboard,
   Truck, Warehouse, Store, Megaphone, BarChart3, Lock, Scale,
   FileText, Settings, LifeBuoy, AlertTriangle, TrendingUp, Plus, Trash2,
-  CheckCircle2, XCircle, Power, Ban, Edit3, Bell, Tag, Crown, Gem, Star, Award, Bot, Sparkles, Undo2, Wallet,
+  CheckCircle2, XCircle, Power, Ban, Edit3, Bell, Tag, Crown, Gem, Star, Award, Bot, Sparkles, Undo2, Wallet, History,
 } from "lucide-react";
 import { AdminPayouts } from "@/components/AdminPayouts";
 import { AdminTreasury } from "@/components/AdminTreasury";
 import { AdminAdvertisingPackages } from "@/components/AdminAdvertisingPackages";
 import { AdminTrends } from "@/components/AdminTrends";
+import { AdminDashboardStats } from "@/components/AdminDashboardStats";
+import { AdminAccountManagement } from "@/components/AdminAccountManagement";
+import { AdminAuditLog } from "@/components/AdminAuditLog";
 import { toast } from "sonner";
 import { PanelLayout, type PanelNavItem } from "@/components/PanelLayout";
 import { AZ_CITY_NAMES, findCity } from "@/lib/azCities";
@@ -26,7 +29,7 @@ type TabKey =
   | "dashboard" | "customers" | "sellers" | "couriers" | "pvz_staff"
   | "categories" | "products" | "shops" | "warehouses" | "pickup_points"
   | "orders" | "returns" | "finance" | "treasury" | "payouts" | "marketing" | "banners" | "packages" | "trends" | "promo" | "analytics"
-  | "security" | "disputes" | "content" | "settings" | "support" | "ai_bot";
+  | "security" | "audit" | "disputes" | "content" | "settings" | "support" | "ai_bot";
 
 interface Stat { users: number; products: number; orders: number; revenue: number; sellers: number }
 interface ProfileRow { id: string; full_name: string | null; shop_name: string | null; created_at: string; phone: string | null }
@@ -40,7 +43,7 @@ interface PickupRow { id: string; name: string; city: string; address: string; p
 interface BannerRow { id: string; title: string; image_url: string | null; link_url: string | null; position: string; is_active: boolean; clicks: number; impressions: number }
 interface DisputeRow { id: string; order_id: string | null; buyer_id: string; seller_id: string | null; reason: string; status: string; compensation: number | null; created_at: string }
 interface PromoRow { id: string; code: string; discount_percent: number | null; discount_amount: number | null; is_active: boolean; used_count: number; usage_limit: number | null; min_order: number }
-interface SettingsRow { id: string; commission_percent: number; delivery_base_fee: number; storage_fee_per_day: number; maintenance_mode: boolean; min_payout: number; single_product_promo_price: number; single_product_promo_days: number; single_shop_promo_price: number; single_shop_promo_days: number; single_banner_price: number; single_banner_days: number; promo_terms_text: string; seller_signup_fee: number }
+interface SettingsRow { id: string; commission_percent: number; delivery_base_fee: number; storage_fee_per_day: number; maintenance_mode: boolean; min_payout: number; single_product_promo_price: number; single_product_promo_days: number; single_shop_promo_price: number; single_shop_promo_days: number; single_banner_price: number; single_banner_days: number; promo_terms_text: string; seller_signup_fee: number; acquisition_source_enabled: boolean; acquisition_source_required: boolean }
 interface TicketRow { id: string; subject: string; category: string; status: string; user_id: string; created_at: string; admin_reply: string | null }
 interface AdPackageRow {
   id: string; name: string; tier: string; price: number; duration_days: number;
@@ -301,7 +304,7 @@ function AdminPanel() {
 
   const updateSettings = async (patch: Partial<SettingsRow>) => {
     if (!settings) return;
-    const { error } = await supabase.from("system_settings").update(patch).eq("id", settings.id);
+    const { error } = await supabase.from("system_settings").update(patch as never).eq("id", settings.id);
     if (error) toast.error(error.message); else { toast.success("Saxlandı"); reload(); }
   };
 
@@ -368,6 +371,7 @@ function AdminPanel() {
     { key: "promo", label: "Promokodlar", icon: Tag, active: tab === "promo", onClick: () => setTab("promo") },
     { key: "analytics", label: "Analitika", icon: BarChart3, active: tab === "analytics", onClick: () => setTab("analytics") },
     { key: "security", label: "Təhlükəsizlik", icon: Lock, active: tab === "security", onClick: () => setTab("security") },
+    { key: "audit", label: "Audit Log", icon: History, active: tab === "audit", onClick: () => setTab("audit") },
     { key: "disputes", label: "Mübahisələr", icon: Scale, badge: disputes.filter((d) => d.status === "open").length, active: tab === "disputes", onClick: () => setTab("disputes") },
     { key: "content", label: "Kontent", icon: FileText, active: tab === "content", onClick: () => setTab("content") },
     { key: "settings", label: "Sistem ayarları", icon: Settings, active: tab === "settings", onClick: () => setTab("settings") },
@@ -384,11 +388,11 @@ function AdminPanel() {
         <h1 className="text-2xl md:text-3xl font-extrabold">{tabTitle}</h1>
       </div>
 
-      {tab === "dashboard" && <DashboardSection stats={stats} orders={orders} couriers={couriers} disputes={disputes} />}
-      {tab === "customers" && <CustomersSection profiles={profiles.filter((p) => isCustomer(p.id))} />}
-      {tab === "sellers" && <SellersSection profiles={profiles} userRoles={userRoles} toggleSeller={toggleSeller} />}
+      {tab === "dashboard" && <div className="space-y-6"><AdminDashboardStats /><DashboardSection stats={stats} orders={orders} couriers={couriers} disputes={disputes} /></div>}
+      {tab === "customers" && <AdminAccountManagement initialRole="buyer" />}
+      {tab === "sellers" && <AdminAccountManagement initialRole="seller" />}
       {tab === "couriers" && <CouriersSection couriers={couriers} addCourier={addCourier} toggleCourier={toggleCourier} />}
-      {tab === "pvz_staff" && <PvzStaffSection />}
+      {tab === "pvz_staff" && <AdminAccountManagement initialRole="pvz" />}
       {tab === "categories" && <CategoriesSection categories={categories} addCategory={addCategory} deleteCategory={deleteCategory} />}
       {tab === "products" && <ProductsSection products={products} toggleProductActive={toggleProductActive} />}
       {tab === "shops" && <ShopsSection profiles={profiles} userRoles={userRoles} />}
@@ -406,6 +410,7 @@ function AdminPanel() {
       {tab === "promo" && <PromoSection promos={promos} addPromo={addPromo} togglePromo={togglePromo} />}
       {tab === "analytics" && <AnalyticsSection products={products} orders={orders} categories={categories} />}
       {tab === "security" && <SecuritySection />}
+      {tab === "audit" && <AdminAuditLog />}
       {tab === "disputes" && <DisputesSection disputes={disputes} resolveDispute={resolveDispute} />}
       {tab === "content" && <ContentSection />}
       {tab === "settings" && <SettingsSection settings={settings} updateSettings={updateSettings} />}
@@ -1050,6 +1055,17 @@ function SettingsSection({ settings, updateSettings }: { settings: SettingsRow |
           <input type="number" step="0.5" defaultValue={settings.seller_signup_fee ?? 20} onBlur={(e) => updateSettings({ seller_signup_fee: Number(e.target.value) })}
             className="mt-1 w-full h-10 px-3 rounded-lg border border-input bg-background" />
           <div className="text-xs text-muted-foreground mt-1">Yeni satıcı qeydiyyat zamanı ödəyəcəyi birdəfəlik məbləğ</div>
+        </div>
+        <div className="rounded-xl border border-border p-4 space-y-3">
+          <div className="font-bold">Qeydiyyat mənbəyi sahəsi</div>
+          <div className="flex items-center justify-between gap-4">
+            <div><div className="font-semibold text-sm">Formada göstər</div><div className="text-xs text-muted-foreground">Satıcı və PVZ qeydiyyatında “Sizi haradan tanıdıq?” sahəsini göstərir.</div></div>
+            <button onClick={() => updateSettings({ acquisition_source_enabled: !settings.acquisition_source_enabled })} className={`px-4 py-2 rounded-lg font-bold text-sm ${settings.acquisition_source_enabled ? "bg-success text-white" : "bg-secondary"}`}>{settings.acquisition_source_enabled ? "Aktiv" : "Deaktiv"}</button>
+          </div>
+          <div className="flex items-center justify-between gap-4 border-t border-border pt-3">
+            <div><div className="font-semibold text-sm">Məcburi olsun</div><div className="text-xs text-muted-foreground">Aktiv olduqda mənbə seçilmədən qeydiyyat tamamlanmır.</div></div>
+            <button disabled={!settings.acquisition_source_enabled} onClick={() => updateSettings({ acquisition_source_required: !settings.acquisition_source_required })} className={`px-4 py-2 rounded-lg font-bold text-sm disabled:opacity-50 ${settings.acquisition_source_required ? "bg-primary text-primary-foreground" : "bg-secondary"}`}>{settings.acquisition_source_required ? "Məcburi" : "Könüllü"}</button>
+          </div>
         </div>
         <div className="flex items-center justify-between pt-2 border-t border-border">
           <div>
