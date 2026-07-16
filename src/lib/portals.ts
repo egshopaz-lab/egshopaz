@@ -33,7 +33,9 @@ export function portalFromHostname(hostname: string): Portal {
 }
 
 export function usePortal(): Portal {
-  const [portal, setPortal] = useState<Portal>("marketplace");
+  const [portal, setPortal] = useState<Portal>(() =>
+    typeof window === "undefined" ? "marketplace" : portalFromHostname(window.location.hostname),
+  );
   useEffect(() => setPortal(portalFromHostname(window.location.hostname)), []);
   return portal;
 }

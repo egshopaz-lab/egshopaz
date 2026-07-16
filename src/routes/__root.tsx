@@ -153,6 +153,7 @@ function AppShell() {
   const isSellerPanel = pathname === "/seller" || pathname.startsWith("/seller/");
   const isPvzPanel = pathname === "/pvz" || pathname.startsWith("/pvz/");
   const isAdminPanel = pathname === "/admin" || pathname.startsWith("/admin/");
+  const isSellerTrends = portal === "seller" && pathname === "/trends";
   const isWorkPanel = isSellerPanel || isPvzPanel || isAdminPanel;
   const isAuthRoute = pathname === "/auth" || pathname.startsWith("/auth/") || pathname === "/login" || pathname === "/register" || pathname === "/reset-password";
 
@@ -181,7 +182,7 @@ function AppShell() {
       return;
     }
 
-    const correctPanel = portal === "seller" ? isSellerPanel : portal === "pvz" ? isPvzPanel : isAdminPanel;
+    const correctPanel = portal === "seller" ? (isSellerPanel || isSellerTrends) : portal === "pvz" ? isPvzPanel : isAdminPanel;
     const sellerOnboarding = portal === "seller" && pathname === "/become-seller";
     if (isAuthRoute || correctPanel || sellerOnboarding) return;
 
@@ -197,7 +198,7 @@ function AppShell() {
     }
 
     window.location.replace(portalUrl("marketplace", pathname + query));
-  }, [isAdmin, isAdminPanel, isAuthRoute, isPvz, isPvzPanel, isSeller, isSellerPanel, loading, navigate, pathname, portal, user]);
+  }, [isAdmin, isAdminPanel, isAuthRoute, isPvz, isPvzPanel, isSeller, isSellerPanel, isSellerTrends, loading, navigate, pathname, portal, user]);
 
   if (!loading && user && accountStatus !== "active") {
     const statusLabel = accountStatus === "temporary_blocked"
@@ -226,7 +227,7 @@ function AppShell() {
     );
   }
 
-  if (isWorkPanel || (portal !== "marketplace" && isAuthRoute) || (portal === "seller" && pathname === "/become-seller")) {
+  if (isWorkPanel || isSellerTrends || (portal !== "marketplace" && isAuthRoute) || (portal === "seller" && pathname === "/become-seller")) {
     const label = portal === "seller" ? "Satıcı portalı" : portal === "pvz" ? "PVZ PUNKT portalı" : "Admin portalı";
     return (
       <div className="min-h-screen flex flex-col bg-background w-full">

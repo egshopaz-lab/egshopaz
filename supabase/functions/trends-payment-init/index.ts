@@ -114,9 +114,9 @@ Deno.serve(async (req: Request) => {
     if (!payment?.payment_id || !payment.merchant_order_id) throw new Error("Ödəniş yaradıla bilmədi");
 
     const sellerSiteUrl = new URL(Deno.env.get("SELLER_SITE_URL") ?? "https://seller.egshop.az");
-    const successUrl = new URL("/seller", sellerSiteUrl);
+    const successUrl = new URL("/trends", sellerSiteUrl);
     successUrl.searchParams.set("trends_payment", "success");
-    const errorUrl = new URL("/seller", sellerSiteUrl);
+    const errorUrl = new URL("/trends", sellerSiteUrl);
     errorUrl.searchParams.set("trends_payment", "error");
 
     const payload = {

@@ -815,11 +815,9 @@ function SellerPanel() {
       onClick: () => setTab("advertising"),
     },
     {
-      key: "trends",
+      to: "/trends",
       label: "EG Trends",
       icon: Rocket,
-      active: tab === "trends",
-      onClick: () => setTab("trends"),
     },
     {
       key: "followers",
