@@ -1,9 +1,8 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { Search, ShoppingCart, User, Heart, LogOut, Store, Camera, Sparkles } from "lucide-react";
+import { Search, ShoppingCart, User, Heart, LogOut, Store, Camera, Sparkles, LayoutGrid, Tag, Compass } from "lucide-react";
 import { lazy, Suspense, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { NotificationsBell } from "@/components/NotificationsBell";
-import { LiveClock } from "@/components/LiveClock";
 
 const VisualSearchDialog = lazy(() =>
   import("@/components/VisualSearchDialog").then((m) => ({ default: m.VisualSearchDialog }))
@@ -33,35 +32,31 @@ export function SiteHeader() {
 
   return (
     <header className="sticky top-0 z-50 border-b border-border shadow-sm">
-      <div className="w-full px-3 sm:px-4 py-2 sm:py-3 flex items-center bg-gradient-brand text-white">
+      <div className="w-full px-3 sm:px-4 py-2.5 flex items-center bg-gradient-to-r from-violet-700 via-purple-600 to-violet-600 text-white">
         <div className="max-w-7xl mx-auto w-full flex flex-wrap sm:flex-nowrap items-center gap-2 sm:gap-4">
           <SidebarTrigger className="shrink-0 text-white" />
 
-          <Link to="/" className="flex items-center gap-3 shrink-0 transition-opacity hover:opacity-95" aria-label="EG Shop">
-            <img src={egLogo} alt="EG Shop logo" width={512} height={512} className="h-9 w-9 sm:h-12 sm:w-12 md:h-14 md:w-14 shrink-0 rounded-full object-contain ring-2 ring-white/35 shadow-lg bg-white/10" />
-            <span className="text-xl sm:text-2xl md:text-3xl uppercase tracking-wide leading-none text-white whitespace-nowrap" style={{ fontFamily: "'Bebas Neue', sans-serif" }}>
-              SHOP
+          <Link to="/" className="flex items-center gap-2.5 shrink-0 transition-opacity hover:opacity-90" aria-label="EG Shop">
+            <img src={egLogo} alt="EG Shop logo" width={512} height={512} className="h-10 w-10 sm:h-11 sm:w-11 shrink-0 object-contain" />
+            <span className="hidden xs:flex sm:flex items-baseline text-xl sm:text-2xl tracking-tight leading-none text-white whitespace-nowrap">
+              <strong className="font-black">EG</strong><span className="font-semibold ml-1">Shop</span>
             </span>
           </Link>
-          <div className="block">
-            <LiveClock compact />
-          </div>
 
-
-          <form onSubmit={onSearch} className="flex-1 max-w-2xl hidden lg:flex">
+          <form onSubmit={onSearch} className="flex-1 max-w-3xl hidden lg:flex">
             <div className="relative w-full">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/70" />
               <input
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
                 placeholder={t("common.searchPlaceholder")}
-                className="w-full pl-10 pr-12 h-11 rounded-lg border border-white/30 bg-white/20 focus:bg-white/30 focus:outline-none focus:ring-2 focus:ring-white/50 transition text-white placeholder:text-white/70"
+                className="w-full pl-10 pr-12 h-11 rounded-xl border border-white/20 bg-white text-slate-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-white/70 transition placeholder:text-slate-400"
               />
               <button
                 type="button"
                 onClick={() => setVisualOpen(true)}
                 title={t("home.visualSearchTitle")}
-                className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-md hover:bg-white/20 text-white transition"
+                className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-md hover:bg-violet-50 text-violet-600 transition"
               >
                 <Camera className="h-5 w-5" />
               </button>
@@ -70,14 +65,6 @@ export function SiteHeader() {
 
           <nav className="order-3 sm:order-none w-full sm:w-auto sm:ml-auto grid grid-cols-5 sm:flex items-center gap-1 sm:gap-2 pt-2 sm:pt-0 border-t border-white/15 sm:border-t-0">
             <LanguageSwitcher />
-            <Link to="/discover" className="hidden lg:flex flex-col items-center text-xs px-3 py-1.5 hover:text-white/80 transition text-white">
-              <span className="h-5 w-5 mb-0.5 text-base">🔥</span>
-              <span>{t("sidebar.discover")}</span>
-            </Link>
-            <Link to="/trends" className="hidden lg:flex flex-col items-center text-xs px-3 py-1.5 hover:text-white/80 transition text-white">
-              <Sparkles className="h-5 w-5 mb-0.5" />
-              <span>EG Trends</span>
-            </Link>
             <Link to="/favorites" className="flex flex-col items-center text-xs px-2 sm:px-3 py-1.5 hover:text-white/80 transition text-white min-w-0">
               <Heart className="h-5 w-5 mb-0.5" />
               <span>{t("header.favorites")}</span>
@@ -120,6 +107,22 @@ export function SiteHeader() {
               </Link>
             )}
           </nav>
+        </div>
+      </div>
+
+      <div className="hidden lg:block bg-background/95 backdrop-blur border-b border-border">
+        <div className="max-w-7xl mx-auto h-11 px-4 flex items-center gap-6 text-sm font-semibold">
+          <Link to="/catalog" search={{ q: undefined, cat: undefined } as never} className="inline-flex items-center gap-2 text-primary hover:text-primary/80 transition">
+            <LayoutGrid className="h-4 w-4" /> {t("sidebar.catalog")}
+          </Link>
+          <Link to="/shops" className="hover:text-primary transition">{t("sidebar.shops")}</Link>
+          <Link to="/discover" className="inline-flex items-center gap-1.5 hover:text-primary transition"><Compass className="h-4 w-4" /> {t("sidebar.discover")}</Link>
+          <Link to="/trends" className="inline-flex items-center gap-1.5 hover:text-primary transition"><Sparkles className="h-4 w-4" /> EG Trends</Link>
+          <Link to="/promotions" className="inline-flex items-center gap-1.5 hover:text-primary transition"><Tag className="h-4 w-4" /> {t("sidebar.promotions")}</Link>
+          <div className="ml-auto flex items-center gap-4 text-xs">
+            <a href={portalUrl("seller", "/register")} className="text-muted-foreground hover:text-primary transition">{t("home.sellerCta")}</a>
+            <a href={portalUrl("pvz", "/register")} className="text-muted-foreground hover:text-primary transition">{t("home.pvzCta")}</a>
+          </div>
         </div>
       </div>
 

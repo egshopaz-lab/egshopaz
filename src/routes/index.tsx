@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { ProductCard, type ProductCardData } from "@/components/ProductCard";
 import { SponsoredProducts } from "@/components/SponsoredProducts";
-import { Tag, Flame, TicketPercent, TrendingUp, Copy, Truck, ShieldCheck, Clock, Gift } from "lucide-react";
+import { Tag, Flame, TicketPercent, TrendingUp, Copy, Truck, ShieldCheck, Gift, ArrowRight, Headphones, RotateCcw, ShoppingBag, Sparkles, Store } from "lucide-react";
 import { toast } from "sonner";
 import { HomeCategoryBrowser } from "@/components/HomeCategoryBrowser";
 import { FeaturedShops } from "@/components/FeaturedShops";
@@ -37,13 +37,7 @@ interface PromoCode { id: string; code: string; discount_percent: number | null;
 
 function Index() {
   const { payment } = Route.useSearch();
-  const { t, i18n: translator } = useTranslation();
-  const language = translator.resolvedLanguage?.split("-")[0] ?? "az";
-  const panelLabels = language === "ru"
-    ? { marketplace: "Маркетплейс", becomeSeller: "Стать продавцом", becomePvz: "Стать PVZ" }
-    : language === "en"
-      ? { marketplace: "Marketplace", becomeSeller: "Become a seller", becomePvz: "Become a PVZ" }
-      : { marketplace: "Marketplace", becomeSeller: "Satıcı ol", becomePvz: "PVZ ol" };
+  const { t } = useTranslation();
   const [allProducts, setAllProducts] = useState<ProductCardData[]>([]);
   const [discounted, setDiscounted] = useState<ProductCardData[]>([]);
   const [trending, setTrending] = useState<ProductCardData[]>([]);
@@ -111,13 +105,59 @@ function Index() {
           <p className="mt-1 text-sm">Kartınızdan məbləğ tutulubsa, dəqiq status bank callback-i ilə yoxlanılacaq. Yenidən cəhd edə bilərsiniz.</p>
         </div>
       )}
-      {/* Public marketplace actions. Operational logins live on subdomains. */}
-      <h1 className="sr-only">EG Shop — Azərbaycanın onlayn marketi</h1>
-      <div className="flex items-center gap-2 overflow-x-auto pb-1 panel-scroll-row">
-        <Link to="/catalog" search={{ q: undefined, cat: undefined } as never} className="whitespace-nowrap px-3 py-1.5 rounded-lg bg-primary/10 text-primary text-xs font-bold hover:bg-primary/20 transition">{panelLabels.marketplace}</Link>
-        <a href={portalUrl("seller", "/register")} className="whitespace-nowrap px-3 py-1.5 rounded-lg bg-emerald-100 text-emerald-700 text-xs font-bold hover:bg-emerald-200 transition">{panelLabels.becomeSeller}</a>
-        <a href={portalUrl("pvz", "/register")} className="whitespace-nowrap px-3 py-1.5 rounded-lg bg-sky-100 text-sky-700 text-xs font-bold hover:bg-sky-200 transition">{panelLabels.becomePvz}</a>
-      </div>
+      <section className="relative overflow-hidden rounded-[28px] bg-slate-950 text-white shadow-xl shadow-violet-950/10">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_85%_15%,rgba(139,92,246,0.45),transparent_35%),radial-gradient(circle_at_10%_90%,rgba(236,72,153,0.2),transparent_35%)]" />
+        <div className="relative grid lg:grid-cols-[1.15fr_0.85fr] min-h-[330px]">
+          <div className="p-7 sm:p-10 lg:p-12 flex flex-col justify-center">
+            <div className="inline-flex w-fit items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-xs font-bold text-violet-100 backdrop-blur">
+              <Sparkles className="h-3.5 w-3.5" /> {t("home.heroBadge")}
+            </div>
+            <h1 className="mt-5 max-w-2xl text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-[1.02]">
+              {t("home.heroLine1")} <span className="text-violet-300">{t("home.heroLine2")}</span>
+            </h1>
+            <p className="mt-5 max-w-xl text-sm sm:text-base leading-7 text-slate-300">{t("home.heroDesc")}</p>
+            <div className="mt-7 flex flex-wrap items-center gap-3">
+              <Link to="/catalog" search={{ q: undefined, cat: undefined } as never} className="inline-flex h-12 items-center gap-2 rounded-xl bg-white px-5 font-extrabold text-violet-700 shadow-lg transition hover:-translate-y-0.5 hover:bg-violet-50">
+                {t("home.startShopping")} <ArrowRight className="h-4 w-4" />
+              </Link>
+              <Link to="/shops" className="inline-flex h-12 items-center gap-2 rounded-xl border border-white/20 bg-white/10 px-5 font-bold text-white backdrop-blur transition hover:bg-white/15">
+                <Store className="h-4 w-4" /> {t("sidebar.shops")}
+              </Link>
+            </div>
+          </div>
+          <div className="relative hidden lg:flex items-center justify-center p-10">
+            <div className="relative w-full max-w-sm rounded-3xl border border-white/15 bg-white/10 p-5 backdrop-blur-xl shadow-2xl">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-[0.18em] text-violet-200">EG Shop</p>
+                  <p className="mt-1 text-xl font-black">{t("home.categoriesTitle")}</p>
+                </div>
+                <div className="grid h-11 w-11 place-items-center rounded-2xl bg-white text-violet-700"><ShoppingBag className="h-5 w-5" /></div>
+              </div>
+              <div className="mt-5 grid grid-cols-2 gap-3 text-sm font-bold">
+                <Link to="/catalog" search={{ cat: "elektronika", q: undefined } as never} className="rounded-2xl bg-white p-4 text-slate-900 transition hover:-translate-y-0.5"><span className="mb-3 block text-3xl">💻</span>{t("home.heroElectronics")}</Link>
+                <Link to="/catalog" search={{ cat: "qadin-geyimleri", q: undefined } as never} className="rounded-2xl bg-violet-400/30 p-4 text-white transition hover:-translate-y-0.5"><span className="mb-3 block text-3xl">👗</span>{t("home.heroFashion")}</Link>
+                <Link to="/catalog" search={{ cat: "ev-ve-metbex", q: undefined } as never} className="rounded-2xl bg-violet-400/30 p-4 text-white transition hover:-translate-y-0.5"><span className="mb-3 block text-3xl">🏠</span>{t("home.heroHome")}</Link>
+                <Link to="/catalog" search={{ cat: "gozellik-ve-baxim", q: undefined } as never} className="rounded-2xl bg-white p-4 text-slate-900 transition hover:-translate-y-0.5"><span className="mb-3 block text-3xl">✨</span>{t("home.heroBeauty")}</Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3" aria-label={t("home.trustTitle")}>
+        {[
+          { icon: ShieldCheck, title: t("home.trustSecure"), text: t("home.trustSecureDesc") },
+          { icon: Truck, title: t("home.trustDelivery"), text: t("home.trustDeliveryDesc") },
+          { icon: RotateCcw, title: t("home.trustReturns"), text: t("home.trustReturnsDesc") },
+          { icon: Headphones, title: t("home.trustSupport"), text: t("home.trustSupportDesc") },
+        ].map((item) => (
+          <div key={item.title} className="flex items-center gap-3 rounded-2xl border border-border bg-card px-3 py-3.5 sm:px-4 shadow-sm">
+            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-violet-50 text-violet-700"><item.icon className="h-5 w-5" /></span>
+            <span className="min-w-0"><strong className="block text-xs sm:text-sm leading-tight">{item.title}</strong><span className="mt-1 hidden sm:block text-xs text-muted-foreground">{item.text}</span></span>
+          </div>
+        ))}
+      </section>
 
       {/* Kateqoriyalar — ən yuxarıda */}
       <HomeCategoryBrowser />
@@ -242,9 +282,11 @@ function Index() {
           </Link>
         </div>
         {allProducts.length === 0 ? (
-          <div className="text-center py-16 bg-secondary/40 rounded-2xl">
-            <p className="text-muted-foreground mb-2">{t("home.noProducts")}</p>
-            <a href={portalUrl("seller", "/register")} className="text-primary font-bold hover:underline">{t("home.becomeFirstSeller")}</a>
+          <div className="text-center py-10 sm:py-12 border border-dashed border-border bg-secondary/25 rounded-2xl">
+            <span className="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-card text-primary shadow-sm"><ShoppingBag className="h-5 w-5" /></span>
+            <p className="mt-3 font-bold text-foreground">{t("home.noProducts")}</p>
+            <p className="mt-1 text-sm text-muted-foreground">{t("home.noProductsDesc")}</p>
+            <Link to="/catalog" search={{ q: undefined, cat: undefined } as never} className="mt-4 inline-flex items-center gap-2 text-sm text-primary font-bold hover:underline">{t("home.exploreCatalog")} <ArrowRight className="h-4 w-4" /></Link>
           </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-4 mobile-product-grid">

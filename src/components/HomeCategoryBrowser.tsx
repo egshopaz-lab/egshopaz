@@ -78,7 +78,7 @@ export function HomeCategoryBrowser() {
   return (
     <section className="space-y-4 min-w-0 max-w-full overflow-hidden">
       {/* TAB BAR — Trendyol stil (narıncı seçilmiş, fon dolu) */}
-      <div className="bg-card rounded-2xl border border-border overflow-hidden min-w-0 max-w-full">
+      <div className="bg-card rounded-2xl border border-border/70 shadow-sm overflow-hidden min-w-0 max-w-full">
         <div className="flex items-center gap-1 px-1">
           <button
             type="button"
@@ -88,7 +88,7 @@ export function HomeCategoryBrowser() {
           >
             <ChevronLeft className="h-4 w-4" />
           </button>
-          <div ref={rootScrollRef} className="flex-1 flex w-full max-w-full gap-2 px-2 py-3 overflow-x-auto overscroll-x-contain scrollbar-responsive">
+          <div ref={rootScrollRef} className="flex-1 flex w-full max-w-full gap-2 px-2 py-3 overflow-x-auto overscroll-x-contain scrollbar-hide">
             {roots.map((c) => {
               const isActive = c.id === activeRootId;
               return (
@@ -169,7 +169,7 @@ export function HomeCategoryBrowser() {
                   >
                     <ChevronLeft className="h-4 w-4" />
                   </button>
-                  <div ref={subScrollRef} className="flex-1 flex w-full max-w-full gap-2 pb-1 overflow-x-auto overscroll-x-contain scrollbar-responsive">
+                  <div ref={subScrollRef} className="flex-1 flex w-full max-w-full gap-2 pb-1 overflow-x-auto overscroll-x-contain scrollbar-hide">
                     {subCats.slice(0, 12).map((s) => {
                       const hasChildren = cats.some((c) => c.parent_id === s.id);
                       return (

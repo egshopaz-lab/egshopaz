@@ -9,7 +9,7 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger,
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import egLogo from "@/assets/eg-logo.png";
+import egLogo from "@/assets/eg-logo.svg";
 import { AZ_CITIES } from "@/lib/azCities";
 import { AcquisitionSourceFields } from "@/components/AcquisitionSourceFields";
 import { ACQUISITION_DETAIL_SOURCES, type AcquisitionSource } from "@/lib/acquisitionSources";
