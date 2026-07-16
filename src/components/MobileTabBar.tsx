@@ -1,5 +1,5 @@
 import { Link, useLocation } from "@tanstack/react-router";
-import { Home, LayoutGrid, ShoppingCart, Heart, User } from "lucide-react";
+import { Home, LayoutGrid, ShoppingCart, Sparkles, User } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTranslation } from "react-i18next";
 
@@ -11,8 +11,8 @@ export function MobileTabBar() {
   const items = [
     { to: "/", icon: Home, label: t("sidebar.home") },
     { to: "/catalog", icon: LayoutGrid, label: t("sidebar.catalog"), search: { q: undefined, cat: undefined } as never },
+    { to: "/trends", icon: Sparkles, label: "Trends" },
     { to: "/cart", icon: ShoppingCart, label: t("header.cart") },
-    { to: "/favorites", icon: Heart, label: t("header.favorites") },
     { to: user ? "/profile" : "/auth", icon: User, label: t("header.cabinet"), search: user ? undefined : ({ role: "buyer" } as never) },
   ];
 

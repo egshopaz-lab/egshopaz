@@ -10,7 +10,7 @@ import {
 import {
   Home, LayoutGrid, Heart, ShoppingCart, MessageCircle, Package,
   Bell, Tag, Gift, Store, User, HelpCircle, Shield, PackageOpen, Flame, Map as MapIcon,
-  GitCompare, Users, Megaphone,
+  GitCompare, Users, Sparkles,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { catName } from "@/lib/catName";
@@ -40,10 +40,12 @@ export function MainSidebar() {
 
   const mainLinks = isSeller ? [
     { to: "/", label: t("sidebar.home"), icon: Home },
+    { to: "/trends", label: "EG Trends", icon: Sparkles },
     { to: "/seller", label: t("sidebar.mySellerPanel"), icon: Store },
   ] : [
     { to: "/", label: t("sidebar.home"), icon: Home },
     { to: "/catalog", label: t("sidebar.catalog"), icon: LayoutGrid, search: { q: undefined, cat: undefined } as never },
+    { to: "/trends", label: "EG Trends", icon: Sparkles },
     { to: "/shops", label: t("sidebar.shops"), icon: Store },
     { to: "/discover", label: t("sidebar.discover"), icon: Flame },
     { to: "/compare", label: t("sidebar.compare"), icon: GitCompare },

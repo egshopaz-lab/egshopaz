@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { Search, ShoppingCart, User, Heart, LogOut, Store, Camera } from "lucide-react";
+import { Search, ShoppingCart, User, Heart, LogOut, Store, Camera, Sparkles } from "lucide-react";
 import { lazy, Suspense, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { NotificationsBell } from "@/components/NotificationsBell";
@@ -73,6 +73,10 @@ export function SiteHeader() {
             <Link to="/discover" className="hidden lg:flex flex-col items-center text-xs px-3 py-1.5 hover:text-white/80 transition text-white">
               <span className="h-5 w-5 mb-0.5 text-base">🔥</span>
               <span>{t("sidebar.discover")}</span>
+            </Link>
+            <Link to="/trends" className="hidden lg:flex flex-col items-center text-xs px-3 py-1.5 hover:text-white/80 transition text-white">
+              <Sparkles className="h-5 w-5 mb-0.5" />
+              <span>EG Trends</span>
             </Link>
             <Link to="/favorites" className="flex flex-col items-center text-xs px-2 sm:px-3 py-1.5 hover:text-white/80 transition text-white min-w-0">
               <Heart className="h-5 w-5 mb-0.5" />
