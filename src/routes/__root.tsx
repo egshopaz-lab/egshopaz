@@ -100,13 +100,19 @@ function RootShell({ children }: { children: React.ReactNode }) {
 }
 
 function LiveClock() {
-  const [now, setNow] = useState(() => new Date());
+  // The server and browser must render the same text before hydration.
+  const [now, setNow] = useState<Date | null>(null);
   useEffect(() => {
+    setNow(new Date());
     const t = setInterval(() => setNow(new Date()), 1000);
     return () => clearInterval(t);
   }, []);
-  const time = now.toLocaleTimeString("az-AZ", { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false });
-  const date = now.toLocaleDateString("az-AZ", { weekday: "short", day: "2-digit", month: "short" });
+  const time = now
+    ? now.toLocaleTimeString("az-AZ", { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false })
+    : "--:--:--";
+  const date = now
+    ? now.toLocaleDateString("az-AZ", { weekday: "short", day: "2-digit", month: "short" })
+    : "-- ---";
   return (
     <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-secondary/80 border border-border">
       <Clock className="h-4 w-4 text-primary shrink-0" />

@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { ArrowLeft, CreditCard, ExternalLink, Loader2, Lock, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import { formatAZN } from "@/lib/format";
+import { getFunctionErrorMessage } from "@/lib/functionError";
 
 export const Route = createFileRoute("/checkout-pay/$orderId")({
   head: () => ({ meta: [{ title: "Təhlükəsiz ödəniş — EG Shop" }, { name: "robots", content: "noindex,nofollow" }] }),
@@ -49,7 +50,7 @@ function CheckoutPayPage() {
       }
       window.location.assign(target.toString());
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Epoint ödənişi başladılmadı");
+      toast.error(await getFunctionErrorMessage(error, "Epoint ödənişi başladılmadı"));
       setPaying(false);
     }
   };

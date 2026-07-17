@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { CalendarDays, Check, Clock3, CreditCard, Edit3, Eye, EyeOff, Image, Megaphone, Plus, Sparkles, Trash2, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { formatAZN, formatDate } from "@/lib/format";
+import { getFunctionErrorMessage } from "@/lib/functionError";
 import { toast } from "sonner";
 
 type LooseClient = { from: (table: string) => any; rpc: (fn: string, args?: Record<string, unknown>) => any };
@@ -96,7 +97,12 @@ export function SellerTrends({ sellerId }: { sellerId: string }) {
       body: { plan_id: plan.id, language: "az" },
     });
     if (error || !data?.redirect_url) {
-      toast.error(data?.error === "access_blocked" ? "EG Trends girişiniz bloklanıb" : "Ödəniş səhifəsi açıla bilmədi");
+      const message = data?.error === "access_blocked"
+        ? "EG Trends girişiniz bloklanıb"
+        : error
+          ? await getFunctionErrorMessage(error, "Ödəniş səhifəsi açıla bilmədi")
+          : typeof data?.error === "string" ? data.error : "Ödəniş səhifəsi açıla bilmədi";
+      toast.error(message);
       setPaying(false);
       return;
     }

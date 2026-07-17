@@ -7,6 +7,7 @@ import { BadgeCheck, CreditCard, LockKeyhole, Package, Store, TrendingUp } from 
 import { toast } from "sonner";
 import { AcquisitionSourceFields } from "@/components/AcquisitionSourceFields";
 import { ACQUISITION_DETAIL_SOURCES, type AcquisitionSource } from "@/lib/acquisitionSources";
+import { getFunctionErrorMessage } from "@/lib/functionError";
 
 type PaymentSearch = { payment?: "success" | "error" };
 
@@ -154,7 +155,9 @@ function BecomeSeller() {
       const message =
         data?.error === "payment_not_configured"
           ? "Ödəniş xidməti hələ aktivləşdirilməyib"
-          : "Ödəniş səhifəsi açıla bilmədi. Yenidən cəhd edin.";
+          : error
+            ? await getFunctionErrorMessage(error, "Ödəniş səhifəsi açıla bilmədi. Yenidən cəhd edin.")
+            : typeof data?.error === "string" ? data.error : "Ödəniş səhifəsi açıla bilmədi. Yenidən cəhd edin.";
       toast.error(message);
       await loadApplication();
       setBusy(false);
