@@ -10,11 +10,12 @@ import {
 import {
   Home, LayoutGrid, Heart, ShoppingCart, MessageCircle, Package,
   Bell, Tag, Gift, Store, User, HelpCircle, Shield, PackageOpen, Flame, Map as MapIcon,
-  GitCompare, Users, Sparkles,
+  GitCompare, Users, Sparkles, Mail, MapPin, ShieldCheck,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { catName } from "@/lib/catName";
 import { CategoryIcon } from "@/components/CategoryIcon";
+import { portalUrl } from "@/lib/portals";
 
 interface Category { id: string; name: string; name_ru?: string | null; name_en?: string | null; slug: string; icon: string | null; parent_id: string | null }
 
@@ -47,11 +48,9 @@ export function MainSidebar() {
     { to: "/", label: t("sidebar.home"), icon: Home },
     { to: "/catalog", label: t("sidebar.catalog"), icon: LayoutGrid, search: { q: undefined, cat: undefined } as never },
     { to: "/trends", label: "EG Trends", icon: Sparkles },
-    { to: "/shops", label: t("sidebar.shops"), icon: Store },
     { to: "/discover", label: t("sidebar.discover"), icon: Flame },
     { to: "/compare", label: t("sidebar.compare"), icon: GitCompare },
     { to: "/map", label: t("sidebar.map"), icon: MapIcon },
-    { to: "/promotions", label: t("sidebar.promotions"), icon: Tag },
     { to: "/bonus", label: t("sidebar.bonuses"), icon: Gift },
   ];
 
@@ -93,6 +92,74 @@ export function MainSidebar() {
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        <SidebarGroup>
+          <SidebarGroupLabel>{t("footer.partners")}</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild>
+                  <a href={portalUrl("seller", "/register")} onClick={close}>
+                    <Store className="h-4 w-4" />
+                    <span>{t("home.sellerCta")}</span>
+                  </a>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild>
+                  <a href={portalUrl("pvz", "/register")} onClick={close}>
+                    <MapPin className="h-4 w-4" />
+                    <span>{t("home.pvzCta")}</span>
+                  </a>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild>
+                  <Link to="/shops" onClick={close}>
+                    <Store className="h-4 w-4" />
+                    <span>{t("sidebar.shops")}</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild>
+                  <Link to="/promotions" onClick={close}>
+                    <Tag className="h-4 w-4" />
+                    <span>{t("sidebar.promotions")}</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        <SidebarGroup>
+          <SidebarGroupLabel>{t("footer.contactTitle")}</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild>
+                  <a href="mailto:info@egshop.az" onClick={close}>
+                    <Mail className="h-4 w-4" />
+                    <span>info@egshop.az</span>
+                  </a>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <div className="flex items-center gap-2 px-2 py-2 text-sm text-sidebar-foreground/80">
+                  <MapPin className="h-4 w-4 shrink-0" />
+                  <span>{t("footer.location")}</span>
+                </div>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <div className="mx-2 mt-1 flex items-center gap-2 rounded-lg bg-emerald-500/10 px-3 py-2 text-xs font-semibold text-emerald-700 dark:text-emerald-300">
+                  <ShieldCheck className="h-4 w-4 shrink-0" />
+                  <span>{t("footer.securePayment")}</span>
+                </div>
+              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

@@ -28,7 +28,7 @@ export function SiteFooter() {
           </ul>
         </div>
 
-        <div>
+        <div className="hidden lg:block">
           <h4 className="font-extrabold text-white">{t("footer.partners")}</h4>
           <ul className="mt-4 space-y-3 text-sm text-slate-400">
             <li><a href={portalUrl("seller", "/register")} className="inline-flex items-center gap-2 transition hover:text-white"><Store className="h-4 w-4" /> {t("home.sellerCta")}</a></li>
@@ -38,7 +38,7 @@ export function SiteFooter() {
           </ul>
         </div>
 
-        <div>
+        <div className="hidden lg:block">
           <h4 className="font-extrabold text-white">{t("footer.contactTitle")}</h4>
           <ul className="mt-4 space-y-3 text-sm text-slate-400">
             <li><a href="mailto:info@egshop.az" className="inline-flex items-center gap-2 transition hover:text-white"><Mail className="h-4 w-4" /> info@egshop.az</a></li>
