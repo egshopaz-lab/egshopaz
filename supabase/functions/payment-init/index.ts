@@ -57,8 +57,14 @@ async function signature(privateKey: string, data: string): Promise<string> {
 function safeRedirect(value: unknown): string {
   if (typeof value !== "string") throw new Error("epoint_redirect_missing");
   const url = new URL(value);
-  if (url.protocol !== "https:" || (url.hostname !== "epoint.az" && !url.hostname.endsWith(".epoint.az"))) {
-    throw new Error("epoint_redirect_invalid");
+  if (url.hostname !== "epoint.az" && !url.hostname.endsWith(".epoint.az")) {
+    throw new Error(`epoint_redirect_invalid_host:${url.hostname}`);
+  }
+  if (url.protocol === "http:") {
+    url.protocol = "https:";
+  }
+  if (url.protocol !== "https:") {
+    throw new Error(`epoint_redirect_invalid_protocol:${url.protocol}`);
   }
   return url.toString();
 }
