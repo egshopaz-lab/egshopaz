@@ -7,7 +7,7 @@ import {
   Users, Package, ShoppingBag, DollarSign, Shield, LayoutDashboard,
   Truck, Warehouse, Store, Megaphone, BarChart3, Lock, Scale,
   FileText, Settings, LifeBuoy, AlertTriangle, TrendingUp, Plus, Trash2,
-  CheckCircle2, XCircle, Power, Ban, Edit3, Bell, Tag, Crown, Gem, Star, Award, Bot, Sparkles, Undo2, Wallet, History,
+  CheckCircle2, XCircle, Power, Ban, Edit3, Bell, Tag, Crown, Gem, Star, Award, Bot, Sparkles, Undo2, Wallet, History, CreditCard,
 } from "lucide-react";
 import { AdminPayouts } from "@/components/AdminPayouts";
 import { AdminTreasury } from "@/components/AdminTreasury";
