@@ -14,6 +14,12 @@ export const Route = createFileRoute("/checkout-pay/$orderId")({
 
 type OrderSummary = { id: string; total: number; payment_status: string; recipient_name: string | null };
 
+function isTrustedPaymentRedirect(target: URL): boolean {
+  const isEpoint = target.hostname === "epoint.az" || target.hostname.endsWith(".epoint.az");
+  const isPashaEcomm = target.hostname === "ecomm.pashabank.az";
+  return target.protocol === "https:" && (isEpoint || isPashaEcomm);
+}
+
 function CheckoutPayPage() {
   const { orderId } = useParams({ from: "/checkout-pay/$orderId" });
   const { user, loading: authLoading } = useAuth();
@@ -45,7 +51,7 @@ function CheckoutPayPage() {
       });
       if (error) throw error;
       const target = new URL(typeof data?.redirect_url === "string" ? data.redirect_url : "");
-      if (target.protocol !== "https:" || (target.hostname !== "epoint.az" && !target.hostname.endsWith(".epoint.az"))) {
+      if (!isTrustedPaymentRedirect(target)) {
         throw new Error("Ödəniş ünvanı etibarsızdır");
       }
       window.location.assign(target.toString());
