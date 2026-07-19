@@ -1,5 +1,6 @@
 const EPOINT_REQUEST_URL = "https://epoint.az/api/1/request";
 const JSON_HEADERS = { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" };
+const EPOINT_TIMEOUT_MS = 15_000;
 
 type JsonRecord = Record<string, unknown>;
 
@@ -117,6 +118,9 @@ function resultBase(serviceType: string): URL {
 
 Deno.serve(async (req: Request) => {
   const origin = req.headers.get("origin");
+  let paymentIdForFailure: string | null = null;
+  let supabaseUrlForFailure: string | null = null;
+  let secretKeyForFailure: string | null = null;
   const cors = allowedOrigin(origin);
   if (req.method === "OPTIONS") {
     if (origin && !cors) return response({ error: "origin_not_allowed" }, 403, null);
@@ -138,6 +142,8 @@ Deno.serve(async (req: Request) => {
   const privateKey = Deno.env.get("EPOINT_PRIVATE_KEY");
   const anonKey = publishableKey();
   const secretKey = adminKey();
+  supabaseUrlForFailure = supabaseUrl ?? null;
+  secretKeyForFailure = secretKey ?? null;
   const authorization = req.headers.get("authorization");
   if (!supabaseUrl || !publicKey || !privateKey || !anonKey || !secretKey) {
     return response({ error: "payment_not_configured" }, 503, origin);
@@ -191,6 +197,7 @@ Deno.serve(async (req: Request) => {
     }>;
     const payment = rows[0];
     if (!payment?.payment_id || !payment.merchant_order_id) throw new Error("payment_intent_missing");
+    paymentIdForFailure = payment.payment_id;
 
     const base = resultBase(serviceType);
     const successUrl = new URL("/payment/success", base);
@@ -210,12 +217,35 @@ Deno.serve(async (req: Request) => {
     };
     const data = base64(new TextEncoder().encode(JSON.stringify(epointPayload)));
     const signed = await signature(privateKey, data);
-    const epointResult = await fetch(EPOINT_REQUEST_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded", Accept: "application/json" },
-      body: new URLSearchParams({ data, signature: signed }),
-    });
-    const epoint = (await epointResult.json()) as JsonRecord;
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort("epoint_timeout"), EPOINT_TIMEOUT_MS);
+    let epointResult: Response;
+    try {
+      epointResult = await fetch(EPOINT_REQUEST_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded", Accept: "application/json" },
+        body: new URLSearchParams({ data, signature: signed }),
+        signal: controller.signal,
+      });
+    } catch (error) {
+      const providerMessage = error instanceof Error && error.name === "AbortError"
+        ? "Epoint request timed out"
+        : "Epoint request failed";
+      await markProviderFailure(supabaseUrl, secretKey, payment.payment_id, providerMessage);
+      return response({ error: "epoint_request_failed", provider_message: providerMessage }, 502, origin);
+    } finally {
+      clearTimeout(timeout);
+    }
+
+    const epointText = await epointResult.text();
+    let epoint: JsonRecord = {};
+    try {
+      epoint = epointText ? JSON.parse(epointText) as JsonRecord : {};
+    } catch {
+      const providerMessage = `Epoint returned non-JSON response (${epointResult.status})`;
+      await markProviderFailure(supabaseUrl, secretKey, payment.payment_id, providerMessage);
+      return response({ error: "epoint_request_failed", provider_message: providerMessage }, 502, origin);
+    }
     if (!epointResult.ok || String(epoint.status).toLowerCase() !== "success") {
       console.error("Epoint rejected payment", epointResult.status, epoint);
       const providerMessage = String(epoint.message ?? epoint.error ?? epoint.status ?? "epoint_request_failed");
@@ -231,7 +261,14 @@ Deno.serve(async (req: Request) => {
     }, 200, origin);
   } catch (error) {
     console.error("Payment initialization failed", error instanceof Error ? error.message : error);
+    if (paymentIdForFailure && supabaseUrlForFailure && secretKeyForFailure) {
+      await markProviderFailure(
+        supabaseUrlForFailure,
+        secretKeyForFailure,
+        paymentIdForFailure,
+        error instanceof Error ? error.message : "payment_initialization_failed",
+      );
+    }
     return response({ error: "invalid_request" }, 400, origin);
   }
 });
-
