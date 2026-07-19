@@ -66,7 +66,7 @@ function redact(value: unknown, depth = 0): unknown {
   if (!value || typeof value !== "object") return typeof value === "string" ? value.slice(0, 2_000) : value;
   const output: Json = {};
   for (const [key, item] of Object.entries(value as Json).slice(0, 100)) {
-    output[key] = /^(cvv|cvc|pan|private_key|secret|signature|card_number)$/i.test(key) ? "[redacted]" : redact(item, depth + 1);
+    output[key] = /^(cvv|cvc|pan|private_key|secret|signature|card_number|card_id|cart_id|provider_card_id)$/i.test(key) ? "[redacted]" : redact(item, depth + 1);
   }
   return output;
 }
