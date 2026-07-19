@@ -13,6 +13,7 @@ import { AdminPayouts } from "@/components/AdminPayouts";
 import { AdminTreasury } from "@/components/AdminTreasury";
 import { AdminAdvertisingPackages } from "@/components/AdminAdvertisingPackages";
 import { AdminTrends } from "@/components/AdminTrends";
+import { AdminEpointOperations } from "@/components/AdminEpointOperations";
 import { AdminDashboardStats } from "@/components/AdminDashboardStats";
 import { AdminAccountManagement } from "@/components/AdminAccountManagement";
 import { AdminAuditLog } from "@/components/AdminAuditLog";
@@ -31,7 +32,7 @@ export const Route = createFileRoute("/admin")({
 type TabKey =
   | "dashboard" | "customers" | "sellers" | "couriers" | "deliveries" | "pvz_staff"
   | "categories" | "products" | "shops" | "warehouses" | "pickup_points"
-  | "orders" | "returns" | "finance" | "treasury" | "payouts" | "marketing" | "banners" | "packages" | "trends" | "promo" | "analytics"
+  | "orders" | "returns" | "finance" | "treasury" | "payouts" | "marketing" | "banners" | "packages" | "trends" | "epoint" | "promo" | "analytics"
   | "security" | "audit" | "disputes" | "content" | "settings" | "support" | "ai_bot";
 
 interface Stat { users: number; products: number; orders: number; revenue: number; sellers: number }
@@ -372,6 +373,7 @@ function AdminPanel() {
     { key: "banners", label: "Bannerlər", icon: Megaphone, active: tab === "banners", onClick: () => setTab("banners") },
     { key: "packages", label: "Reklam paketləri", icon: Crown, active: tab === "packages", onClick: () => setTab("packages") },
     { key: "trends", label: "Reklam / EG Trends", icon: Megaphone, active: tab === "trends", onClick: () => setTab("trends") },
+    { key: "epoint", label: "Epoint ödənişləri", icon: CreditCard, active: tab === "epoint", onClick: () => setTab("epoint") },
     { key: "promo", label: "Promokodlar", icon: Tag, active: tab === "promo", onClick: () => setTab("promo") },
     { key: "analytics", label: "Analitika", icon: BarChart3, active: tab === "analytics", onClick: () => setTab("analytics") },
     { key: "security", label: "Təhlükəsizlik", icon: Lock, active: tab === "security", onClick: () => setTab("security") },
@@ -412,6 +414,7 @@ function AdminPanel() {
       {tab === "banners" && <AdminBannerManager />}
       {tab === "packages" && <AdminAdvertisingPackages />}
       {tab === "trends" && <AdminTrends />}
+      {tab === "epoint" && <AdminEpointOperations />}
       {tab === "promo" && <PromoSection promos={promos} addPromo={addPromo} togglePromo={togglePromo} />}
       {tab === "analytics" && <AnalyticsSection products={products} orders={orders} categories={categories} />}
       {tab === "security" && <SecuritySection />}
