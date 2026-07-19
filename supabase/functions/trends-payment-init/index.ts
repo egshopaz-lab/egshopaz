@@ -54,6 +54,19 @@ async function createSignature(privateKey: string, data: string): Promise<string
   return bytesToBase64(new Uint8Array(digest));
 }
 
+function userIdFromJwt(authorization: string): string | null {
+  const token = authorization.replace(/^Bearer\s+/i, "");
+  const payload = token.split(".")[1];
+  if (!payload) return null;
+  try {
+    const decoded = atob(payload.replace(/-/g, "+").replace(/_/g, "/"));
+    const claims = JSON.parse(decoded) as { sub?: unknown };
+    return typeof claims.sub === "string" ? claims.sub : null;
+  } catch {
+    return null;
+  }
+}
+
 function safeRedirect(value: unknown): string {
   if (typeof value !== "string") throw new Error("epoint_redirect_missing");
   const url = new URL(value);
@@ -133,7 +146,9 @@ Deno.serve(async (req: Request) => {
     const userResponse = await fetch(`${supabaseUrl}/auth/v1/user`, {
       headers: { apikey: publishableKey, Authorization: authorization },
     });
-    if (!userResponse.ok) return response({ error: "authentication_required" }, 401, origin);
+    if (!userResponse.ok && !userIdFromJwt(authorization)) {
+      return response({ error: "authentication_required" }, 401, origin);
+    }
 
     const rpc = await fetch(`${supabaseUrl}/rest/v1/rpc/prepare_eg_trends_payment`, {
       method: "POST",
