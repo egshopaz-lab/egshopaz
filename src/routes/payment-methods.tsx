@@ -65,7 +65,7 @@ function PaymentMethodsPage() {
 
   const remove = async (id: string) => {
     if (!confirm("Bu kartÄ± hesabdan silmÉ™k istÉ™yirsiniz?")) return;
-    const { error } = await db.from("epoint_saved_cards").update({ status: "deleted", is_default: false }).eq("id", id);
+    const { error } = await db.from("epoint_saved_cards").update({ status: "deleted" }).eq("id", id);
     if (error) toast.error(error.message); else { toast.success("Kart silindi"); await load(); }
   };
 
