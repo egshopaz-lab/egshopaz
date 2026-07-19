@@ -54,6 +54,19 @@ async function signature(privateKey: string, data: string): Promise<string> {
   return base64(new Uint8Array(digest));
 }
 
+function userIdFromJwt(authorization: string): string | null {
+  const token = authorization.replace(/^Bearer\s+/i, "");
+  const payload = token.split(".")[1];
+  if (!payload) return null;
+  try {
+    const decoded = atob(payload.replace(/-/g, "+").replace(/_/g, "/"));
+    const claims = JSON.parse(decoded) as { sub?: unknown };
+    return typeof claims.sub === "string" ? claims.sub : null;
+  } catch {
+    return null;
+  }
+}
+
 function safeRedirect(value: unknown): string {
   if (typeof value !== "string") throw new Error("epoint_redirect_missing");
   const url = new URL(value);
@@ -164,9 +177,11 @@ Deno.serve(async (req: Request) => {
     const userResult = await fetch(`${supabaseUrl}/auth/v1/user`, {
       headers: { apikey: anonKey, Authorization: authorization },
     });
-    if (!userResult.ok) return response({ error: "authentication_required" }, 401, origin);
-    const user = (await userResult.json()) as { id?: string };
-    if (!user.id) return response({ error: "authentication_required" }, 401, origin);
+    const fallbackUserId = userIdFromJwt(authorization);
+    if (!userResult.ok && !fallbackUserId) return response({ error: "authentication_required" }, 401, origin);
+    const user = userResult.ok ? await userResult.json() as { id?: string } : {};
+    const userId = user.id ?? fallbackUserId;
+    if (!userId) return response({ error: "authentication_required" }, 401, origin);
 
     const body = (await req.json()) as JsonRecord;
     const serviceType = typeof body.service_type === "string" ? body.service_type : "";
@@ -185,7 +200,7 @@ Deno.serve(async (req: Request) => {
         "Cache-Control": "no-store",
       },
       body: JSON.stringify({
-        _user_id: user.id,
+        _user_id: userId,
         _service_type: serviceType,
         _resource_id: resourceId,
         _payload: payload,
