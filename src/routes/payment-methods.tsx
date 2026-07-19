@@ -1,163 +1,135 @@
+
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState, useCallback } from "react";
-import { useTranslation } from "react-i18next";
+import { useCallback, useEffect, useState } from "react";
+import { CreditCard, Lock, Plus, RefreshCw, Star, Trash2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { PanelLayout } from "@/components/PanelLayout";
 import { useBuyerNav } from "@/hooks/useBuyerNav";
 import { supabase } from "@/integrations/supabase/client";
-import { CreditCard, Plus, Trash2, Lock, Star } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/payment-methods")({
-  head: () => ({ meta: [{ title: "Ödəniş üsulları — EG Shop" }] }),
+  head: () => ({ meta: [{ title: "Ã–dÉ™niÅŸ Ã¼sullarÄ± â€” EG Shop" }] }),
   component: PaymentMethodsPage,
 });
 
-interface SavedCard {
+type SavedCard = {
   id: string;
-  brand: string;
-  last4: string;
-  exp_month: number;
-  exp_year: number;
-  holder: string;
+  card_mask: string | null;
+  card_name: string | null;
+  purpose: "payment" | "payout" | "both";
+  status: "pending" | "active" | "blocked" | "deleted";
   is_default: boolean;
-}
+  created_at: string;
+};
+
+const db = supabase as any;
 
 function PaymentMethodsPage() {
-  const { t } = useTranslation();
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const { items } = useBuyerNav();
   const [cards, setCards] = useState<SavedCard[]>([]);
-  const [adding, setAdding] = useState(false);
-  const [form, setForm] = useState({ number: "", exp: "", cvv: "", holder: "" });
+  const [loading, setLoading] = useState(true);
+  const [working, setWorking] = useState(false);
 
   useEffect(() => { if (!authLoading && !user) navigate({ to: "/auth" }); }, [user, authLoading, navigate]);
 
   const load = useCallback(async () => {
     if (!user) return;
-    const { data } = await supabase.from("customer_cards" as never).select("*")
-      .order("is_default", { ascending: false }).order("created_at", { ascending: false });
-    setCards((data as unknown as SavedCard[]) ?? []);
+    setLoading(true);
+    const { data, error } = await db.from("epoint_saved_cards")
+      .select("id,card_mask,card_name,purpose,status,is_default,created_at")
+      .neq("status", "deleted")
+      .order("is_default", { ascending: false })
+      .order("created_at", { ascending: false });
+    if (error) toast.error(error.message);
+    setCards((data ?? []) as SavedCard[]);
+    setLoading(false);
   }, [user]);
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => { void load(); }, [load]);
 
-  const addCard = async () => {
-    const num = form.number.replace(/\s/g, "");
-    if (num.length < 13 || num.length > 19) { toast.error("Kart nömrəsi yanlışdır"); return; }
-    if (!/^\d{2}\/\d{2}$/.test(form.exp)) { toast.error("Etibar tarixi MM/YY formatında olmalıdır"); return; }
-    if (form.cvv.length < 3) { toast.error("CVV yanlışdır"); return; }
-    if (!form.holder.trim()) { toast.error("Kart sahibinin adını daxil edin"); return; }
-    const brand = num.startsWith("4") ? "Visa" : /^5[1-5]/.test(num) ? "MasterCard" : "Card";
-    const [mm, yy] = form.exp.split("/");
-    const { error } = await supabase.from("customer_cards" as never).insert({
-      user_id: user!.id,
-      brand,
-      last4: num.slice(-4),
-      exp_month: parseInt(mm, 10),
-      exp_year: 2000 + parseInt(yy, 10),
-      holder: form.holder.toUpperCase().slice(0, 50),
-      is_default: cards.length === 0,
-    } as never);
-    if (error) { toast.error(error.message); return; }
-    setForm({ number: "", exp: "", cvv: "", holder: "" });
-    setAdding(false);
-    toast.success("Kart əlavə edildi");
-    load();
+  const register = async () => {
+    setWorking(true);
+    const { data, error } = await supabase.functions.invoke("epoint-operations", {
+      body: { action: "card_registration", purpose: "payment", language: "az" },
+    });
+    setWorking(false);
+    if (error || data?.error || !data?.redirect_url) {
+      toast.error(data?.error || error?.message || "Kart qeydiyyatÄ± baÅŸladÄ±lmadÄ±");
+      return;
+    }
+    window.location.assign(data.redirect_url);
   };
 
   const remove = async (id: string) => {
-    if (!confirm("Kartı silmək istəyirsiniz?")) return;
-    const { error } = await supabase.from("customer_cards" as never).delete().eq("id", id);
-    if (error) { toast.error(error.message); return; }
-    toast.success("Silindi");
-    load();
+    if (!confirm("Bu kartÄ± hesabdan silmÉ™k istÉ™yirsiniz?")) return;
+    const { error } = await db.from("epoint_saved_cards").update({ status: "deleted", is_default: false }).eq("id", id);
+    if (error) toast.error(error.message); else { toast.success("Kart silindi"); await load(); }
   };
 
-  const setDefault = async (id: string) => {
-    const { error } = await supabase.rpc("set_default_card" as never, { _card_id: id } as never);
-    if (error) { toast.error(error.message); return; }
-    toast.success("Default kart yeniləndi");
-    load();
+  const makeDefault = async (id: string) => {
+    const { error } = await db.rpc("set_default_epoint_card", { _card_id: id });
+    if (error) toast.error(error.message); else { toast.success("Æsas kart yenilÉ™ndi"); await load(); }
   };
 
   if (!user) return null;
 
   return (
-    <PanelLayout title={t("sidebar.buyerPanelTitle")} subtitle={user.email ?? undefined} items={items}>
-      <div>
-        <div className="flex items-center justify-between mb-4">
-          <h1 className="text-2xl font-extrabold flex items-center gap-2"><CreditCard className="h-6 w-6 text-primary" /> Kartlarım</h1>
-          <button onClick={() => setAdding(true)} className="bg-primary text-primary-foreground px-4 h-10 rounded-lg font-bold hover:bg-primary/90 inline-flex items-center gap-2">
-            <Plus className="h-4 w-4" /> Yeni kart
-          </button>
-        </div>
-
-        <div className="bg-blue-50 border border-blue-200 text-blue-900 rounded-xl p-3 text-sm mb-4 flex items-start gap-2">
-          <Lock className="h-4 w-4 shrink-0 mt-0.5" />
-          <div>Kart məlumatınız təhlükəsiz saxlanır. Yalnız brend, son 4 rəqəm və etibar tarixi yadda qalır — tam nömrə və CVV heç vaxt saxlanmır.</div>
-        </div>
-
-        {cards.length === 0 ? (
-          <div className="bg-secondary/40 rounded-2xl p-12 text-center text-muted-foreground">Hələ kartınız yoxdur</div>
-        ) : (
-          <div className="grid sm:grid-cols-2 gap-3">
-            {cards.map((c) => (
-              <div key={c.id} className="bg-gradient-brand text-primary-foreground rounded-2xl p-5 relative shadow-elegant">
-                <div className="absolute top-3 right-3 flex gap-1">
-                  {!c.is_default && (
-                    <button onClick={() => setDefault(c.id)} title="Default et" className="p-1.5 bg-background/20 rounded-lg hover:bg-background/30">
-                      <Star className="h-4 w-4" />
-                    </button>
-                  )}
-                  <button onClick={() => remove(c.id)} className="p-1.5 bg-background/20 rounded-lg hover:bg-background/30">
-                    <Trash2 className="h-4 w-4" />
-                  </button>
-                </div>
-                <div className="text-xs opacity-80 flex items-center gap-2">{c.brand} {c.is_default && <span className="bg-background/30 px-1.5 rounded text-[10px]">DEFAULT</span>}</div>
-                <div className="text-2xl font-bold tracking-widest mt-6">•••• •••• •••• {c.last4}</div>
-                <div className="flex justify-between mt-4 text-xs">
-                  <div><div className="opacity-70">SAHİB</div><div className="font-semibold">{c.holder || "—"}</div></div>
-                  <div><div className="opacity-70">ETİBAR</div><div className="font-semibold">{String(c.exp_month).padStart(2,"0")}/{String(c.exp_year).slice(-2)}</div></div>
-                </div>
-              </div>
-            ))}
+    <PanelLayout title="MÃ¼ÅŸtÉ™ri paneli" subtitle={user.email ?? undefined} items={items}>
+      <div className="space-y-5">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h1 className="flex items-center gap-2 text-xl font-bold"><CreditCard className="h-5 w-5 text-primary" /> KartlarÄ±m</h1>
+            <p className="mt-1 text-sm text-muted-foreground">Kart mÉ™lumatlarÄ± Epoint tÉ™rÉ™findÉ™n qorunur.</p>
           </div>
-        )}
+          <div className="flex gap-2">
+            <button type="button" onClick={() => void load()} className="inline-flex h-10 w-10 items-center justify-center rounded-md border border-border" title="YenilÉ™"><RefreshCw className="h-4 w-4" /></button>
+            <button type="button" disabled={working} onClick={() => void register()} className="inline-flex h-10 items-center gap-2 rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground disabled:opacity-50"><Plus className="h-4 w-4" /> Kart É™lavÉ™ et</button>
+          </div>
+        </div>
 
-        {adding && (
-          <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setAdding(false)}>
-            <div className="bg-card rounded-2xl p-6 w-full max-w-md" onClick={(e) => e.stopPropagation()}>
-              <h2 className="text-xl font-bold mb-4">Yeni kart əlavə et</h2>
-              <div className="space-y-3">
-                <input placeholder="Kart nömrəsi" value={form.number} maxLength={23}
-                       onChange={(e) => setForm({ ...form, number: e.target.value.replace(/\D/g, "").replace(/(\d{4})/g, "$1 ").trim() })}
-                       className="w-full h-11 px-3 rounded-lg border border-input bg-background tracking-widest" />
-                <div className="grid grid-cols-2 gap-3">
-                  <input placeholder="MM/YY" value={form.exp} maxLength={5}
-                         onChange={(e) => {
-                           let v = e.target.value.replace(/\D/g, "");
-                           if (v.length >= 3) v = v.slice(0, 2) + "/" + v.slice(2, 4);
-                           setForm({ ...form, exp: v });
-                         }}
-                         className="h-11 px-3 rounded-lg border border-input bg-background" />
-                  <input placeholder="CVV" value={form.cvv} maxLength={4} type="password"
-                         onChange={(e) => setForm({ ...form, cvv: e.target.value.replace(/\D/g, "") })}
-                         className="h-11 px-3 rounded-lg border border-input bg-background" />
+        <div className="flex items-start gap-3 border-y border-border bg-muted/30 px-1 py-4 text-sm text-muted-foreground">
+          <Lock className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+          <p>EG Shop kart nÃ¶mrÉ™sini vÉ™ CVV-ni gÃ¶rmÃ¼r vÉ™ saxlamÄ±r. MÉ™lumatlar yalnÄ±z Epoint-in tÉ™hlÃ¼kÉ™siz Ã¶dÉ™niÅŸ sÉ™hifÉ™sindÉ™ daxil edilir.</p>
+        </div>
+
+        {loading ? (
+          <div className="py-16 text-center text-muted-foreground">YÃ¼klÉ™nir...</div>
+        ) : cards.length === 0 ? (
+          <div className="border-y border-dashed border-border py-16 text-center">
+            <CreditCard className="mx-auto h-9 w-9 text-muted-foreground" />
+            <p className="mt-3 font-medium">SaxlanmÄ±ÅŸ kart yoxdur</p>
+            <p className="mt-1 text-sm text-muted-foreground">Ä°lk kartÄ±nÄ±zÄ± Epoint Ã¼zÉ™rindÉ™n tÉ™hlÃ¼kÉ™siz É™lavÉ™ edin.</p>
+          </div>
+        ) : (
+          <div className="grid gap-3 md:grid-cols-2">
+            {cards.map((card) => (
+              <article key={card.id} className="border border-border bg-card p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <div className="flex items-center gap-2 font-semibold"><CreditCard className="h-5 w-5 text-primary" /> {card.card_mask || "Qorunan kart"}</div>
+                    <p className="mt-1 text-xs text-muted-foreground">{card.card_name || "Kart sahibi"}</p>
+                  </div>
+                  <CardStatus value={card.status} />
                 </div>
-                <input placeholder="Kart sahibinin adı" value={form.holder}
-                       onChange={(e) => setForm({ ...form, holder: e.target.value })}
-                       className="w-full h-11 px-3 rounded-lg border border-input bg-background uppercase" />
-              </div>
-              <div className="flex gap-2 mt-4">
-                <button onClick={addCard} className="flex-1 bg-primary text-primary-foreground h-11 rounded-lg font-bold">Əlavə et</button>
-                <button onClick={() => setAdding(false)} className="px-4 h-11 rounded-lg border border-border">Ləğv et</button>
-              </div>
-            </div>
+                <div className="mt-5 flex items-center justify-between gap-2 border-t border-border pt-3">
+                  {card.is_default ? <span className="inline-flex items-center gap-1 text-xs font-medium text-primary"><Star className="h-3.5 w-3.5 fill-current" /> Æsas kart</span> : card.status === "active" ? <button type="button" onClick={() => void makeDefault(card.id)} className="inline-flex items-center gap-1 text-xs font-medium text-primary"><Star className="h-3.5 w-3.5" /> Æsas et</button> : <span className="text-xs text-muted-foreground">TÉ™sdiq gÃ¶zlÉ™nilir</span>}
+                  <button type="button" onClick={() => void remove(card.id)} className="inline-flex h-8 w-8 items-center justify-center text-destructive" title="KartÄ± sil"><Trash2 className="h-4 w-4" /></button>
+                </div>
+              </article>
+            ))}
           </div>
         )}
       </div>
     </PanelLayout>
   );
 }
+
+function CardStatus({ value }: { value: SavedCard["status"] }) {
+  const labels = { active: "Aktiv", pending: "GÃ¶zlÉ™yir", blocked: "BloklanÄ±b", deleted: "Silinib" };
+  const classes = value === "active" ? "bg-emerald-100 text-emerald-800" : value === "pending" ? "bg-amber-100 text-amber-800" : "bg-red-100 text-red-800";
+  return <span className={`px-2 py-1 text-xs font-medium ${classes}`}>{labels[value]}</span>;
+}
+
