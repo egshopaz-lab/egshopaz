@@ -57,7 +57,9 @@ async function signature(privateKey: string, data: string): Promise<string> {
 function safeRedirect(value: unknown): string {
   if (typeof value !== "string") throw new Error("epoint_redirect_missing");
   const url = new URL(value);
-  if (url.hostname !== "epoint.az" && !url.hostname.endsWith(".epoint.az")) {
+  const isEpoint = url.hostname === "epoint.az" || url.hostname.endsWith(".epoint.az");
+  const isPashaEcomm = url.hostname === "ecomm.pashabank.az";
+  if (!isEpoint && !isPashaEcomm) {
     throw new Error(`epoint_redirect_invalid_host:${url.hostname}`);
   }
   if (url.protocol === "http:") {
