@@ -1,4 +1,5 @@
 const EPOINT_REQUEST_URL = "https://epoint.az/api/1/request";
+const EPOINT_TIMEOUT_MS = 15_000;
 
 type JsonRecord = Record<string, unknown>;
 
@@ -33,6 +34,14 @@ function getPublishableKey(): string | null {
   return Deno.env.get("SUPABASE_ANON_KEY") ?? null;
 }
 
+function getSecretKey(): string | null {
+  const keys = Deno.env.get("SUPABASE_SECRET_KEYS");
+  if (keys) {
+    try { return (JSON.parse(keys) as Record<string, string>).default ?? null; } catch { /* legacy fallback */ }
+  }
+  return Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? null;
+}
+
 function bytesToBase64(bytes: Uint8Array): string {
   let binary = "";
   for (const byte of bytes) binary += String.fromCharCode(byte);
@@ -46,17 +55,42 @@ async function createSignature(privateKey: string, data: string): Promise<string
 }
 
 function safeRedirect(value: unknown): string {
-  if (typeof value !== "string") throw new Error("Epoint yönləndirmə ünvanı qaytarmadı");
+  if (typeof value !== "string") throw new Error("epoint_redirect_missing");
   const url = new URL(value);
   if (url.protocol !== "https:" || (url.hostname !== "epoint.az" && !url.hostname.endsWith(".epoint.az"))) {
-    throw new Error("Epoint etibarsız yönləndirmə ünvanı qaytardı");
+    throw new Error("epoint_redirect_invalid");
   }
   return url.toString();
+}
+
+async function markTrendsFailure(
+  supabaseUrl: string,
+  secretKey: string | null,
+  paymentId: string,
+  message: string,
+): Promise<void> {
+  if (!secretKey) return;
+  const result = await fetch(`${supabaseUrl}/rest/v1/eg_trends_payments?id=eq.${paymentId}`, {
+    method: "PATCH",
+    headers: {
+      apikey: secretKey,
+      ...(secretKey.startsWith("eyJ") ? { Authorization: `Bearer ${secretKey}` } : {}),
+      "Content-Type": "application/json",
+      Prefer: "return=minimal",
+    },
+    body: JSON.stringify({
+      status: "failed",
+      message: message.slice(0, 500),
+      updated_at: new Date().toISOString(),
+    }),
+  });
+  if (!result.ok) console.error("Could not persist EG Trends Epoint failure", result.status);
 }
 
 Deno.serve(async (req: Request) => {
   const origin = req.headers.get("origin");
   const allowedOrigin = getAllowedOrigin(origin);
+  let paymentIdForFailure: string | null = null;
 
   if (req.method === "OPTIONS") {
     if (origin && !allowedOrigin) return response({ error: "origin_not_allowed" }, 403, null);
@@ -74,6 +108,7 @@ Deno.serve(async (req: Request) => {
 
   const supabaseUrl = Deno.env.get("SUPABASE_URL");
   const publishableKey = getPublishableKey();
+  const secretKey = getSecretKey();
   const publicKey = Deno.env.get("EPOINT_PUBLIC_KEY");
   const privateKey = Deno.env.get("EPOINT_PRIVATE_KEY");
   const authorization = req.headers.get("authorization");
@@ -84,7 +119,7 @@ Deno.serve(async (req: Request) => {
 
   try {
     const body = (await req.json()) as JsonRecord;
-    if (typeof body.plan_id !== "string") throw new Error("Paket seçilməyib");
+    if (typeof body.plan_id !== "string") throw new Error("plan_required");
     const language = ["az", "en", "ru"].includes(String(body.language)) ? String(body.language) : "az";
 
     const userResponse = await fetch(`${supabaseUrl}/auth/v1/user`, {
@@ -105,13 +140,14 @@ Deno.serve(async (req: Request) => {
     if (!rpc.ok) {
       const detail = (await rpc.text()).slice(0, 1_000);
       console.error("Could not prepare EG Trends payment", rpc.status, detail);
-      return response({ error: detail.includes("bloklanıb") ? "access_blocked" : "payment_prepare_failed" }, 400, origin);
+      return response({ error: detail.includes("bloklan") ? "access_blocked" : "payment_prepare_failed" }, 400, origin);
     }
     const rows = (await rpc.json()) as Array<{
       payment_id: string; merchant_order_id: string; amount: number | string; currency: string; duration_days: number;
     }>;
     const payment = rows[0];
-    if (!payment?.payment_id || !payment.merchant_order_id) throw new Error("Ödəniş yaradıla bilmədi");
+    if (!payment?.payment_id || !payment.merchant_order_id) throw new Error("payment_intent_missing");
+    paymentIdForFailure = payment.payment_id;
 
     const sellerSiteUrl = new URL(Deno.env.get("SELLER_SITE_URL") ?? "https://seller.egshop.az");
     const successUrl = new URL("/seller", sellerSiteUrl);
@@ -125,20 +161,45 @@ Deno.serve(async (req: Request) => {
       currency: payment.currency,
       language,
       order_id: payment.merchant_order_id,
-      description: `EG Trends ${payment.duration_days} günlük abunə`,
+      description: `EG Trends ${payment.duration_days} gunluk abune`,
       success_redirect_url: successUrl.toString(),
       error_redirect_url: errorUrl.toString(),
     };
     const data = bytesToBase64(new TextEncoder().encode(JSON.stringify(payload)));
     const signature = await createSignature(privateKey, data);
-    const epointResponse = await fetch(EPOINT_REQUEST_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded", Accept: "application/json" },
-      body: new URLSearchParams({ data, signature }),
-    });
-    const epointBody = (await epointResponse.json()) as JsonRecord;
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort("epoint_timeout"), EPOINT_TIMEOUT_MS);
+    let epointResponse: Response;
+    try {
+      epointResponse = await fetch(EPOINT_REQUEST_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded", Accept: "application/json" },
+        body: new URLSearchParams({ data, signature }),
+        signal: controller.signal,
+      });
+    } catch (error) {
+      const providerMessage = error instanceof Error && error.name === "AbortError"
+        ? "Epoint request timed out"
+        : "Epoint request failed";
+      await markTrendsFailure(supabaseUrl, secretKey, payment.payment_id, providerMessage);
+      return response({ error: "epoint_request_failed", provider_message: providerMessage }, 502, origin);
+    } finally {
+      clearTimeout(timeout);
+    }
+
+    const epointText = await epointResponse.text();
+    let epointBody: JsonRecord = {};
+    try {
+      epointBody = epointText ? JSON.parse(epointText) as JsonRecord : {};
+    } catch {
+      const providerMessage = `Epoint returned non-JSON response (${epointResponse.status})`;
+      await markTrendsFailure(supabaseUrl, secretKey, payment.payment_id, providerMessage);
+      return response({ error: "epoint_request_failed", provider_message: providerMessage }, 502, origin);
+    }
     if (!epointResponse.ok || String(epointBody.status).toLowerCase() !== "success") {
-      return response({ error: "epoint_request_failed" }, 502, origin);
+      const providerMessage = String(epointBody.message ?? epointBody.error ?? epointBody.status ?? "epoint_request_failed");
+      await markTrendsFailure(supabaseUrl, secretKey, payment.payment_id, providerMessage);
+      return response({ error: "epoint_request_failed", provider_message: providerMessage }, 502, origin);
     }
     return response({
       redirect_url: safeRedirect(epointBody.redirect_url),
@@ -148,7 +209,14 @@ Deno.serve(async (req: Request) => {
     }, 200, origin);
   } catch (error) {
     console.error("EG Trends payment initialization failed", error instanceof Error ? error.message : error);
+    if (paymentIdForFailure && supabaseUrl) {
+      await markTrendsFailure(
+        supabaseUrl,
+        secretKey,
+        paymentIdForFailure,
+        error instanceof Error ? error.message : "payment_initialization_failed",
+      );
+    }
     return response({ error: error instanceof Error ? error.message : "invalid_request" }, 400, origin);
   }
 });
-
