@@ -84,10 +84,12 @@ async function createSignature(privateKey: string, data: string): Promise<string
 function safeEpointRedirect(value: unknown): string {
   if (typeof value !== "string") throw new Error("Epoint yönləndirmə ünvanı qaytarmadı");
   const url = new URL(value);
-  if (
-    url.protocol !== "https:" ||
-    (url.hostname !== "epoint.az" && !url.hostname.endsWith(".epoint.az"))
-  ) {
+  const hostname = url.hostname.toLowerCase();
+  const trustedHost =
+    hostname === "epoint.az" ||
+    hostname.endsWith(".epoint.az") ||
+    hostname === "ecomm.pashabank.az";
+  if (url.protocol !== "https:" || !trustedHost) {
     throw new Error("Epoint etibarsız yönləndirmə ünvanı qaytardı");
   }
   return url.toString();
