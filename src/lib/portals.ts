@@ -33,9 +33,10 @@ export function portalFromHostname(hostname: string): Portal {
 }
 
 export function usePortal(): Portal {
-  const [portal, setPortal] = useState<Portal>(() =>
-    typeof window === "undefined" ? "marketplace" : portalFromHostname(window.location.hostname),
-  );
+  // Keep the first client render identical to SSR to avoid hydration
+  // mismatches on seller/pvz/admin subdomains. The real hostname-specific
+  // portal is applied immediately after hydration.
+  const [portal, setPortal] = useState<Portal>("marketplace");
   useEffect(() => setPortal(portalFromHostname(window.location.hostname)), []);
   return portal;
 }
