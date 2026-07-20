@@ -1,12 +1,16 @@
-const TRUSTED_PAYMENT_HOSTS = new Set(["epoint.az", "ecomm.pashabank.az"]);
+const TRUSTED_PAYMENT_HOSTS = new Set(["epoint.az", "pashabank.az"]);
+
+function isTrustedPaymentHost(hostname: string): boolean {
+  return (
+    TRUSTED_PAYMENT_HOSTS.has(hostname) ||
+    hostname.endsWith(".epoint.az") ||
+    hostname.endsWith(".pashabank.az")
+  );
+}
 
 export function isTrustedPaymentRedirect(url: URL): boolean {
   const hostname = url.hostname.toLowerCase();
-  const isTrustedHost =
-    TRUSTED_PAYMENT_HOSTS.has(hostname) ||
-    hostname.endsWith(".epoint.az");
-
-  return url.protocol === "https:" && isTrustedHost;
+  return url.protocol === "https:" && isTrustedPaymentHost(hostname);
 }
 
 export function parseTrustedPaymentRedirect(value: unknown): URL {
@@ -16,7 +20,7 @@ export function parseTrustedPaymentRedirect(value: unknown): URL {
 
   const target = new URL(value);
   if (!isTrustedPaymentRedirect(target)) {
-    throw new Error("Ödəniş ünvanı etibarsızdır");
+    throw new Error(`Ödəniş ünvanı etibarsızdır: ${target.hostname}`);
   }
 
   return target;
