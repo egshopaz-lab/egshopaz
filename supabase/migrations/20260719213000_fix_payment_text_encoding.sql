@@ -70,7 +70,7 @@ begin
       update public.orders set total = _amount, discount = _discount + _bonus_discount,
         payment_status = 'pending', payment_method = 'epoint'
       where id = _order.id;
-      _description := 'EG Shop sifariÅŸi #' || left(_order.id::text, 8);
+      _description := 'EG Shop sifarişi #' || left(_order.id::text, 8);
       _canonical := jsonb_build_object(
         'order_id', _order.id, 'subtotal', _subtotal, 'shipping', _shipping,
         'promo_discount', _discount, 'bonus_discount', _bonus_discount
@@ -111,7 +111,7 @@ begin
       if _application.status = 'active' then raise exception 'pvz_already_active'; end if;
       _resource_id := _application.id;
       _amount := _settings.pvz_registration_fee;
-      _description := 'EG Shop PVZ qeydiyyat haqqÄ±';
+      _description := 'EG Shop PVZ qeydiyyat haqqı';
       _canonical := jsonb_build_object('application_id', _application.id);
 
     when 'seller_package' then
@@ -120,7 +120,7 @@ begin
       where id = _resource_id and is_active = true;
       if not found then raise exception 'package_not_found'; end if;
       _amount := _package.price;
-      _description := _package.name || ' paketi (' || _package.duration_days || ' gÃ¼n)';
+      _description := _package.name || ' paketi (' || _package.duration_days || ' gün)';
       _canonical := jsonb_build_object('package_id', _package.id, 'duration_days', _package.duration_days);
 
     when 'product_promotion' then
@@ -129,20 +129,20 @@ begin
       where id = _resource_id and seller_id = _user_id and is_active = true;
       if not found then raise exception 'product_not_found'; end if;
       _amount := _settings.single_product_promo_price;
-      _description := 'MÉ™hsul reklamÄ±: ' || left(_product.title, 150);
+      _description := 'Məhsul reklamı: ' || left(_product.title, 150);
       _canonical := jsonb_build_object('product_id', _product.id, 'duration_days', _settings.single_product_promo_days);
 
     when 'shop_promotion' then
       if not public.has_role(_user_id, 'seller'::public.app_role) then raise exception 'seller_required'; end if;
       _amount := _settings.single_shop_promo_price;
-      _description := 'MaÄŸaza reklamÄ±';
+      _description := 'Mağaza reklamı';
       _canonical := jsonb_build_object('duration_days', _settings.single_shop_promo_days);
 
     when 'banner_promotion' then
       if not public.has_role(_user_id, 'seller'::public.app_role) then raise exception 'seller_required'; end if;
       if coalesce(trim(_payload->>'title'), '') = '' then raise exception 'banner_title_required'; end if;
       _amount := _settings.single_banner_price;
-      _description := 'Banner reklamÄ±: ' || left(trim(_payload->>'title'), 150);
+      _description := 'Banner reklamı: ' || left(trim(_payload->>'title'), 150);
       _canonical := jsonb_build_object(
         'title', left(trim(_payload->>'title'), 200),
         'image_url', nullif(left(trim(_payload->>'image_url'), 1000), ''),
@@ -169,7 +169,7 @@ begin
       order by ends_at desc limit 1;
       if not found then raise exception 'active_package_required'; end if;
       _amount := _settings.slot_shop_fee;
-      _description := 'Paket slotu: maÄŸaza reklamÄ±';
+      _description := 'Paket slotu: mağaza reklamı';
       _canonical := jsonb_build_object('subscription_id', _subscription.id);
 
     when 'slot_banner' then
@@ -205,5 +205,4 @@ begin
   return query select _payment_id, _merchant, _amount, 'AZN'::text, _description;
 end;
 $function$;
-
 
