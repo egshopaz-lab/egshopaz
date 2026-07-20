@@ -215,8 +215,8 @@ Deno.serve(async (req: Request) => {
       {
         redirect_url: safeEpointRedirect(epointBody.redirect_url),
         application_id: payment.application_id,
-        amount: 20,
-        currency: "AZN",
+        amount: Number(payment.amount),
+        currency: payment.currency,
       },
       200,
       origin,
