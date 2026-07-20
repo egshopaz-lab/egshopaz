@@ -14,9 +14,19 @@ export const Route = createFileRoute("/my-reviews")({
   component: MyReviewsPage,
 });
 
+interface ProductSummary {
+  id: string;
+  title: string;
+  image_url: string | null;
+}
+
 interface Review {
-  id: string; rating: number; comment: string | null; created_at: string;
-  product_id: string; products: { title: string; image_url: string | null } | null;
+  id: string;
+  rating: number;
+  comment: string | null;
+  created_at: string;
+  product_id: string;
+  products: ProductSummary | null;
 }
 
 function MyReviewsPage() {
@@ -26,19 +36,41 @@ function MyReviewsPage() {
   const { items } = useBuyerNav();
   const [reviews, setReviews] = useState<Review[]>([]);
 
-  useEffect(() => { if (!authLoading && !user) navigate({ to: "/auth" }); }, [user, authLoading, navigate]);
+  useEffect(() => {
+    if (!authLoading && !user) navigate({ to: "/auth" });
+  }, [user, authLoading, navigate]);
 
-  const load = () => {
+  const load = async () => {
     if (!user) return;
-    supabase.from("reviews").select("*, products(title,image_url)").eq("user_id", user.id).order("created_at", { ascending: false })
-      .then(({ data }) => setReviews((data ?? []) as unknown as Review[]));
+
+    const { data: reviewRows } = await supabase
+      .from("reviews")
+      .select("*")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false });
+
+    const rows = (reviewRows ?? []) as Omit<Review, "products">[];
+    const productIds = Array.from(new Set(rows.map((r) => r.product_id).filter(Boolean)));
+    const { data: productRows } = productIds.length
+      ? await supabase.from("products").select("id,title,image_url").in("id", productIds)
+      : { data: [] };
+
+    const productsById = new Map((productRows ?? []).map((p) => [p.id, p as ProductSummary]));
+    setReviews(rows.map((r) => ({ ...r, products: productsById.get(r.product_id) ?? null })));
   };
-  useEffect(load, [user]);
+
+  useEffect(() => {
+    void load();
+  }, [user]);
 
   const remove = async (id: string) => {
     if (!confirm("Rəyi silmək istəyirsiniz?")) return;
     const { error } = await supabase.from("reviews").delete().eq("id", id);
-    if (error) toast.error("Silinmədi"); else { toast.success("Silindi"); load(); }
+    if (error) toast.error("Silinmədi");
+    else {
+      toast.success("Silindi");
+      void load();
+    }
   };
 
   if (!user) return null;
@@ -46,7 +78,9 @@ function MyReviewsPage() {
   return (
     <PanelLayout title={t("sidebar.buyerPanelTitle")} subtitle={user.email ?? undefined} items={items}>
       <div>
-        <h1 className="text-2xl font-extrabold mb-4 flex items-center gap-2"><Star className="h-6 w-6 text-primary" /> {t("myReviews.title")}</h1>
+        <h1 className="text-2xl font-extrabold mb-4 flex items-center gap-2">
+          <Star className="h-6 w-6 text-primary" /> {t("myReviews.title")}
+        </h1>
         {reviews.length === 0 ? (
           <div className="bg-secondary/40 rounded-2xl p-12 text-center text-muted-foreground">
             {t("myReviews.empty")}
@@ -71,7 +105,7 @@ function MyReviewsPage() {
                     </div>
                     {r.comment && <p className="text-sm mt-2 text-foreground/80">{r.comment}</p>}
                   </div>
-                  <button onClick={() => remove(r.id)} className="p-1.5 hover:bg-destructive/10 text-destructive rounded">
+                  <button onClick={() => void remove(r.id)} className="p-1.5 hover:bg-destructive/10 text-destructive rounded">
                     <Trash2 className="h-4 w-4" />
                   </button>
                 </div>
