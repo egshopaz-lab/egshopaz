@@ -6,6 +6,7 @@ import { ArrowLeft, CreditCard, ExternalLink, Loader2, Lock, ShieldCheck } from 
 import { toast } from "sonner";
 import { formatAZN } from "@/lib/format";
 import { getFunctionErrorMessage } from "@/lib/functionError";
+import { parseTrustedPaymentRedirect } from "@/lib/paymentRedirect";
 
 export const Route = createFileRoute("/checkout-pay/$orderId")({
   head: () => ({ meta: [{ title: "Təhlükəsiz ödəniş — EG Shop" }, { name: "robots", content: "noindex,nofollow" }] }),
@@ -13,12 +14,6 @@ export const Route = createFileRoute("/checkout-pay/$orderId")({
 });
 
 type OrderSummary = { id: string; total: number; payment_status: string; recipient_name: string | null };
-
-function isTrustedPaymentRedirect(target: URL): boolean {
-  const isEpoint = target.hostname === "epoint.az" || target.hostname.endsWith(".epoint.az");
-  const isPashaEcomm = target.hostname === "ecomm.pashabank.az";
-  return target.protocol === "https:" && (isEpoint || isPashaEcomm);
-}
 
 function CheckoutPayPage() {
   const { orderId } = useParams({ from: "/checkout-pay/$orderId" });
@@ -50,10 +45,7 @@ function CheckoutPayPage() {
         body: { service_type: "product_order", resource_id: order.id, language: "az" },
       });
       if (error) throw error;
-      const target = new URL(typeof data?.redirect_url === "string" ? data.redirect_url : "");
-      if (!isTrustedPaymentRedirect(target)) {
-        throw new Error("Ödəniş ünvanı etibarsızdır");
-      }
+      const target = parseTrustedPaymentRedirect(data?.redirect_url);
       window.location.assign(target.toString());
     } catch (error) {
       toast.error(await getFunctionErrorMessage(error, "Epoint ödənişi başladılmadı"));
