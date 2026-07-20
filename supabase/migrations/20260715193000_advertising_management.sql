@@ -95,9 +95,9 @@ grant insert, update, delete on public.ad_service_types, public.ad_package_servi
 insert into public.ad_service_types
   (slug, name, description, base_price, default_duration_days, default_usage_limit, display_rules, priority, settings, sort_order)
 values
-  ('shop_promotion', 'MaÄŸazanÄ± reklam et', 'MaÄŸazanÄ± ana sÉ™hifÉ™dÉ™ vÉ™ seÃ§ilmiÅŸ vitrinlÉ™rdÉ™ gÃ¶stÉ™rir.', 10, 7, 1, '{"position":"home_featured"}'::jsonb, 80, '{"icon":"store"}'::jsonb, 10),
-  ('product_promotion', 'MÉ™hsulu irÉ™li Ã§É™k', 'MÉ™hsulu kataloqda vÉ™ ana sÉ™hifÉ™dÉ™ Ã¶n sÄ±ralara Ã§Ä±xarÄ±r.', 5, 7, 5, '{"position":"catalog_top"}'::jsonb, 70, '{"icon":"package"}'::jsonb, 20),
-  ('banner_promotion', 'Banner reklamÄ±', 'ÅžÉ™kil vÉ™ ya video bannerini seÃ§ilmiÅŸ reklam mÃ¶vqeyindÉ™ gÃ¶stÉ™rir.', 5, 30, 1, '{"position":"home_top","media":["image","video"]}'::jsonb, 60, '{"icon":"image"}'::jsonb, 30)
+  ('shop_promotion', 'Mağazanı reklam et', 'Mağazanı ana səhifədə və seçilmiş vitrinlərdə göstərir.', 10, 7, 1, '{"position":"home_featured"}'::jsonb, 80, '{"icon":"store"}'::jsonb, 10),
+  ('product_promotion', 'Məhsulu irəli çək', 'Məhsulu kataloqda və ana səhifədə ön sıralara çıxarır.', 5, 7, 5, '{"position":"catalog_top"}'::jsonb, 70, '{"icon":"package"}'::jsonb, 20),
+  ('banner_promotion', 'Banner reklamı', 'Şəkil və ya video bannerini seçilmiş reklam mövqeyində göstərir.', 5, 30, 1, '{"position":"home_top","media":["image","video"]}'::jsonb, 60, '{"icon":"image"}'::jsonb, 30)
 on conflict (slug) do update set
   name = excluded.name,
   description = excluded.description,
@@ -180,4 +180,3 @@ begin
     alter publication supabase_realtime add table public.seller_subscriptions;
   end if;
 end $$;
-
