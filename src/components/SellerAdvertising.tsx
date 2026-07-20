@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { formatAZN, formatDateTime, formatDate } from "@/lib/format";
+import { getFunctionErrorMessage } from "@/lib/functionError";
+import { parseTrustedPaymentRedirect } from "@/lib/paymentRedirect";
 import {
   Check, Crown, Sparkles, Star, CreditCard, Calendar, TrendingUp,
   Receipt, Loader2, X, Image as ImageIcon, Plus, Trash2, Megaphone, Package, Store,
@@ -266,13 +268,11 @@ export function SellerAdvertising() {
         body: { ...request, language: "az" },
       });
       if (error) throw error;
-      const target = new URL(typeof data?.redirect_url === "string" ? data.redirect_url : "");
-      if (target.protocol !== "https:" || (target.hostname !== "epoint.az" && !target.hostname.endsWith(".epoint.az"))) {
-        throw new Error("Ödəniş ünvanı etibarsızdır");
-      }
+      const target = parseTrustedPaymentRedirect(data?.redirect_url);
       window.location.assign(target.toString());
     } catch (e) {
-      toast.error("Epoint ödənişi başladılmadı: " + (e as Error).message);
+      const message = await getFunctionErrorMessage(e, "Epoint ödənişi başladılmadı");
+      toast.error(`Epoint ödənişi başladılmadı: ${message}`);
       setPaying(false);
     }
   };
