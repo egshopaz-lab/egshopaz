@@ -2,10 +2,12 @@ import { useEffect, useState } from "react";
 import { ShieldCheck } from "lucide-react";
 import { PortalAuthForm, type AuthMode } from "@/routes/auth";
 import { PORTAL_CONFIG, portalUrl, usePortal } from "@/lib/portals";
+import { useMojibakeRepair } from "@/hooks/useMojibakeRepair";
 
 export function PortalAuthRoute({ mode, referralCode }: { mode: AuthMode; referralCode?: string }) {
   const portal = usePortal();
   const [ready, setReady] = useState(false);
+  useMojibakeRepair(ready);
   useEffect(() => setReady(true), []);
 
   if (!ready) return <div className="min-h-[420px]" />;
@@ -33,7 +35,7 @@ export function PortalAuthRoute({ mode, referralCode }: { mode: AuthMode; referr
   }
 
   return (
-    <div>
+    <div className="min-w-0 overflow-x-hidden">
       <PortalAuthForm
         fixedRole={config.role}
         fixedMode={mode}
