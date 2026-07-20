@@ -14,6 +14,7 @@ import { LanguageDomSync } from "@/components/LanguageDomSync";
 import "@/i18n";
 import { absoluteUrl, SITE_URL } from "@/lib/site";
 import { portalUrl, usePortal } from "@/lib/portals";
+import { useMojibakeRepair } from "@/hooks/useMojibakeRepair";
 
 import "../styles.css";
 
@@ -148,6 +149,7 @@ function WorkHeader({ label }: { label: string }) {
 }
 
 function AppShell() {
+  useMojibakeRepair();
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const portal = usePortal();
