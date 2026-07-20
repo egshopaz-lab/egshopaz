@@ -245,7 +245,7 @@ Deno.serve(async (req: Request) => {
       errorUrl.searchParams.set("card_registration", "error");
       const result = await epoint("card-registration", {
         public_key: publicKey, language: lang, refund: purpose === "payment" ? 0 : 1,
-        description: "EG Shop saxlanmÄ±ÅŸ kart qeydiyyatÄ±",
+        description: "EG Shop saxlanmış kart qeydiyyatı",
         success_redirect_url: successUrl.toString(), error_redirect_url: errorUrl.toString(),
       }, privateKey);
       const providerCardId = text(result.card_id ?? result.cart_id, 512);
@@ -478,4 +478,3 @@ Deno.serve(async (req: Request) => {
     return reply({ error: clientErrors.has(message) ? message : "epoint_operation_failed" }, clientErrors.has(message) ? 400 : 502, origin);
   }
 });
-
