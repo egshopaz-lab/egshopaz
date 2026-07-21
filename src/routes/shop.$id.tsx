@@ -147,7 +147,7 @@ function ShopPage() {
     const body = messageBody.trim();
     if (!user || !body || messageSending) return;
     setMessageSending(true);
-    const { error } = await supabase.from("shop_messages").insert({
+    const { error } = await (supabase as any).from("shop_messages").insert({
       buyer_id: user.id,
       seller_id: id,
       sender_id: user.id,
