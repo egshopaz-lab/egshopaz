@@ -152,10 +152,10 @@
     }
 
     .container {
-      width: 100% !important;
-      max-width: 100% !important;
-      padding-left: 0.85rem !important;
-      padding-right: 0.85rem !important;
+      width: 100%;
+      max-width: 100%;
+      padding-left: 0.85rem;
+      padding-right: 0.85rem;
     }
 
     .grid {
