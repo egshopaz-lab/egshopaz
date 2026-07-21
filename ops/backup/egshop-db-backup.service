@@ -1,0 +1,19 @@
+
+[Unit]
+Description=EG Shop PostgreSQL backup
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=egshop
+Group=egshop
+EnvironmentFile=/etc/egshop/backup.env
+ExecStart=/var/www/egshop/current/ops/backup/backup.sh
+PrivateTmp=true
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/backups/egshop
+
+
