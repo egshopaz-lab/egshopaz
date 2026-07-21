@@ -150,7 +150,6 @@ function ShopPage() {
     const { error } = await (supabase as any).from("shop_messages").insert({
       buyer_id: user.id,
       seller_id: id,
-      sender_id: user.id,
       sender_role: "buyer",
       body,
     });
