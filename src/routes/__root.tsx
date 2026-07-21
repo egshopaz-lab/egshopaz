@@ -13,7 +13,7 @@ import { MobileTabBar } from "@/components/MobileTabBar";
 import { LanguageDomSync } from "@/components/LanguageDomSync";
 import "@/i18n";
 import { absoluteUrl, SITE_URL } from "@/lib/site";
-import { portalUrl, usePortal } from "@/lib/portals";
+import { PortalProvider, portalUrl, usePortal, usePortalReady } from "@/lib/portals";
 import { useMojibakeRepair } from "@/hooks/useMojibakeRepair";
 
 import "../styles.css";
@@ -23,13 +23,13 @@ function NotFoundComponent() {
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="max-w-md text-center">
         <h1 className="text-7xl font-bold text-gradient-brand">404</h1>
-        <h2 className="mt-4 text-xl font-semibold">Səhifə tapılmadı</h2>
+        <h2 className="mt-4 text-xl font-semibold">SÉ™hifÉ™ tapÄ±lmadÄ±</h2>
         <p className="mt-2 text-sm text-muted-foreground">
-          Axtardığınız səhifə mövcud deyil və ya köçürülüb.
+          AxtardÄ±ÄźÄ±nÄ±z sÉ™hifÉ™ mĂ¶vcud deyil vÉ™ ya kĂ¶Ă§ĂĽrĂĽlĂĽb.
         </p>
         <div className="mt-6">
           <Link to="/" className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition">
-            Ana səhifəyə qayıt
+            Ana sÉ™hifÉ™yÉ™ qayÄ±t
           </Link>
         </div>
       </div>
@@ -42,8 +42,8 @@ export const Route = createRootRoute({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1, maximum-scale=5.0, user-scalable=yes" },
-      { title: "EG Shop — Azərbaycanın onlayn marketi" },
-      { name: "description", content: "Milyonlarla məhsul, sürətli çatdırılma və sərfəli qiymətlər. EG Shop Azərbaycanda." },
+      { title: "EG Shop â€” AzÉ™rbaycanÄ±n onlayn marketi" },
+      { name: "description", content: "Milyonlarla mÉ™hsul, sĂĽrÉ™tli Ă§atdÄ±rÄ±lma vÉ™ sÉ™rfÉ™li qiymÉ™tlÉ™r. EG Shop AzÉ™rbaycanda." },
       { property: "og:site_name", content: "EG Shop" },
       { property: "og:type", content: "website" },
       { property: "og:locale", content: "az_AZ" },
@@ -131,7 +131,7 @@ function WorkHeader({ label }: { label: string }) {
   return (
     <header className="sticky top-0 z-50 bg-background border-b border-border shadow-sm">
       <div className="container mx-auto px-4 h-14 flex items-center gap-3">
-        <div className="font-extrabold text-primary tracking-tight">EG Shop · {label}</div>
+        <div className="font-extrabold text-primary tracking-tight">EG Shop Â· {label}</div>
         <div className="ml-auto flex items-center gap-3">
           <LiveClock />
           {user && (
@@ -139,7 +139,7 @@ function WorkHeader({ label }: { label: string }) {
           )}
           {user && (
             <Button variant="ghost" size="sm" onClick={async () => { await signOut(); navigate({ to: "/login" }); }}>
-              <LogOut className="h-4 w-4 mr-1" /> Çıxış
+              <LogOut className="h-4 w-4 mr-1" /> Ă‡Ä±xÄ±Ĺź
             </Button>
           )}
         </div>
@@ -153,6 +153,7 @@ function AppShell() {
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const portal = usePortal();
+  const portalReady = usePortalReady();
   const {
     user, isSeller, isAdmin, isPvz, loading,
     accountStatus, blockedUntil, blockReason, signOut,
@@ -207,27 +208,38 @@ function AppShell() {
     window.location.replace(portalUrl("marketplace", pathname + query));
   }, [isAdmin, isAdminPanel, isAuthRoute, isPvz, isPvzPanel, isSeller, isSellerPanel, isSellerTrends, loading, navigate, pathname, portal, user]);
 
+  // Authentication and work-panel URLs are shared by multiple subdomains.
+  // Until the browser hostname has been resolved, showing the marketplace
+  // shell here would cause a visible wrong-page flash on admin/seller/PVZ.
+  if (!portalReady && (isAuthRoute || isWorkPanel)) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background" aria-busy="true" aria-label="Portal yĂĽklÉ™nir">
+        <img src="/brand/eg-icon.svg" alt="EG Shop" className="h-14 w-14 animate-pulse" />
+      </div>
+    );
+  }
+
   if (!loading && user && accountStatus !== "active") {
     const statusLabel = accountStatus === "temporary_blocked"
-      ? "Hesab müvəqqəti bloklanıb"
+      ? "Hesab mĂĽvÉ™qqÉ™ti bloklanÄ±b"
       : accountStatus === "permanently_blocked"
-        ? "Hesab daimi bloklanıb"
+        ? "Hesab daimi bloklanÄ±b"
         : "Hesab deaktiv edilib";
     return (
       <div className="min-h-screen flex items-center justify-center bg-muted/30 px-4">
         <div className="w-full max-w-lg rounded-2xl border bg-card p-8 text-center shadow-card">
           <h1 className="text-2xl font-extrabold text-destructive">{statusLabel}</h1>
           <p className="mt-3 text-sm text-muted-foreground">
-            Bu hesabın sistemə və panellərə girişi dayandırılıb.
+            Bu hesabÄ±n sistemÉ™ vÉ™ panellÉ™rÉ™ giriĹźi dayandÄ±rÄ±lÄ±b.
           </p>
-          {blockReason && <p className="mt-4 rounded-lg bg-muted p-3 text-sm">Səbəb: {blockReason}</p>}
+          {blockReason && <p className="mt-4 rounded-lg bg-muted p-3 text-sm">SÉ™bÉ™b: {blockReason}</p>}
           {blockedUntil && accountStatus === "temporary_blocked" && (
             <p className="mt-3 text-sm text-muted-foreground">
-              Bitmə vaxtı: {new Date(blockedUntil).toLocaleString("az-AZ")}
+              BitmÉ™ vaxtÄ±: {new Date(blockedUntil).toLocaleString("az-AZ")}
             </p>
           )}
           <Button className="mt-6" onClick={() => void signOut()}>
-            <LogOut className="mr-2 h-4 w-4" /> Çıxış
+            <LogOut className="mr-2 h-4 w-4" /> Ă‡Ä±xÄ±Ĺź
           </Button>
         </div>
       </div>
@@ -235,7 +247,7 @@ function AppShell() {
   }
 
   if (isWorkPanel || isSellerTrends || (portal !== "marketplace" && isAuthRoute) || (portal === "seller" && pathname === "/become-seller")) {
-    const label = portal === "seller" ? "Satıcı portalı" : portal === "pvz" ? "PVZ PUNKT portalı" : "Admin portalı";
+    const label = portal === "seller" ? "SatÄ±cÄ± portalÄ±" : portal === "pvz" ? "PVZ PUNKT portalÄ±" : "Admin portalÄ±";
     return (
       <div className="flex min-h-screen w-full flex-col overflow-x-hidden bg-background">
         <WorkHeader label={label} />
@@ -267,11 +279,14 @@ function AppShell() {
 
 function RootComponent() {
   return (
-    <AuthProvider>
-      <LanguageDomSync />
-      <AppShell />
-      
-      <Toaster position="top-center" richColors />
-    </AuthProvider>
+    <PortalProvider>
+      <AuthProvider>
+        <LanguageDomSync />
+        <AppShell />
+        
+        <Toaster position="top-center" richColors />
+      </AuthProvider>
+    </PortalProvider>
   );
 }
+
