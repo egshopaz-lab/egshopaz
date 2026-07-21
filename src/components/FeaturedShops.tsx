@@ -51,7 +51,7 @@ export function FeaturedShops() {
 
       const sellerIds = [...new Set(rows.map((row) => row.seller_id))];
       const { data: storefronts, error: storefrontsError } = await (supabase as any)
-        .from("seller_storefronts")
+        .from("active_seller_storefronts")
         .select("id,shop_name,shop_logo_url,shop_banner_url,shop_city")
         .in("id", sellerIds);
       if (storefrontsError) {
