@@ -94,7 +94,7 @@ function ShopPage() {
   useEffect(() => {
     setLoading(true);
     Promise.all([
-      supabase.from("profiles_public").select("id,shop_name,full_name,shop_description,shop_city,shop_email,shop_logo_url,shop_banner_url,created_at,seller_tier,seller_total_orders").eq("id", id).maybeSingle(),
+      (supabase as any).from("active_seller_storefronts").select("id,shop_name,full_name,shop_description,shop_city,shop_email,shop_logo_url,shop_banner_url,created_at,seller_tier,seller_total_orders").eq("id", id).maybeSingle(),
       supabase.from("products").select("id,title,price,old_price,image_url,video_url,rating,reviews_count,brand").eq("seller_id", id).eq("is_active", true).order("created_at", { ascending: false }),
       supabase.from("shop_followers").select("id", { count: "exact", head: true }).eq("seller_id", id),
     ]).then(([{ data: prof }, { data: prods }, { count }]) => {
