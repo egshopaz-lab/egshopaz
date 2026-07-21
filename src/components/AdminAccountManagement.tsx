@@ -105,7 +105,30 @@ export function AdminAccountManagement({ initialRole }: { initialRole: "buyer" |
       granting ? "Admin tərəfindən xüsusi icazə" : "",
     );
     if (reason === null) return;
-    await invokeAction(row, granting ? "grant_product_access" : "revoke_product_access", { reason });
+    setBusyId(row.user_id);
+    const { data: authData } = await supabase.auth.getUser();
+    const adminId = authData.user?.id;
+    if (!adminId) {
+      setBusyId(null);
+      toast.error("Admin sessiyası tapılmadı");
+      return;
+    }
+    const { error } = await supabase.rpc("admin_set_seller_product_access" as never, {
+      _admin_id: adminId,
+      _target_id: row.user_id,
+      _allowed: granting,
+      _reason: reason,
+      _admin_email: authData.user?.email ?? null,
+      _ip_address: null,
+      _user_agent: navigator.userAgent,
+    } as never);
+    setBusyId(null);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    toast.success(granting ? "Məhsul yerləşdirmə icazəsi verildi" : "Məhsul yerləşdirmə icazəsi ləğv edildi");
+    await load();
   };
 
   const actionCls = "inline-flex items-center gap-1 rounded-lg border border-border px-2 py-1.5 text-xs font-semibold hover:bg-secondary disabled:opacity-50";
