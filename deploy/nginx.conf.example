@@ -82,6 +82,7 @@ server {
     # Redirect each operational subdomain before the application renders.
     # This prevents the marketplace SSR shell from flashing on portal roots.
     location = / {
+        add_header Cache-Control "no-store" always;
         return 302 $egshop_portal_root;
     }
 
