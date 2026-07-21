@@ -153,6 +153,9 @@ declare
   _new jsonb;
   _paid boolean;
 begin
+  if auth.role() <> 'service_role' and auth.uid() is distinct from _admin_id then
+    raise exception 'Admin şəxsiyyəti uyğun deyil';
+  end if;
   if _admin_id is null or not exists (
     select 1 from public.user_roles ur join public.profiles p on p.id = ur.user_id
     where ur.user_id = _admin_id and ur.role = 'admin'::public.app_role and p.account_status = 'active'
@@ -202,5 +205,5 @@ $$;
 revoke all on function public.admin_set_seller_product_access(uuid,uuid,boolean,text,text,inet,text)
   from public, anon, authenticated;
 grant execute on function public.admin_set_seller_product_access(uuid,uuid,boolean,text,text,inet,text)
-  to service_role;
+  to authenticated, service_role;
 
