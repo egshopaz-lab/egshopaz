@@ -119,6 +119,7 @@ begin
     new.moderation_status := old.moderation_status;
     new.moderation_reason := old.moderation_reason;
     new.moderated_at := old.moderated_at; new.moderated_by := old.moderated_by;
+    if old.moderation_status <> 'approved' then new.is_active := false; end if;
   end if;
   return new;
 end;
