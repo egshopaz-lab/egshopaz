@@ -31,11 +31,11 @@ function ShopsPage() {
 
   const load = async () => {
     setLoading(true);
-    const { data } = await supabase
-      .from("profiles_public")
+    const { data, error } = await (supabase as any)
+      .from("active_seller_storefronts")
       .select("id,shop_name,full_name,shop_logo_url,shop_banner_url,shop_city,shop_description")
-      .not("shop_name", "is", null)
       .order("shop_name");
+    if (error) toast.error("Mağazalar yüklənmədi: " + error.message);
     setShops((data ?? []) as Shop[]);
     if (user) {
       const { data: f } = await supabase
