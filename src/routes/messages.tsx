@@ -5,9 +5,12 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { PanelLayout } from "@/components/PanelLayout";
 import { useBuyerNav } from "@/hooks/useBuyerNav";
-import { MessageCircle, Send, Search } from "lucide-react";
+import { MessageCircle, Paperclip, Send, Search, X } from "lucide-react";
 import { toast } from "sonner";
 import { formatDateTime } from "@/lib/format";
+import { MessageAttachment } from "@/components/MessageAttachment";
+import { ConversationSafetyActions } from "@/components/ConversationSafetyActions";
+import { uploadMessageAttachment } from "@/lib/shopMessageSafety";
 
 export const Route = createFileRoute("/messages")({
   head: () => ({ meta: [{ title: "Mesajlarım — EG Shop" }] }),
@@ -22,6 +25,10 @@ interface Msg {
   order_id: string | null;
   sender_role: "buyer" | "seller";
   body: string;
+  attachment_path: string | null;
+  attachment_name: string | null;
+  attachment_mime: string | null;
+  attachment_size: number | null;
   read_at: string | null;
   created_at: string;
 }
@@ -37,6 +44,7 @@ function MessagesPage() {
   const [activeSeller, setActiveSeller] = useState<string | null>(null);
   const [reply, setReply] = useState("");
   const [sending, setSending] = useState(false);
+  const [attachment, setAttachment] = useState<File | null>(null);
   const [filter, setFilter] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -123,18 +131,27 @@ function MessagesPage() {
   const send = async () => {
     if (!user || !activeSeller) return;
     const body = reply.trim().slice(0, 2000);
-    if (body.length < 1) return;
+    if (body.length < 1 && !attachment) return;
     if (user.id === activeSeller) { toast.error("Öz mağazanıza mesaj göndərə bilməzsiniz"); return; }
     setSending(true);
-    const { error } = await supabase.from("shop_messages").insert({
-      buyer_id: user.id,
-      seller_id: activeSeller,
-      sender_role: "buyer",
-      body,
+    let uploaded: Awaited<ReturnType<typeof uploadMessageAttachment>> | null = null;
+    try {
+      if (attachment) uploaded = await uploadMessageAttachment(attachment, user.id, activeSeller, user.id);
+    } catch (error) {
+      setSending(false);
+      toast.error(error instanceof Error ? error.message : "Fayl yüklənmədi");
+      return;
+    }
+    const { error } = await (supabase as any).from("shop_messages").insert({
+      buyer_id: user.id, seller_id: activeSeller, sender_role: "buyer", body: body || "Fayl göndərildi",
+      attachment_path: uploaded?.path ?? null, attachment_name: uploaded?.name ?? null,
+      attachment_mime: uploaded?.mime ?? null, attachment_size: uploaded?.size ?? null,
     });
     setSending(false);
-    if (error) toast.error("Mesaj göndərilmədi");
-    else { setReply(""); load(); }
+    if (error) {
+      if (uploaded) void supabase.storage.from("message-attachments").remove([uploaded.path]);
+      toast.error(error.message);
+    } else { setReply(""); setAttachment(null); load(); }
   };
 
   if (!user) return null;
@@ -216,6 +233,8 @@ function MessagesPage() {
                         : (sellerName(activeSeller)[0]?.toUpperCase() ?? "?")}
                     </div>
                     <div className="font-bold">{sellerName(activeSeller)}</div>
+                    <ConversationSafetyActions currentUserId={user.id} otherUserId={activeSeller}
+                      latestMessageId={activeMessages.length ? activeMessages[activeMessages.length - 1].id : null} />
                   </div>
 
                   <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-2 bg-secondary/20">
@@ -225,6 +244,7 @@ function MessagesPage() {
                         <div key={m.id} className={`flex ${mine ? "justify-end" : "justify-start"}`}>
                           <div className={`max-w-[75%] rounded-2xl px-3.5 py-2 ${mine ? "bg-primary text-primary-foreground rounded-br-sm" : "bg-card border border-border rounded-bl-sm"}`}>
                             <div className="text-sm whitespace-pre-wrap break-words">{m.body}</div>
+                            <MessageAttachment message={m} />
                             <div className={`text-[10px] mt-1 opacity-70 ${mine ? "text-primary-foreground" : "text-muted-foreground"}`}>
                               {formatDateTime(m.created_at)}
                             </div>
@@ -234,7 +254,11 @@ function MessagesPage() {
                     })}
                   </div>
 
+                  {attachment && <div className="flex items-center gap-2 border-t px-3 pt-2 text-xs"><Paperclip className="h-3.5 w-3.5" /><span className="min-w-0 flex-1 truncate">{attachment.name}</span><button onClick={() => setAttachment(null)}><X className="h-4 w-4" /></button></div>}
                   <div className="p-3 border-t border-border flex gap-2">
+                    <label className="grid h-10 w-10 shrink-0 cursor-pointer place-items-center rounded-lg border hover:bg-secondary" title="Şəkil və ya fayl əlavə et">
+                      <Paperclip className="h-4 w-4" /><input type="file" className="hidden" accept="image/jpeg,image/png,image/webp,image/gif,application/pdf,text/plain,.doc,.docx" onChange={(e) => setAttachment(e.target.files?.[0] ?? null)} />
+                    </label>
                     <textarea
                       value={reply}
                       onChange={(e) => setReply(e.target.value)}
@@ -246,7 +270,7 @@ function MessagesPage() {
                     />
                     <button
                       onClick={send}
-                      disabled={sending || reply.trim().length === 0}
+                      disabled={sending || (reply.trim().length === 0 && !attachment)}
                       className="bg-primary text-primary-foreground px-4 rounded-lg font-bold hover:bg-primary/90 disabled:opacity-60 inline-flex items-center gap-1"
                     >
                       <Send className="h-4 w-4" />
