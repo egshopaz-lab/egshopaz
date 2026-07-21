@@ -3,6 +3,7 @@ import { AlertTriangle, Download, RefreshCw, Search, Store, TrendingUp, Wallet }
 import { supabase } from "@/integrations/supabase/client";
 import { formatAZN, formatDateTime } from "@/lib/format";
 import { toast } from "sonner";
+import { AdminAccountingLedger } from "@/components/AdminAccountingLedger";
 
 type Period = "7d" | "30d" | "90d" | "all";
 type Row = Record<string, any>;
@@ -133,6 +134,7 @@ export function AdminFinanceCenter({ commissionPercent = 10 }: { commissionPerce
 
   if (loading) return <div className="rounded-2xl border border-border bg-card p-10 text-center text-muted-foreground">Maliyyə məlumatları yüklənir...</div>;
   return <div className="space-y-6">
+    <AdminAccountingLedger />
     <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border bg-card p-4"><div><h2 className="text-lg font-extrabold">Maliyyə İdarəetmə Mərkəzi</h2><p className="text-xs text-muted-foreground">Sifariş, Epoint, xəzinə, balans və gəlirlər bir ekranda.</p></div><div className="flex flex-wrap gap-2">{(["7d", "30d", "90d", "all"] as Period[]).map((p) => <button key={p} onClick={() => setPeriod(p)} className={`h-9 rounded-lg px-3 text-xs font-bold ${period === p ? "bg-primary text-primary-foreground" : "bg-secondary"}`}>{p === "all" ? "Bütün dövr" : p.replace("d", " gün")}</button>)}<button onClick={() => void load()} className="grid h-9 w-9 place-items-center rounded-lg border"><RefreshCw className="h-4 w-4" /></button><button onClick={exportCsv} className="flex h-9 items-center gap-2 rounded-lg border px-3 text-xs font-bold"><Download className="h-4 w-4" />CSV</button></div></div>
     <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4"><Card label="Ödənilmiş satış (GMV)" value={formatAZN(report.gross)} hint={`${report.paidOrders.length} ödənilmiş sifariş`} /><Card label="Platforma gəliri" value={formatAZN(report.income)} hint="Komissiya + xidmət gəlirləri" tone="good" /><Card label="Satıcılara borc" value={formatAZN(report.liability)} hint="Mövcud və gözləyən balans" tone={report.liability ? "warn" : undefined} /><Card label="Geri ödənişlər" value={formatAZN(report.refunds)} hint="Qəbul edilən qaytarmalar" tone={report.refunds ? "warn" : undefined} /><Card label="Xəzinəyə daxilolma" value={formatAZN(report.cashIn)} hint="Real xəzinə hərəkətləri" tone="good" /><Card label="Xəzinədən çıxış" value={formatAZN(report.cashOut)} hint={`Net ${formatAZN(report.cashIn - report.cashOut)}`} /><Card label="Satıcı payout" value={formatAZN(report.payoutTotal)} hint="Ödənilmiş çıxarışlar" /><Card label="Epoint uğuru" value={`${report.epoint.length ? (report.success.length / report.epoint.length * 100).toFixed(1) : "0.0"}%`} hint={`${report.success.length} uğurlu · ${report.failed.length} xətalı`} tone={report.failed.length ? "warn" : "good"} /></div>
     <div className="grid gap-4 lg:grid-cols-3">
