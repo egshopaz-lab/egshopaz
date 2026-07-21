@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
@@ -12,8 +12,8 @@ import { absoluteUrl } from "@/lib/site";
 
 export const Route = createFileRoute("/shop/$id")({
   loader: async ({ params }) => {
-    const { data } = await supabase
-      .from("profiles_public")
+    const { data } = await (supabase as any)
+      .from("active_seller_storefronts")
       .select("id,shop_name,full_name,shop_description,shop_city,shop_logo_url,shop_banner_url")
       .eq("id", params.id)
       .maybeSingle();
@@ -79,6 +79,7 @@ function ShopPage() {
   const { id } = Route.useParams();
   const { t } = useTranslation();
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [products, setProducts] = useState<ProductCardData[]>([]);
   const [stats, setStats] = useState({ count: 0, avg: 0, reviews: 0, years: 0 });
@@ -86,6 +87,9 @@ function ShopPage() {
   const [following, setFollowing] = useState(false);
   const [followers, setFollowers] = useState(0);
   const [tab, setTab] = useState<"products" | "reviews" | "about">("products");
+  const [messageOpen, setMessageOpen] = useState(false);
+  const [messageBody, setMessageBody] = useState("");
+  const [messageSending, setMessageSending] = useState(false);
 
   useEffect(() => {
     setLoading(true);
@@ -125,6 +129,40 @@ function ShopPage() {
       setFollowing(true); setFollowers((c) => c + 1);
       toast.success("Mağaza izlənildi 💙");
     }
+  };
+
+  const openMessage = () => {
+    if (!user) {
+      void navigate({ to: "/auth", search: { role: "buyer" } });
+      return;
+    }
+    if (user.id === id) {
+      toast.error("Öz mağazanıza mesaj yaza bilməzsiniz");
+      return;
+    }
+    setMessageOpen((open) => !open);
+  };
+
+  const sendMessage = async () => {
+    const body = messageBody.trim();
+    if (!user || !body || messageSending) return;
+    setMessageSending(true);
+    const { error } = await supabase.from("shop_messages").insert({
+      buyer_id: user.id,
+      seller_id: id,
+      sender_id: user.id,
+      sender_role: "buyer",
+      body,
+    });
+    setMessageSending(false);
+    if (error) {
+      toast.error("Mesaj göndərilmədi: " + error.message);
+      return;
+    }
+    setMessageBody("");
+    setMessageOpen(false);
+    toast.success("Mesaj satıcıya göndərildi");
+    void navigate({ to: "/messages" });
   };
 
   const share = async () => {
@@ -189,18 +227,53 @@ function ShopPage() {
                   </div>
                 </div>
                 {user?.id !== id && (
-                  <button
-                    onClick={toggleFollow}
-                    className={`inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl font-bold text-sm transition shadow-sm ${following ? "bg-primary/10 text-primary border border-primary/30" : "bg-primary text-primary-foreground hover:bg-primary/90"}`}
-                  >
-                    <Heart className={`h-4 w-4 ${following ? "fill-primary" : ""}`} />
-                    {following ? "İzlənilir" : "İzlə"}
-                  </button>
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      onClick={openMessage}
+                      className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl border border-primary/30 bg-background font-bold text-sm text-primary transition hover:bg-primary/5"
+                    >
+                      <MessageCircle className="h-4 w-4" />
+                      Satıcıya yaz
+                    </button>
+                    <button
+                      onClick={toggleFollow}
+                      className={`inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl font-bold text-sm transition shadow-sm ${following ? "bg-primary/10 text-primary border border-primary/30" : "bg-primary text-primary-foreground hover:bg-primary/90"}`}
+                    >
+                      <Heart className={`h-4 w-4 ${following ? "fill-primary" : ""}`} />
+                      {following ? "İzlənilir" : "İzlə"}
+                    </button>
+                  </div>
                 )}
               </div>
 
               {profile.shop_description && (
                 <p className="text-sm text-foreground/80 mt-3 max-w-2xl line-clamp-2">{profile.shop_description}</p>
+              )}
+
+              {messageOpen && user?.id !== id && (
+                <div className="mt-4 max-w-2xl rounded-2xl border bg-background p-3 shadow-sm">
+                  <textarea
+                    value={messageBody}
+                    onChange={(event) => setMessageBody(event.target.value)}
+                    rows={3}
+                    maxLength={2000}
+                    placeholder="Satıcıya mesajınızı yazın..."
+                    className="w-full resize-none rounded-xl border bg-muted/20 px-3 py-2 text-sm outline-none focus:border-primary"
+                  />
+                  <div className="mt-2 flex justify-end gap-2">
+                    <button type="button" onClick={() => setMessageOpen(false)} className="px-4 py-2 text-sm font-semibold text-muted-foreground">
+                      Bağla
+                    </button>
+                    <button
+                      type="button"
+                      onClick={sendMessage}
+                      disabled={!messageBody.trim() || messageSending}
+                      className="rounded-xl bg-primary px-4 py-2 text-sm font-bold text-primary-foreground disabled:opacity-50"
+                    >
+                      {messageSending ? "Göndərilir..." : "Göndər"}
+                    </button>
+                  </div>
+                </div>
               )}
 
               {/* Stats grid */}
