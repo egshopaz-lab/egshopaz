@@ -7,7 +7,7 @@ import {
   Users, Package, ShoppingBag, DollarSign, Shield, LayoutDashboard,
   Truck, Warehouse, Store, Megaphone, BarChart3, Lock, Scale,
   FileText, Settings, LifeBuoy, AlertTriangle, TrendingUp, Plus, Trash2,
-  CheckCircle2, XCircle, Power, Ban, Edit3, Bell, Tag, Crown, Gem, Star, Award, Bot, Sparkles, Undo2, Wallet, History, CreditCard,
+  CheckCircle2, XCircle, Power, Ban, Edit3, Bell, Tag, Crown, Gem, Star, Award, Bot, Sparkles, Undo2, Wallet, History, CreditCard, ListChecks,
 } from "lucide-react";
 import { AdminPayouts } from "@/components/AdminPayouts";
 import { AdminTreasury } from "@/components/AdminTreasury";
@@ -20,12 +20,13 @@ import { AdminAuditLog } from "@/components/AdminAuditLog";
 import { AdminDeliveryManagement } from "@/components/AdminDeliveryManagement";
 import { AdminBannerManager } from "@/components/AdminBannerManager";
 import { AdminCategoryManager } from "@/components/AdminCategoryManager";
+import { AdminOperationsCenter } from "@/components/AdminOperationsCenter";
 import { toast } from "sonner";
 import { PanelLayout, type PanelNavItem } from "@/components/PanelLayout";
 import { AZ_CITY_NAMES, findCity } from "@/lib/azCities";
 
 type TabKey =
-  | "dashboard" | "customers" | "sellers" | "couriers" | "deliveries" | "pvz_staff"
+  | "dashboard" | "operations" | "customers" | "sellers" | "couriers" | "deliveries" | "pvz_staff"
   | "categories" | "products" | "shops" | "warehouses" | "pickup_points"
   | "orders" | "returns" | "finance" | "treasury" | "payouts" | "marketing" | "banners" | "packages" | "trends" | "epoint" | "promo" | "analytics"
   | "security" | "audit" | "disputes" | "content" | "settings" | "support" | "ai_bot";
@@ -69,6 +70,7 @@ export function AdminPanel() {
   const [settings, setSettings] = useState<SettingsRow | null>(null);
   const [tickets, setTickets] = useState<TicketRow[]>([]);
   const [packages, setPackages] = useState<AdPackageRow[]>([]);
+  const [adminPermissions, setAdminPermissions] = useState<string[]>(["*"]);
   const [unlocked, setUnlocked] = useState<boolean>(() => {
     if (typeof window === "undefined") return false;
     return sessionStorage.getItem("admin_panel_unlocked") === "1";
@@ -83,6 +85,14 @@ export function AdminPanel() {
       void signOut().then(() => navigate({ to: "/login", replace: true }));
     }
   }, [user, isAdmin, loading, navigate, signOut]);
+
+  useEffect(() => {
+    if (!isAdmin || !user?.id) return;
+    void (supabase as any).from("admin_staff_permissions").select("permissions,is_active").eq("admin_id", user.id).maybeSingle()
+      .then(({ data }: { data: { permissions?: string[]; is_active?: boolean } | null }) => {
+        if (data) setAdminPermissions(data.is_active === false ? [] : (data.permissions ?? []));
+      });
+  }, [isAdmin, user?.id]);
 
   const submitPassword = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -347,8 +357,22 @@ export function AdminPanel() {
     await supabase.from("ad_packages").update({ is_active: !active }).eq("id", id); reload();
   };
 
-  const navItems: PanelNavItem[] = [
+  const can = (permission: string) => adminPermissions.includes("*") || adminPermissions.includes(permission);
+  const navPermission: Partial<Record<TabKey, string>> = {
+    customers: "accounts.manage", sellers: "accounts.manage", pvz_staff: "accounts.manage",
+    products: "products.manage", categories: "products.manage", shops: "products.manage",
+    finance: "payments.manage", treasury: "payments.manage", payouts: "payments.manage", epoint: "payments.manage",
+    marketing: "advertising.manage", banners: "advertising.manage", packages: "advertising.manage",
+    trends: "advertising.manage", promo: "advertising.manage", content: "advertising.manage",
+    support: "support.manage", ai_bot: "support.manage",
+    couriers: "delivery.manage", deliveries: "delivery.manage", warehouses: "delivery.manage",
+    pickup_points: "delivery.manage", orders: "delivery.manage", returns: "delivery.manage",
+    disputes: "disputes.manage", analytics: "reports.view", audit: "reports.view",
+    security: "admins.manage", settings: "admins.manage",
+  };
+  const allNavItems: PanelNavItem[] = [
     { key: "dashboard", label: "Ana səhifə", icon: LayoutDashboard, active: tab === "dashboard", onClick: () => setTab("dashboard") },
+    { key: "operations", label: "İş mərkəzi", icon: ListChecks, active: tab === "operations", onClick: () => setTab("operations") },
     { key: "customers", label: "Müştərilər", icon: Users, active: tab === "customers", onClick: () => setTab("customers") },
     { key: "sellers", label: "Satıcılar", icon: Store, active: tab === "sellers", onClick: () => setTab("sellers") },
     { key: "couriers", label: "Kuryerlər", icon: Truck, badge: couriers.filter((c) => c.is_active).length, active: tab === "couriers", onClick: () => setTab("couriers") },
@@ -379,6 +403,10 @@ export function AdminPanel() {
     { key: "support", label: "Dəstək", icon: LifeBuoy, badge: tickets.filter((t) => t.status === "open").length, active: tab === "support", onClick: () => setTab("support") },
     { key: "ai_bot", label: "AI Bot", icon: Bot, active: tab === "ai_bot", onClick: () => setTab("ai_bot") },
   ];
+  const navItems = allNavItems.filter((item) => {
+    const required = navPermission[item.key as TabKey];
+    return !required || can(required);
+  });
 
   const tabTitle = navItems.find((n) => n.key === tab)?.label ?? "Admin";
 
@@ -390,6 +418,7 @@ export function AdminPanel() {
       </div>
 
       {tab === "dashboard" && <div className="space-y-6"><AdminDashboardStats /><DashboardSection stats={stats} orders={orders} couriers={couriers} disputes={disputes} /></div>}
+      {tab === "operations" && <AdminOperationsCenter />}
       {tab === "customers" && <AdminAccountManagement initialRole="buyer" />}
       {tab === "sellers" && <AdminAccountManagement initialRole="seller" />}
       {tab === "couriers" && <CouriersSection couriers={couriers} addCourier={addCourier} toggleCourier={toggleCourier} />}
