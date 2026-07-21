@@ -1,3 +1,4 @@
+
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.110.2";
 
@@ -24,6 +25,7 @@ function json(body: Record<string, unknown>, status: number, origin: string | nu
 
 const allowedActions = new Set([
   "activate", "restore", "deactivate", "temporary_block", "permanent_block", "edit", "hard_delete",
+  "grant_product_access", "revoke_product_access",
 ]);
 
 Deno.serve(async (req) => {
@@ -96,6 +98,20 @@ Deno.serve(async (req) => {
       return json({ ok: true, action }, 200, origin);
     }
 
+    if (action === "grant_product_access" || action === "revoke_product_access") {
+      const { data, error } = await service.rpc("admin_set_seller_product_access", {
+        _admin_id: admin.id,
+        _target_id: targetId,
+        _allowed: action === "grant_product_access",
+        _reason: reason,
+        _admin_email: adminEmail,
+        _ip_address: ipAddress,
+        _user_agent: userAgent,
+      });
+      if (error) throw error;
+      return json({ ok: true, action, result: data }, 200, origin);
+    }
+
     if (action === "edit" && typeof profilePatch.email === "string") {
       const email = profilePatch.email.trim().toLowerCase();
       delete profilePatch.email;
@@ -136,3 +152,4 @@ Deno.serve(async (req) => {
     return json({ error: error instanceof Error ? error.message : "request_failed" }, 400, origin);
   }
 });
+
