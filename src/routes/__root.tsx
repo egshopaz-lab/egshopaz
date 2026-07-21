@@ -158,11 +158,9 @@ function AppShell() {
     user, isSeller, isAdmin, isPvz, loading,
     accountStatus, blockedUntil, blockReason, signOut,
   } = useAuth();
-  const isSellerPanel = pathname === "/seller" || pathname.startsWith("/seller/");
-  const isPvzPanel = pathname === "/pvz" || pathname.startsWith("/pvz/");
-  const isAdminPanel = pathname === "/dashboard" || pathname.startsWith("/dashboard/");
+  const isDashboardPanel = pathname === "/dashboard" || pathname.startsWith("/dashboard/");
   const isSellerTrends = portal === "seller" && pathname === "/trends";
-  const isWorkPanel = isSellerPanel || isPvzPanel || isAdminPanel;
+  const isWorkPanel = isDashboardPanel;
   const isAuthRoute = pathname === "/auth" || pathname.startsWith("/auth/") || pathname === "/login" || pathname === "/register" || pathname === "/reset-password";
 
 
@@ -174,9 +172,7 @@ function AppShell() {
 
     if (portal === "marketplace") {
       if (pathname === "/become-seller") window.location.replace(portalUrl("seller", "/register"));
-      else if (isSellerPanel) window.location.replace(portalUrl("seller", pathname + query));
-      else if (isPvzPanel) window.location.replace(portalUrl("pvz", pathname + query));
-      else if (isAdminPanel) window.location.replace(portalUrl("admin", pathname + query));
+      else if (isDashboardPanel) window.location.replace(portalUrl("admin", pathname + query));
       else if (pathname === "/auth") {
         const role = new URLSearchParams(query).get("role");
         const destination = role === "seller" ? "seller" : role === "pvz" ? "pvz" : role === "admin" ? "admin" : "marketplace";
@@ -190,7 +186,7 @@ function AppShell() {
       return;
     }
 
-    const correctPanel = portal === "seller" ? (isSellerPanel || isSellerTrends) : portal === "pvz" ? isPvzPanel : isAdminPanel;
+    const correctPanel = isDashboardPanel || isSellerTrends;
     const sellerOnboarding = portal === "seller" && pathname === "/become-seller";
     if (isAuthRoute || correctPanel || sellerOnboarding) return;
 
@@ -198,15 +194,15 @@ function AppShell() {
       if (loading) return;
       const target = !user
         ? "/login"
-        : portal === "seller" ? (isSeller ? "/seller" : "/become-seller")
-        : portal === "pvz" ? (isPvz ? "/pvz" : "/login")
+        : portal === "seller" ? (isSeller ? "/dashboard" : "/become-seller")
+        : portal === "pvz" ? (isPvz ? "/dashboard" : "/login")
         : isAdmin ? "/dashboard" : "/login";
       navigate({ to: target, replace: true });
       return;
     }
 
     window.location.replace(portalUrl("marketplace", pathname + query));
-  }, [isAdmin, isAdminPanel, isAuthRoute, isPvz, isPvzPanel, isSeller, isSellerPanel, isSellerTrends, loading, navigate, pathname, portal, user]);
+  }, [isAdmin, isAuthRoute, isDashboardPanel, isPvz, isSeller, isSellerTrends, loading, navigate, pathname, portal, user]);
 
   // Authentication and work-panel URLs are shared by multiple subdomains.
   // Until the browser hostname has been resolved, showing the marketplace

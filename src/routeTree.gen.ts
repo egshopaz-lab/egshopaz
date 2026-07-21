@@ -14,13 +14,11 @@ import { Route as TermsRouteImport } from './routes/terms'
 import { Route as SupportRouteImport } from './routes/support'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as ShopsRouteImport } from './routes/shops'
-import { Route as SellerRouteImport } from './routes/seller'
 import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
 import { Route as ReturnsRouteImport } from './routes/returns'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as RegisterRouteImport } from './routes/register'
 import { Route as ReferralRouteImport } from './routes/referral'
-import { Route as PvzRouteImport } from './routes/pvz'
 import { Route as PromotionsRouteImport } from './routes/promotions'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as PrivacyRouteImport } from './routes/privacy'
@@ -35,9 +33,11 @@ import { Route as MapRouteImport } from './routes/map'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as LlmsDottxtRouteImport } from './routes/llms[.]txt'
 import { Route as FollowedShopsRouteImport } from './routes/followed-shops'
+import { Route as FeedbackRouteImport } from './routes/feedback'
 import { Route as FavoritesRouteImport } from './routes/favorites'
 import { Route as DisputesRouteImport } from './routes/disputes'
 import { Route as DiscoverRouteImport } from './routes/discover'
+import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as CompareRouteImport } from './routes/compare'
 import { Route as CatalogRouteImport } from './routes/catalog'
@@ -45,7 +45,6 @@ import { Route as CartRouteImport } from './routes/cart'
 import { Route as BonusRouteImport } from './routes/bonus'
 import { Route as BecomeSellerRouteImport } from './routes/become-seller'
 import { Route as AuthRouteImport } from './routes/auth'
-import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as AddressesRouteImport } from './routes/addresses'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
@@ -80,11 +79,6 @@ const ShopsRoute = ShopsRouteImport.update({
   path: '/shops',
   getParentRoute: () => rootRouteImport,
 } as any)
-const SellerRoute = SellerRouteImport.update({
-  id: '/seller',
-  path: '/seller',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const RobotsDottxtRoute = RobotsDottxtRouteImport.update({
   id: '/robots.txt',
   path: '/robots.txt',
@@ -108,11 +102,6 @@ const RegisterRoute = RegisterRouteImport.update({
 const ReferralRoute = ReferralRouteImport.update({
   id: '/referral',
   path: '/referral',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PvzRoute = PvzRouteImport.update({
-  id: '/pvz',
-  path: '/pvz',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PromotionsRoute = PromotionsRouteImport.update({
@@ -185,6 +174,11 @@ const FollowedShopsRoute = FollowedShopsRouteImport.update({
   path: '/followed-shops',
   getParentRoute: () => rootRouteImport,
 } as any)
+const FeedbackRoute = FeedbackRouteImport.update({
+  id: '/feedback',
+  path: '/feedback',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const FavoritesRoute = FavoritesRouteImport.update({
   id: '/favorites',
   path: '/favorites',
@@ -198,6 +192,11 @@ const DisputesRoute = DisputesRouteImport.update({
 const DiscoverRoute = DiscoverRouteImport.update({
   id: '/discover',
   path: '/discover',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardRoute = DashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ContactRoute = ContactRouteImport.update({
@@ -233,11 +232,6 @@ const BecomeSellerRoute = BecomeSellerRouteImport.update({
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DashboardRoute = DashboardRouteImport.update({
-  id: '/dashboard',
-  path: '/dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AddressesRoute = AddressesRouteImport.update({
@@ -285,7 +279,6 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/addresses': typeof AddressesRoute
-  '/dashboard': typeof DashboardRoute
   '/auth': typeof AuthRoute
   '/become-seller': typeof BecomeSellerRoute
   '/bonus': typeof BonusRoute
@@ -293,9 +286,11 @@ export interface FileRoutesByFullPath {
   '/catalog': typeof CatalogRoute
   '/compare': typeof CompareRoute
   '/contact': typeof ContactRoute
+  '/dashboard': typeof DashboardRoute
   '/discover': typeof DiscoverRoute
   '/disputes': typeof DisputesRoute
   '/favorites': typeof FavoritesRoute
+  '/feedback': typeof FeedbackRoute
   '/followed-shops': typeof FollowedShopsRoute
   '/llms.txt': typeof LlmsDottxtRoute
   '/login': typeof LoginRoute
@@ -310,13 +305,11 @@ export interface FileRoutesByFullPath {
   '/privacy': typeof PrivacyRoute
   '/profile': typeof ProfileRoute
   '/promotions': typeof PromotionsRoute
-  '/pvz': typeof PvzRoute
   '/referral': typeof ReferralRoute
   '/register': typeof RegisterRoute
   '/reset-password': typeof ResetPasswordRoute
   '/returns': typeof ReturnsRoute
   '/robots.txt': typeof RobotsDottxtRoute
-  '/seller': typeof SellerRoute
   '/shops': typeof ShopsRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/support': typeof SupportRoute
@@ -332,7 +325,6 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/addresses': typeof AddressesRoute
-  '/dashboard': typeof DashboardRoute
   '/auth': typeof AuthRoute
   '/become-seller': typeof BecomeSellerRoute
   '/bonus': typeof BonusRoute
@@ -340,9 +332,11 @@ export interface FileRoutesByTo {
   '/catalog': typeof CatalogRoute
   '/compare': typeof CompareRoute
   '/contact': typeof ContactRoute
+  '/dashboard': typeof DashboardRoute
   '/discover': typeof DiscoverRoute
   '/disputes': typeof DisputesRoute
   '/favorites': typeof FavoritesRoute
+  '/feedback': typeof FeedbackRoute
   '/followed-shops': typeof FollowedShopsRoute
   '/llms.txt': typeof LlmsDottxtRoute
   '/login': typeof LoginRoute
@@ -357,13 +351,11 @@ export interface FileRoutesByTo {
   '/privacy': typeof PrivacyRoute
   '/profile': typeof ProfileRoute
   '/promotions': typeof PromotionsRoute
-  '/pvz': typeof PvzRoute
   '/referral': typeof ReferralRoute
   '/register': typeof RegisterRoute
   '/reset-password': typeof ResetPasswordRoute
   '/returns': typeof ReturnsRoute
   '/robots.txt': typeof RobotsDottxtRoute
-  '/seller': typeof SellerRoute
   '/shops': typeof ShopsRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/support': typeof SupportRoute
@@ -380,7 +372,6 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/addresses': typeof AddressesRoute
-  '/dashboard': typeof DashboardRoute
   '/auth': typeof AuthRoute
   '/become-seller': typeof BecomeSellerRoute
   '/bonus': typeof BonusRoute
@@ -388,9 +379,11 @@ export interface FileRoutesById {
   '/catalog': typeof CatalogRoute
   '/compare': typeof CompareRoute
   '/contact': typeof ContactRoute
+  '/dashboard': typeof DashboardRoute
   '/discover': typeof DiscoverRoute
   '/disputes': typeof DisputesRoute
   '/favorites': typeof FavoritesRoute
+  '/feedback': typeof FeedbackRoute
   '/followed-shops': typeof FollowedShopsRoute
   '/llms.txt': typeof LlmsDottxtRoute
   '/login': typeof LoginRoute
@@ -405,13 +398,11 @@ export interface FileRoutesById {
   '/privacy': typeof PrivacyRoute
   '/profile': typeof ProfileRoute
   '/promotions': typeof PromotionsRoute
-  '/pvz': typeof PvzRoute
   '/referral': typeof ReferralRoute
   '/register': typeof RegisterRoute
   '/reset-password': typeof ResetPasswordRoute
   '/returns': typeof ReturnsRoute
   '/robots.txt': typeof RobotsDottxtRoute
-  '/seller': typeof SellerRoute
   '/shops': typeof ShopsRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/support': typeof SupportRoute
@@ -429,7 +420,6 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/addresses'
-    | '/dashboard'
     | '/auth'
     | '/become-seller'
     | '/bonus'
@@ -437,9 +427,11 @@ export interface FileRouteTypes {
     | '/catalog'
     | '/compare'
     | '/contact'
+    | '/dashboard'
     | '/discover'
     | '/disputes'
     | '/favorites'
+    | '/feedback'
     | '/followed-shops'
     | '/llms.txt'
     | '/login'
@@ -454,13 +446,11 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/profile'
     | '/promotions'
-    | '/pvz'
     | '/referral'
     | '/register'
     | '/reset-password'
     | '/returns'
     | '/robots.txt'
-    | '/seller'
     | '/shops'
     | '/sitemap.xml'
     | '/support'
@@ -476,7 +466,6 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/addresses'
-    | '/dashboard'
     | '/auth'
     | '/become-seller'
     | '/bonus'
@@ -484,9 +473,11 @@ export interface FileRouteTypes {
     | '/catalog'
     | '/compare'
     | '/contact'
+    | '/dashboard'
     | '/discover'
     | '/disputes'
     | '/favorites'
+    | '/feedback'
     | '/followed-shops'
     | '/llms.txt'
     | '/login'
@@ -501,13 +492,11 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/profile'
     | '/promotions'
-    | '/pvz'
     | '/referral'
     | '/register'
     | '/reset-password'
     | '/returns'
     | '/robots.txt'
-    | '/seller'
     | '/shops'
     | '/sitemap.xml'
     | '/support'
@@ -523,7 +512,6 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/addresses'
-    | '/dashboard'
     | '/auth'
     | '/become-seller'
     | '/bonus'
@@ -531,9 +519,11 @@ export interface FileRouteTypes {
     | '/catalog'
     | '/compare'
     | '/contact'
+    | '/dashboard'
     | '/discover'
     | '/disputes'
     | '/favorites'
+    | '/feedback'
     | '/followed-shops'
     | '/llms.txt'
     | '/login'
@@ -548,13 +538,11 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/profile'
     | '/promotions'
-    | '/pvz'
     | '/referral'
     | '/register'
     | '/reset-password'
     | '/returns'
     | '/robots.txt'
-    | '/seller'
     | '/shops'
     | '/sitemap.xml'
     | '/support'
@@ -571,7 +559,6 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
   AddressesRoute: typeof AddressesRoute
-  DashboardRoute: typeof DashboardRoute
   AuthRoute: typeof AuthRoute
   BecomeSellerRoute: typeof BecomeSellerRoute
   BonusRoute: typeof BonusRoute
@@ -579,9 +566,11 @@ export interface RootRouteChildren {
   CatalogRoute: typeof CatalogRoute
   CompareRoute: typeof CompareRoute
   ContactRoute: typeof ContactRoute
+  DashboardRoute: typeof DashboardRoute
   DiscoverRoute: typeof DiscoverRoute
   DisputesRoute: typeof DisputesRoute
   FavoritesRoute: typeof FavoritesRoute
+  FeedbackRoute: typeof FeedbackRoute
   FollowedShopsRoute: typeof FollowedShopsRoute
   LlmsDottxtRoute: typeof LlmsDottxtRoute
   LoginRoute: typeof LoginRoute
@@ -596,13 +585,11 @@ export interface RootRouteChildren {
   PrivacyRoute: typeof PrivacyRoute
   ProfileRoute: typeof ProfileRoute
   PromotionsRoute: typeof PromotionsRoute
-  PvzRoute: typeof PvzRoute
   ReferralRoute: typeof ReferralRoute
   RegisterRoute: typeof RegisterRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   ReturnsRoute: typeof ReturnsRoute
   RobotsDottxtRoute: typeof RobotsDottxtRoute
-  SellerRoute: typeof SellerRoute
   ShopsRoute: typeof ShopsRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   SupportRoute: typeof SupportRoute
@@ -652,13 +639,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ShopsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/seller': {
-      id: '/seller'
-      path: '/seller'
-      fullPath: '/seller'
-      preLoaderRoute: typeof SellerRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/robots.txt': {
       id: '/robots.txt'
       path: '/robots.txt'
@@ -692,13 +672,6 @@ declare module '@tanstack/react-router' {
       path: '/referral'
       fullPath: '/referral'
       preLoaderRoute: typeof ReferralRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/pvz': {
-      id: '/pvz'
-      path: '/pvz'
-      fullPath: '/pvz'
-      preLoaderRoute: typeof PvzRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/promotions': {
@@ -799,6 +772,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FollowedShopsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/feedback': {
+      id: '/feedback'
+      path: '/feedback'
+      fullPath: '/feedback'
+      preLoaderRoute: typeof FeedbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/favorites': {
       id: '/favorites'
       path: '/favorites'
@@ -818,6 +798,13 @@ declare module '@tanstack/react-router' {
       path: '/discover'
       fullPath: '/discover'
       preLoaderRoute: typeof DiscoverRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard': {
+      id: '/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/contact': {
@@ -867,13 +854,6 @@ declare module '@tanstack/react-router' {
       path: '/auth'
       fullPath: '/auth'
       preLoaderRoute: typeof AuthRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/dashboard': {
-      id: '/dashboard'
-      path: '/dashboard'
-      fullPath: '/dashboard'
-      preLoaderRoute: typeof DashboardRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/addresses': {
@@ -939,7 +919,6 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
   AddressesRoute: AddressesRoute,
-  DashboardRoute: DashboardRoute,
   AuthRoute: AuthRoute,
   BecomeSellerRoute: BecomeSellerRoute,
   BonusRoute: BonusRoute,
@@ -947,9 +926,11 @@ const rootRouteChildren: RootRouteChildren = {
   CatalogRoute: CatalogRoute,
   CompareRoute: CompareRoute,
   ContactRoute: ContactRoute,
+  DashboardRoute: DashboardRoute,
   DiscoverRoute: DiscoverRoute,
   DisputesRoute: DisputesRoute,
   FavoritesRoute: FavoritesRoute,
+  FeedbackRoute: FeedbackRoute,
   FollowedShopsRoute: FollowedShopsRoute,
   LlmsDottxtRoute: LlmsDottxtRoute,
   LoginRoute: LoginRoute,
@@ -964,13 +945,11 @@ const rootRouteChildren: RootRouteChildren = {
   PrivacyRoute: PrivacyRoute,
   ProfileRoute: ProfileRoute,
   PromotionsRoute: PromotionsRoute,
-  PvzRoute: PvzRoute,
   ReferralRoute: ReferralRoute,
   RegisterRoute: RegisterRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   ReturnsRoute: ReturnsRoute,
   RobotsDottxtRoute: RobotsDottxtRoute,
-  SellerRoute: SellerRoute,
   ShopsRoute: ShopsRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   SupportRoute: SupportRoute,
@@ -985,12 +964,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { createStart } from '@tanstack/react-start'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-  }
-}

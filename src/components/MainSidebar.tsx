@@ -10,7 +10,7 @@ import {
 import {
   Home, LayoutGrid, Heart, ShoppingCart, MessageCircle, Package,
   Bell, Tag, Gift, Store, User, HelpCircle, Shield, PackageOpen, Flame, Map as MapIcon,
-  GitCompare, Users, Sparkles, Mail, MapPin, ShieldCheck,
+  GitCompare, Users, Sparkles, Mail, MapPin, ShieldCheck, type LucideIcon,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { catName } from "@/lib/catName";
@@ -18,6 +18,13 @@ import { CategoryIcon } from "@/components/CategoryIcon";
 import { portalUrl } from "@/lib/portals";
 
 interface Category { id: string; name: string; name_ru?: string | null; name_en?: string | null; slug: string; icon: string | null; parent_id: string | null }
+interface SidebarNavLink {
+  to?: string;
+  href?: string;
+  label: string;
+  icon: LucideIcon;
+  search?: never;
+}
 
 export function MainSidebar() {
   const { user, isSeller } = useAuth();
@@ -40,10 +47,10 @@ export function MainSidebar() {
 
   const parents = cats.filter((c) => !c.parent_id);
 
-  const mainLinks = isSeller ? [
+  const mainLinks: SidebarNavLink[] = isSeller ? [
     { to: "/", label: t("sidebar.home"), icon: Home },
     { to: "/trends", label: "EG Trends", icon: Sparkles },
-    { to: "/seller", label: t("sidebar.mySellerPanel"), icon: Store },
+    { href: portalUrl("seller", "/dashboard"), label: t("sidebar.mySellerPanel"), icon: Store },
   ] : [
     { to: "/", label: t("sidebar.home"), icon: Home },
     { to: "/catalog", label: t("sidebar.catalog"), icon: LayoutGrid, search: { q: undefined, cat: undefined } as never },
@@ -54,8 +61,8 @@ export function MainSidebar() {
     { to: "/bonus", label: t("sidebar.bonuses"), icon: Gift },
   ];
 
-  const userLinks = user ? (isSeller ? [
-    { to: "/seller", label: t("sidebar.mySellerPanel"), icon: Store },
+  const userLinks: SidebarNavLink[] = user ? (isSeller ? [
+    { href: portalUrl("seller", "/dashboard"), label: t("sidebar.mySellerPanel"), icon: Store },
     { to: "/notifications", label: t("sidebar.notifications"), icon: Bell },
   ] : [
     { to: "/profile", label: t("sidebar.profile"), icon: User },
@@ -83,12 +90,15 @@ export function MainSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               {mainLinks.map((l) => (
-                <SidebarMenuItem key={l.to}>
+                <SidebarMenuItem key={l.href ?? l.to}>
                   <SidebarMenuButton asChild>
-                    <Link to={l.to} search={l.search} onClick={close}>
+                    {l.href ? <a href={l.href} onClick={close}>
                       <l.icon className="h-4 w-4" />
                       <span>{l.label}</span>
-                    </Link>
+                    </a> : <Link to={l.to ?? "/"} search={l.search} onClick={close}>
+                      <l.icon className="h-4 w-4" />
+                      <span>{l.label}</span>
+                    </Link>}
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
@@ -194,12 +204,15 @@ export function MainSidebar() {
             <SidebarGroupContent>
               <SidebarMenu>
                 {userLinks.map((l) => (
-                  <SidebarMenuItem key={l.to}>
+                  <SidebarMenuItem key={l.href ?? l.to}>
                     <SidebarMenuButton asChild>
-                      <Link to={l.to} onClick={close}>
+                      {l.href ? <a href={l.href} onClick={close}>
                         <l.icon className="h-4 w-4" />
                         <span>{l.label}</span>
-                      </Link>
+                      </a> : <Link to={l.to ?? "/"} onClick={close}>
+                        <l.icon className="h-4 w-4" />
+                        <span>{l.label}</span>
+                      </Link>}
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 ))}

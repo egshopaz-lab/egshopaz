@@ -3,8 +3,8 @@
 
 map $host $egshop_portal_root {
     default             /login;
-    seller.egshop.az    /seller;
-    pvz.egshop.az       /pvz;
+    seller.egshop.az    /login;
+    pvz.egshop.az       /login;
     admin.egshop.az     /login;
 }
 
@@ -41,8 +41,8 @@ server {
 
     # Permanent public entry points for the operational portals.
     location = /become-seller { return 302 https://seller.egshop.az/register; }
-    location = /seller { return 302 https://seller.egshop.az/seller; }
-    location = /pvz { return 302 https://pvz.egshop.az/pvz; }
+    location = /seller { return 302 https://seller.egshop.az/dashboard; }
+    location = /pvz { return 302 https://pvz.egshop.az/dashboard; }
     location = /admin { return 302 https://admin.egshop.az/dashboard; }
 
     location / {

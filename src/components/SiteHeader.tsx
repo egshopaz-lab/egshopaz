@@ -115,7 +115,7 @@ export function SiteHeader() {
                   )}
                   {isSeller && (
                     <DropdownMenuItem
-                      onClick={() => window.location.assign(portalUrl("seller", "/seller"))}
+                      onClick={() => window.location.assign(portalUrl("seller", "/dashboard"))}
                     >
                       <Store className="h-4 w-4 mr-2" /> {t("header.sellerPanel")}
                     </DropdownMenuItem>

@@ -23,12 +23,12 @@ export const PORTAL_CONFIG: Record<
   {
     label: string;
     role: PortalRole;
-    panelPath: "/" | "/seller" | "/pvz" | "/dashboard";
+    panelPath: "/" | "/dashboard";
   }
 > = {
   marketplace: { label: "Marketplace", role: "buyer", panelPath: "/" },
-  seller: { label: "Satıcı portalı", role: "seller", panelPath: "/seller" },
-  pvz: { label: "PVZ portalı", role: "pvz", panelPath: "/pvz" },
+  seller: { label: "Satıcı portalı", role: "seller", panelPath: "/dashboard" },
+  pvz: { label: "PVZ portalı", role: "pvz", panelPath: "/dashboard" },
   admin: { label: "Admin portalı", role: "admin", panelPath: "/dashboard" },
 };
 

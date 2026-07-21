@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { QRScannerDialog } from "@/components/QRScannerDialog";
 import { PvzOrderChat } from "@/components/PvzOrderChat";
@@ -52,11 +52,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-export const Route = createFileRoute("/pvz")({
-  head: () => ({ meta: [{ title: "PVZ işçi paneli — EG Shop" }] }),
-  component: PvzPanel,
-});
-
 type TabKey =
   | "dashboard"
   | "intake"
@@ -71,7 +66,7 @@ type TabKey =
   | "settings"
   | "support";
 
-function PvzPanel() {
+export function PvzPanel() {
   const { t } = useTranslation();
   const { user, isPvz, loading: authLoading } = useAuth();
   const navigate = useNavigate();

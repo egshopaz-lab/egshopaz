@@ -190,7 +190,7 @@ export function PortalAuthForm({
         return;
       }
       await refreshRoles();
-      navigate({ to: "/pvz", replace: true });
+      navigate({ to: "/dashboard", replace: true });
     });
   }, [fixedMode, fixedRole, navigate, refreshRoles, user]);
 
@@ -252,8 +252,8 @@ export function PortalAuthForm({
       setBusy(false);
       toast.success("Xoş gəldiniz!");
       const dest = role === "seller"
-        ? (roles.includes("seller") ? "/seller" : "/become-seller")
-        : role === "pvz" ? "/pvz"
+        ? (roles.includes("seller") ? "/dashboard" : "/become-seller")
+        : role === "pvz" ? "/dashboard"
         : role === "admin" ? "/dashboard"
         : "/";
       navigate({ to: dest });
@@ -360,7 +360,7 @@ export function PortalAuthForm({
       if (e3) { setBusy(false); toast.error(e3.message); return; }
       toast.success("PVZ PUNKT qeydiyyatı tamamlandı");
       setBusy(false);
-      navigate({ to: "/pvz" });
+      navigate({ to: "/dashboard" });
       return;
     }
 

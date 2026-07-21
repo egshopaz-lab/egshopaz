@@ -5,8 +5,8 @@
 | Host | Məqsəd | Giriş | Qeydiyyat | Panel |
 | --- | --- | --- | --- | --- |
 | `egshop.az` | Müştəri marketplace | `/login` | `/register` | `/` |
-| `seller.egshop.az` | Satıcı qeydiyyatı və idarəetmə | `/login` | `/register` | `/seller` |
-| `pvz.egshop.az` | PVZ qeydiyyatı və əməliyyatları | `/login` | `/register` | `/pvz` |
+| `seller.egshop.az` | Satıcı qeydiyyatı və idarəetmə | `/login` | `/register` | `/dashboard` |
+| `pvz.egshop.az` | PVZ qeydiyyatı və əməliyyatları | `/login` | `/register` | `/dashboard` |
 | `admin.egshop.az` | İdarəetmə | `/login` | `/register` (dəvət məlumatı) | `/dashboard` |
 
 Bütün hostlar eyni tətbiq build-indən və eyni Supabase layihəsindən
@@ -27,8 +27,8 @@ qarşısını alır.
 ## Köhnə linklər
 
 - `egshop.az/become-seller` → `seller.egshop.az/register`
-- `egshop.az/seller` → `seller.egshop.az/seller`
-- `egshop.az/pvz` → `pvz.egshop.az/pvz`
+- `egshop.az/seller` → `seller.egshop.az/dashboard`
+- `egshop.az/pvz` → `pvz.egshop.az/dashboard`
 - `egshop.az/admin` → `admin.egshop.az/dashboard`
 - Köhnə `/auth?role=...` linkləri uyğun portalın `/login` səhifəsinə yönləndirilir.
 
@@ -53,9 +53,9 @@ Redirect-lər həm tətbiq səviyyəsində, həm də Nginx nümunəsində saxlan
 - `src/routes/auth.tsx`
 - `src/routes/become-seller.tsx`
 - `src/routes/index.tsx`
-- `src/routes/pvz.tsx`
+- `src/components/PvzPanel.tsx`
 - `src/routes/robots[.]txt.ts`
-- `src/routes/seller.tsx`
+- `src/components/SellerPanel.tsx`
 - `src/routes/sitemap[.]xml.ts`
 - `supabase/config.toml`
 - `supabase/functions/seller-payment-init/index.ts`

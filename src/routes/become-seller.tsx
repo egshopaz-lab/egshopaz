@@ -76,14 +76,14 @@ function BecomeSeller() {
 
     if (current?.status === "active") {
       await refreshRoles();
-      navigate({ to: "/seller", replace: true });
+      navigate({ to: "/dashboard", replace: true });
     }
     return current;
   }, [navigate, refreshRoles, user]);
 
   useEffect(() => {
     if (!loading && !user) navigate({ to: "/login" });
-    if (isSeller) navigate({ to: "/seller", replace: true });
+    if (isSeller) navigate({ to: "/dashboard", replace: true });
   }, [user, isSeller, loading, navigate]);
 
   useEffect(() => {

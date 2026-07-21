@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
+import { useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { SellerReturns } from "@/components/SellerReturns";
@@ -53,11 +53,6 @@ import { CategoryCascade } from "@/components/CategoryCascade";
 import { findCity } from "@/lib/azCities";
 import { DateRangeFilter, emptyRange, inRange, type DateRange } from "@/components/DateRangeFilter";
 import { SellerExternalDelivery } from "@/components/SellerExternalDelivery";
-
-export const Route = createFileRoute("/seller")({
-  head: () => ({ meta: [{ title: "Satıcı paneli — EG Shop" }] }),
-  component: SellerPanel,
-});
 
 interface Product {
   id: string;
@@ -176,7 +171,7 @@ const ORDER_STATUSES = [
   { v: "cancelled", l: "Ləğv edildi", c: "bg-destructive/10 text-destructive" },
 ];
 
-function SellerPanel() {
+export function SellerPanel() {
   const { user, isSeller, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [tab, setTab] = useState<

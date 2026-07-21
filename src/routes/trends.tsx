@@ -31,7 +31,7 @@ function TrendsRoute() {
   return (
     <div className="container mx-auto max-w-7xl px-4 py-6">
       <Button asChild variant="ghost" className="mb-4 -ml-3">
-        <Link to="/seller">
+        <Link to="/dashboard">
           <ArrowLeft className="mr-2 h-4 w-4" /> Satıcı panelinə qayıt
         </Link>
       </Button>
