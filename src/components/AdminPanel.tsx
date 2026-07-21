@@ -23,6 +23,7 @@ import { AdminCategoryManager } from "@/components/AdminCategoryManager";
 import { AdminOperationsCenter } from "@/components/AdminOperationsCenter";
 import { AdminShopManagement } from "@/components/AdminShopManagement";
 import { AdminMessageReports } from "@/components/AdminMessageReports";
+import { AdminFinanceCenter } from "@/components/AdminFinanceCenter";
 import { toast } from "sonner";
 import { PanelLayout, type PanelNavItem } from "@/components/PanelLayout";
 import { AZ_CITY_NAMES, findCity } from "@/lib/azCities";
@@ -434,7 +435,7 @@ export function AdminPanel() {
       {tab === "pickup_points" && <PickupSection pickups={pickups} addPickup={addPickup} togglePickup={togglePickup} editPickup={editPickup} deletePickup={deletePickup} />}
       {tab === "orders" && <OrdersSection orders={orders} updateOrderStatus={updateOrderStatus} />}
       {tab === "returns" && <AdminReturnsSection />}
-      {tab === "finance" && <FinanceSection stats={stats} orders={orders} settings={settings} />}
+      {tab === "finance" && <AdminFinanceCenter commissionPercent={settings?.commission_percent ?? 10} />}
       {tab === "treasury" && <AdminTreasury />}
       {tab === "payouts" && <AdminPayouts />}
       {tab === "marketing" && <MarketingSection />}
