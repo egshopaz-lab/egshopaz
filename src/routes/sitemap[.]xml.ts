@@ -30,10 +30,10 @@ export const Route = createFileRoute("/sitemap.xml")({
             const sb = createClient(url, key, { auth: { persistSession: false } });
             const [{ data: products }, { data: shops }] = await Promise.all([
               sb.from("products").select("id").eq("is_active", true).limit(5000),
-              sb.from("profiles_public").select("id").not("shop_name", "is", null).limit(2000),
+              (sb as any).from("active_seller_storefronts").select("id").limit(2000),
             ]);
             productPaths = (products ?? []).map((p) => `/product/${p.id}`);
-            shopPaths = (shops ?? []).map((s) => `/shop/${s.id}`);
+            shopPaths = (shops ?? []).map((s: { id: string }) => `/shop/${s.id}`);
           }
         } catch {
           // fall back to static only
