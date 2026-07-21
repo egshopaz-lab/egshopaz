@@ -89,7 +89,7 @@ function Catalog() {
     }
 
     let query: any = supabase.from("products")
-      .select("id,title,price,old_price,image_url,video_url,rating,reviews_count,brand,stock,delivery_days_min,delivery_days_max,delivery_city,free_shipping,fast_delivery,condition,category_id,seller_id,profiles:seller_id(shop_name,full_name,shop_city)")
+      .select("id,title,price,old_price,image_url,video_url,rating,reviews_count,brand,stock,delivery_days_min,delivery_days_max,delivery_city,free_shipping,fast_delivery,condition,category_id,seller_id")
       .eq("is_active", true);
     if (q) query = query.ilike("title", `%${q}%`);
     if (catSlugs) {
@@ -125,7 +125,7 @@ function Catalog() {
     else if (filters.sort === "discount_high") query = query.order("old_price", { ascending: false, nullsFirst: false });
     else query = query.order("created_at", { ascending: false });
 
-    query.limit(80).then(({ data, error }: { data: ProductCardData[] | null; error: { message: string } | null }) => {
+    query.limit(80).then(async ({ data, error }: { data: ProductCardData[] | null; error: { message: string } | null }) => {
       if (error) {
         console.error("Catalog products query failed:", error);
         setProducts([]);
@@ -133,6 +133,15 @@ function Catalog() {
         return;
       }
       let list = (data ?? []) as ProductCardData[];
+      const sellerIds = [...new Set(list.map((product) => product.seller_id).filter((value): value is string => Boolean(value)))];
+      if (sellerIds.length) {
+        const { data: profiles } = await (supabase as any)
+          .from("profiles_public")
+          .select("id,shop_name,full_name,shop_city")
+          .in("id", sellerIds);
+        const profileMap = new Map<string, ProductCardData["profiles"]>((profiles ?? []).map((profile: any) => [profile.id, profile]));
+        list = list.map((product) => ({ ...product, profiles: product.seller_id ? profileMap.get(product.seller_id) ?? null : null }));
+      }
       if (filters.minDiscount) {
         const min = filters.minDiscount;
         list = list.filter((p: any) => {

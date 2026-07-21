@@ -55,12 +55,18 @@ export function useMojibakeRepair(enabled = true) {
       }
     });
 
-    repairMojibakeIn(document.body);
-    observe();
+    // React may hydrate nested boundaries after the parent effect runs. Delay
+    // DOM text repair so it cannot mutate server markup during hydration.
+    const startTimer = window.setTimeout(() => {
+      repairMojibakeIn(document.body);
+      observe();
+    }, 800);
 
     return () => {
+      window.clearTimeout(startTimer);
       observer.disconnect();
       if (frame) window.cancelAnimationFrame(frame);
     };
   }, [enabled]);
 }
+

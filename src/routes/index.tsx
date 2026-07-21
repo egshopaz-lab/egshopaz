@@ -41,7 +41,7 @@ interface PromoCode {
 }
 
 const PRODUCT_COLUMNS =
-  "id,title,price,old_price,image_url,video_url,rating,reviews_count,brand,delivery_days_min,delivery_days_max,delivery_city,free_shipping,fast_delivery,stock,seller_id,profiles:seller_id(shop_name,full_name,shop_city)";
+  "id,title,price,old_price,image_url,video_url,rating,reviews_count,brand,delivery_days_min,delivery_days_max,delivery_city,free_shipping,fast_delivery,stock,seller_id";
 
 function ProductSection({
   title,
@@ -137,11 +137,22 @@ function Index() {
           .eq("is_active", true)
           .limit(6),
       ]);
+      const lists = [latest ?? [], sales ?? [], popular ?? [], prizes ?? []] as ProductCardData[][];
+      const sellerIds = [...new Set(lists.flatMap((list) => list.map((product) => product.seller_id)).filter((value): value is string => Boolean(value)))];
+      let profileMap = new Map<string, ProductCardData["profiles"]>();
+      if (sellerIds.length) {
+        const { data: profiles } = await (supabase as any)
+          .from("profiles_public")
+          .select("id,shop_name,full_name,shop_city")
+          .in("id", sellerIds);
+        profileMap = new Map((profiles ?? []).map((profile: any) => [profile.id, profile]));
+      }
       if (!active) return;
-      setAllProducts((latest ?? []) as ProductCardData[]);
-      setDiscounted((sales ?? []) as ProductCardData[]);
-      setTrending((popular ?? []) as ProductCardData[]);
-      setGiveaways((prizes ?? []) as ProductCardData[]);
+      const enrich = (list: ProductCardData[]) => list.map((product) => ({ ...product, profiles: product.seller_id ? profileMap.get(product.seller_id) ?? null : null }));
+      setAllProducts(enrich(lists[0]));
+      setDiscounted(enrich(lists[1]));
+      setTrending(enrich(lists[2]));
+      setGiveaways(enrich(lists[3]));
       setPromos((codes ?? []) as PromoCode[]);
       setProductsLoaded(true);
     })();
