@@ -5,7 +5,7 @@ map $host $egshop_portal_root {
     default             /login;
     seller.egshop.az    /seller;
     pvz.egshop.az       /pvz;
-    admin.egshop.az     /admin;
+    admin.egshop.az     /login;
 }
 
 server {
