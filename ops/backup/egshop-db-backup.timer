@@ -1,0 +1,14 @@
+
+[Unit]
+Description=Run EG Shop database backup every day
+
+[Timer]
+OnCalendar=*-*-* 02:30:00 UTC
+Persistent=true
+RandomizedDelaySec=15m
+Unit=egshop-db-backup.service
+
+[Install]
+WantedBy=timers.target
+
+
