@@ -167,7 +167,7 @@ function AppShell() {
   // One build serves four isolated portals. Cross-domain navigation uses full
   // URLs because browser sessions and canonical hosts are origin-scoped.
   useEffect(() => {
-    if (typeof window === "undefined") return;
+    if (typeof window === "undefined") return;\n    // Wait until the browser hostname has resolved to the real portal.\n    // Otherwise the initial marketplace fallback can redirect seller/PVZ to admin.\n    if (!portalReady) return;
     const query = window.location.search;
 
     if (portal === "marketplace") {
