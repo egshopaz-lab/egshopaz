@@ -254,7 +254,7 @@ export function PortalAuthForm({
       const dest = role === "seller"
         ? (roles.includes("seller") ? "/seller" : "/become-seller")
         : role === "pvz" ? "/pvz"
-        : role === "admin" ? "/admin"
+        : role === "admin" ? "/dashboard"
         : "/";
       navigate({ to: dest });
       return;

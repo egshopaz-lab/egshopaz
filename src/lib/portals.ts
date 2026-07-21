@@ -23,13 +23,13 @@ export const PORTAL_CONFIG: Record<
   {
     label: string;
     role: PortalRole;
-    panelPath: "/" | "/seller" | "/pvz" | "/admin";
+    panelPath: "/" | "/seller" | "/pvz" | "/dashboard";
   }
 > = {
   marketplace: { label: "Marketplace", role: "buyer", panelPath: "/" },
   seller: { label: "Satıcı portalı", role: "seller", panelPath: "/seller" },
   pvz: { label: "PVZ portalı", role: "pvz", panelPath: "/pvz" },
-  admin: { label: "Admin portalı", role: "admin", panelPath: "/admin" },
+  admin: { label: "Admin portalı", role: "admin", panelPath: "/dashboard" },
 };
 
 export function portalFromHostname(hostname: string): Portal {

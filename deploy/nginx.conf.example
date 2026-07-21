@@ -43,7 +43,7 @@ server {
     location = /become-seller { return 302 https://seller.egshop.az/register; }
     location = /seller { return 302 https://seller.egshop.az/seller; }
     location = /pvz { return 302 https://pvz.egshop.az/pvz; }
-    location = /admin { return 302 https://admin.egshop.az/admin; }
+    location = /admin { return 302 https://admin.egshop.az/dashboard; }
 
     location / {
         proxy_pass http://127.0.0.1:3000;

@@ -45,7 +45,7 @@ import { Route as CartRouteImport } from './routes/cart'
 import { Route as BonusRouteImport } from './routes/bonus'
 import { Route as BecomeSellerRouteImport } from './routes/become-seller'
 import { Route as AuthRouteImport } from './routes/auth'
-import { Route as AdminRouteImport } from './routes/admin'
+import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as AddressesRouteImport } from './routes/addresses'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
@@ -235,9 +235,9 @@ const AuthRoute = AuthRouteImport.update({
   path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AdminRoute = AdminRouteImport.update({
-  id: '/admin',
-  path: '/admin',
+const DashboardRoute = DashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AddressesRoute = AddressesRouteImport.update({
@@ -285,7 +285,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/addresses': typeof AddressesRoute
-  '/admin': typeof AdminRoute
+  '/dashboard': typeof DashboardRoute
   '/auth': typeof AuthRoute
   '/become-seller': typeof BecomeSellerRoute
   '/bonus': typeof BonusRoute
@@ -332,7 +332,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/addresses': typeof AddressesRoute
-  '/admin': typeof AdminRoute
+  '/dashboard': typeof DashboardRoute
   '/auth': typeof AuthRoute
   '/become-seller': typeof BecomeSellerRoute
   '/bonus': typeof BonusRoute
@@ -380,7 +380,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/addresses': typeof AddressesRoute
-  '/admin': typeof AdminRoute
+  '/dashboard': typeof DashboardRoute
   '/auth': typeof AuthRoute
   '/become-seller': typeof BecomeSellerRoute
   '/bonus': typeof BonusRoute
@@ -429,7 +429,7 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/addresses'
-    | '/admin'
+    | '/dashboard'
     | '/auth'
     | '/become-seller'
     | '/bonus'
@@ -476,7 +476,7 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/addresses'
-    | '/admin'
+    | '/dashboard'
     | '/auth'
     | '/become-seller'
     | '/bonus'
@@ -523,7 +523,7 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/addresses'
-    | '/admin'
+    | '/dashboard'
     | '/auth'
     | '/become-seller'
     | '/bonus'
@@ -571,7 +571,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
   AddressesRoute: typeof AddressesRoute
-  AdminRoute: typeof AdminRoute
+  DashboardRoute: typeof DashboardRoute
   AuthRoute: typeof AuthRoute
   BecomeSellerRoute: typeof BecomeSellerRoute
   BonusRoute: typeof BonusRoute
@@ -869,11 +869,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/admin': {
-      id: '/admin'
-      path: '/admin'
-      fullPath: '/admin'
-      preLoaderRoute: typeof AdminRouteImport
+    '/dashboard': {
+      id: '/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/addresses': {
@@ -939,7 +939,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
   AddressesRoute: AddressesRoute,
-  AdminRoute: AdminRoute,
+  DashboardRoute: DashboardRoute,
   AuthRoute: AuthRoute,
   BecomeSellerRoute: BecomeSellerRoute,
   BonusRoute: BonusRoute,

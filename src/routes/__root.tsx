@@ -160,7 +160,7 @@ function AppShell() {
   } = useAuth();
   const isSellerPanel = pathname === "/seller" || pathname.startsWith("/seller/");
   const isPvzPanel = pathname === "/pvz" || pathname.startsWith("/pvz/");
-  const isAdminPanel = pathname === "/admin" || pathname.startsWith("/admin/");
+  const isAdminPanel = pathname === "/dashboard" || pathname.startsWith("/dashboard/");
   const isSellerTrends = portal === "seller" && pathname === "/trends";
   const isWorkPanel = isSellerPanel || isPvzPanel || isAdminPanel;
   const isAuthRoute = pathname === "/auth" || pathname.startsWith("/auth/") || pathname === "/login" || pathname === "/register" || pathname === "/reset-password";
@@ -200,7 +200,7 @@ function AppShell() {
         ? "/login"
         : portal === "seller" ? (isSeller ? "/seller" : "/become-seller")
         : portal === "pvz" ? (isPvz ? "/pvz" : "/login")
-        : isAdmin ? "/admin" : "/login";
+        : isAdmin ? "/dashboard" : "/login";
       navigate({ to: target, replace: true });
       return;
     }
