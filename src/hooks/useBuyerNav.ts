@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { playNotificationSound, prepareNotificationSound } from "@/lib/notificationSound";
 import {
   User as UserIcon, Package, MapPin, CreditCard, Star,
   Gift, Bell, MessageCircle, Coins, AlertTriangle,
@@ -19,6 +20,7 @@ export function useBuyerNav(): { items: PanelNavItem[]; bonusBalance: number } {
 
   useEffect(() => {
     if (!user) return;
+    prepareNotificationSound();
     supabase.from("orders").select("*", { count: "exact", head: true }).eq("buyer_id", user.id).in("status", ["pending", "paid", "shipped"])
       .then(({ count }) => setOrderCount(count ?? 0));
     supabase.from("profiles").select("bonus_balance").eq("id", user.id).maybeSingle()
@@ -32,7 +34,17 @@ export function useBuyerNav(): { items: PanelNavItem[]; bonusBalance: number } {
     };
     loadUnread();
     const ch = supabase.channel(`buyer-msg-badge-${user.id}`)
-      .on("postgres_changes", { event: "*", schema: "public", table: "shop_messages", filter: `buyer_id=eq.${user.id}` }, loadUnread)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "shop_messages", filter: `buyer_id=eq.${user.id}` },
+        (payload) => {
+          const message = payload.new as { sender_role?: string };
+          if (payload.eventType === "INSERT" && message.sender_role === "seller") {
+            playNotificationSound();
+          }
+          loadUnread();
+        },
+      )
       .subscribe();
     return () => { supabase.removeChannel(ch); };
   }, [user]);
