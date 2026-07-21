@@ -22,6 +22,7 @@ import { AdminBannerManager } from "@/components/AdminBannerManager";
 import { AdminCategoryManager } from "@/components/AdminCategoryManager";
 import { AdminOperationsCenter } from "@/components/AdminOperationsCenter";
 import { AdminShopManagement } from "@/components/AdminShopManagement";
+import { AdminMessageReports } from "@/components/AdminMessageReports";
 import { toast } from "sonner";
 import { PanelLayout, type PanelNavItem } from "@/components/PanelLayout";
 import { AZ_CITY_NAMES, findCity } from "@/lib/azCities";
@@ -30,7 +31,7 @@ type TabKey =
   | "dashboard" | "operations" | "customers" | "sellers" | "couriers" | "deliveries" | "pvz_staff"
   | "categories" | "products" | "shops" | "warehouses" | "pickup_points"
   | "orders" | "returns" | "finance" | "treasury" | "payouts" | "marketing" | "banners" | "packages" | "trends" | "epoint" | "promo" | "analytics"
-  | "security" | "audit" | "disputes" | "content" | "settings" | "support" | "ai_bot";
+  | "security" | "audit" | "disputes" | "message_reports" | "content" | "settings" | "support" | "ai_bot";
 
 interface Stat { users: number; products: number; orders: number; revenue: number; sellers: number }
 interface ProfileRow { id: string; full_name: string | null; shop_name: string | null; created_at: string; phone: string | null }
@@ -365,7 +366,7 @@ export function AdminPanel() {
     finance: "payments.manage", treasury: "payments.manage", payouts: "payments.manage", epoint: "payments.manage",
     marketing: "advertising.manage", banners: "advertising.manage", packages: "advertising.manage",
     trends: "advertising.manage", promo: "advertising.manage", content: "advertising.manage",
-    support: "support.manage", ai_bot: "support.manage",
+    support: "support.manage", message_reports: "support.manage", ai_bot: "support.manage",
     couriers: "delivery.manage", deliveries: "delivery.manage", warehouses: "delivery.manage",
     pickup_points: "delivery.manage", orders: "delivery.manage", returns: "delivery.manage",
     disputes: "disputes.manage", analytics: "reports.view", audit: "reports.view",
@@ -399,6 +400,7 @@ export function AdminPanel() {
     { key: "security", label: "Təhlükəsizlik", icon: Lock, active: tab === "security", onClick: () => setTab("security") },
     { key: "audit", label: "Audit Log", icon: History, active: tab === "audit", onClick: () => setTab("audit") },
     { key: "disputes", label: "Mübahisələr", icon: Scale, badge: disputes.filter((d) => d.status === "open").length, active: tab === "disputes", onClick: () => setTab("disputes") },
+    { key: "message_reports", label: "Mesaj şikayətləri", icon: AlertTriangle, active: tab === "message_reports", onClick: () => setTab("message_reports") },
     { key: "content", label: "Kontent", icon: FileText, active: tab === "content", onClick: () => setTab("content") },
     { key: "settings", label: "Sistem ayarları", icon: Settings, active: tab === "settings", onClick: () => setTab("settings") },
     { key: "support", label: "Dəstək", icon: LifeBuoy, badge: tickets.filter((t) => t.status === "open").length, active: tab === "support", onClick: () => setTab("support") },
@@ -445,6 +447,7 @@ export function AdminPanel() {
       {tab === "security" && <SecuritySection />}
       {tab === "audit" && <AdminAuditLog />}
       {tab === "disputes" && <DisputesSection disputes={disputes} resolveDispute={resolveDispute} />}
+      {tab === "message_reports" && <AdminMessageReports />}
       {tab === "content" && <ContentSection />}
       {tab === "settings" && <SettingsSection settings={settings} updateSettings={updateSettings} />}
       {tab === "support" && <SupportSection tickets={tickets} replyTicket={replyTicket} />}
