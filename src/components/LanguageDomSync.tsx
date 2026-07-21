@@ -11,50 +11,50 @@ type TranslationEntry = { ru: string; en: string };
 const textOriginals = new WeakMap<Text, string>();
 const attrOriginals = new WeakMap<Element, Partial<Record<string, string>>>();
 
-const AZ_CHARS = /[ĆŹÉ™ÄžÄźÄ°Ä±Ă–Ă¶ĂśĂĽĂ‡Ă§ĹžĹź]/;
+const AZ_CHARS = /[ƏəĞğİıÖöÜüÇçŞş]/;
 const ATTRS = ["placeholder", "title", "aria-label"] as const;
 
 const EXTRA_PHRASES: Record<string, TranslationEntry> = {
-  "EG Shop tÉ™tbiqini yĂĽklÉ™": { ru: "ĐˇĐşĐ°Ń‡Đ°Ń‚ŃŚ ĐżŃ€Đ¸Đ»ĐľĐ¶ĐµĐ˝Đ¸Đµ EG Shop", en: "Download the EG Shop app" },
-  "Daha sĂĽrÉ™tli alÄ±Ĺź-veriĹź, bildiriĹźlÉ™r vÉ™ xĂĽsusi endirimlÉ™r tÉ™tbiqdÉ™.": {
-    ru: "Đ‘ĐľĐ»ĐµĐµ Đ±Ń‹ŃŃ‚Ń€Ń‹Đµ ĐżĐľĐşŃĐżĐşĐ¸, ŃĐ˛ĐµĐ´ĐľĐĽĐ»ĐµĐ˝Đ¸ŃŹ Đ¸ ŃĐżĐµŃ†Đ¸Đ°Đ»ŃŚĐ˝Ń‹Đµ ŃĐşĐ¸Đ´ĐşĐ¸ â€” Đ˛ ĐżŃ€Đ¸Đ»ĐľĐ¶ĐµĐ˝Đ¸Đ¸.",
+  "EG Shop tətbiqini yüklə": { ru: "Скачать приложение EG Shop", en: "Download the EG Shop app" },
+  "Daha sürətli alış-veriş, bildirişlər və xüsusi endirimlər tətbiqdə.": {
+    ru: "Более быстрые покупки, уведомления и специальные скидки — в приложении.",
     en: "Faster shopping, notifications and special discounts in the app.",
   },
-  "YĂĽklÉ™": { ru: "ĐˇĐşĐ°Ń‡Đ°Ń‚ŃŚ", en: "Download" },
-  "Sonra": { ru: "ĐźĐľĐ·Đ¶Đµ", en: "Later" },
-  "Toggle Sidebar": { ru: "ĐžŃ‚ĐşŃ€Ń‹Ń‚ŃŚ ĐĽĐµĐ˝ŃŽ", en: "Toggle menu" },
-  "SÉ™hifÉ™ tapÄ±lmadÄ±": { ru: "ĐˇŃ‚Ń€Đ°Đ˝Đ¸Ń†Đ° Đ˝Đµ Đ˝Đ°ĐąĐ´ĐµĐ˝Đ°", en: "Page not found" },
-  "AxtardÄ±ÄźÄ±nÄ±z sÉ™hifÉ™ mĂ¶vcud deyil vÉ™ ya kĂ¶Ă§ĂĽrĂĽlĂĽb.": {
-    ru: "ĐˇŃ‚Ń€Đ°Đ˝Đ¸Ń†Đ°, ĐşĐľŃ‚ĐľŃ€ŃŃŽ Đ˛Ń‹ Đ¸Ń‰ĐµŃ‚Đµ, Đ˝Đµ ŃŃŃ‰ĐµŃŃ‚Đ˛ŃĐµŃ‚ Đ¸Đ»Đ¸ Đ±Ń‹Đ»Đ° ĐżĐµŃ€ĐµĐĽĐµŃ‰ĐµĐ˝Đ°.",
+  "Yüklə": { ru: "Скачать", en: "Download" },
+  "Sonra": { ru: "Позже", en: "Later" },
+  "Toggle Sidebar": { ru: "Открыть меню", en: "Toggle menu" },
+  "Səhifə tapılmadı": { ru: "Страница не найдена", en: "Page not found" },
+  "Axtardığınız səhifə mövcud deyil və ya köçürülüb.": {
+    ru: "Страница, которую вы ищете, не существует или была перемещена.",
     en: "The page you are looking for does not exist or has been moved.",
   },
-  "Ana sÉ™hifÉ™yÉ™ qayÄ±t": { ru: "Đ’ĐµŃ€Đ˝ŃŃ‚ŃŚŃŃŹ Đ˝Đ° ĐłĐ»Đ°Đ˛Đ˝ŃŃŽ", en: "Go back home" },
-  "Ă‡Ä±xÄ±Ĺź": { ru: "Đ’Ń‹ĐąŃ‚Đ¸", en: "Logout" },
-  "SatÄ±cÄ± paneli": { ru: "ĐźĐ°Đ˝ĐµĐ»ŃŚ ĐżŃ€ĐľĐ´Đ°Đ˛Ń†Đ°", en: "Seller panel" },
-  "PVZ PUNKT paneli": { ru: "ĐźĐ°Đ˝ĐµĐ»ŃŚ ĐźĐ’Đ—", en: "PVZ panel" },
-  "BakÄ±, AzÉ™rbaycan": { ru: "Đ‘Đ°ĐşŃ, ĐĐ·ĐµŃ€Đ±Đ°ĐąĐ´Đ¶Đ°Đ˝", en: "Baku, Azerbaijan" },
-  "ĆŹlaqÉ™": { ru: "ĐšĐľĐ˝Ń‚Đ°ĐşŃ‚Ń‹", en: "Contact" },
-  "ĹžÉ™rtlÉ™r vÉ™ qaydalar": { ru: "ĐŁŃĐ»ĐľĐ˛Đ¸ŃŹ Đ¸ ĐżŃ€Đ°Đ˛Đ¸Đ»Đ°", en: "Terms and rules" },
-  "MÉ™xfilik siyasÉ™ti": { ru: "ĐźĐľĐ»Đ¸Ń‚Đ¸ĐşĐ° ĐşĐľĐ˝Ń„Đ¸Đ´ĐµĐ˝Ń†Đ¸Đ°Đ»ŃŚĐ˝ĐľŃŃ‚Đ¸", en: "Privacy policy" },
-  "MĂĽqayisÉ™ ĂĽĂ§ĂĽn daxil olun": { ru: "Đ’ĐľĐąĐ´Đ¸Ń‚Đµ Đ´Đ»ŃŹ ŃŃ€Đ°Đ˛Đ˝ĐµĐ˝Đ¸ŃŹ", en: "Sign in to compare" },
-  "MĂĽqayisÉ™ siyahÄ±nÄ±z boĹźdur": { ru: "ĐˇĐżĐ¸ŃĐľĐş ŃŃ€Đ°Đ˛Đ˝ĐµĐ˝Đ¸ŃŹ ĐżŃŃŃ‚", en: "Your comparison list is empty" },
-  "Kataloqa keĂ§": { ru: "ĐźĐµŃ€ĐµĐąŃ‚Đ¸ Đ˛ ĐşĐ°Ń‚Đ°Đ»ĐľĐł", en: "Go to catalog" },
-  "SÉ™bÉ™tÉ™": { ru: "Đ’ ĐşĐľŃ€Đ·Đ¸Đ˝Ń", en: "To cart" },
-  "Ă–dÉ™niĹź": { ru: "ĐžĐżĐ»Đ°Ń‚Đ°", en: "Payment" },
-  "KartlarÄ±m": { ru: "ĐśĐľĐ¸ ĐşĐ°Ń€Ń‚Ń‹", en: "My cards" },
-  "Yeni kart É™lavÉ™ et": { ru: "Đ”ĐľĐ±Đ°Đ˛Đ¸Ń‚ŃŚ Đ˝ĐľĐ˛ŃŃŽ ĐşĐ°Ń€Ń‚Ń", en: "Add new card" },
-  "Kart nĂ¶mrÉ™si": { ru: "ĐťĐľĐĽĐµŃ€ ĐşĐ°Ń€Ń‚Ń‹", en: "Card number" },
-  "Kart sahibinin adÄ±": { ru: "ĐĐĽŃŹ Đ˛Đ»Đ°Đ´ĐµĐ»ŃŚŃ†Đ° ĐşĐ°Ń€Ń‚Ń‹", en: "Cardholder name" },
-  "ĆŹlavÉ™ et": { ru: "Đ”ĐľĐ±Đ°Đ˛Đ¸Ń‚ŃŚ", en: "Add" },
-  "LÉ™Äźv et": { ru: "ĐžŃ‚ĐĽĐµĐ˝Đ°", en: "Cancel" },
-  "HÉ™lÉ™ kartÄ±nÄ±z yoxdur": { ru: "ĐŁ Đ˛Đ°Ń ĐżĐľĐşĐ° Đ˝ĐµŃ‚ ĐşĐ°Ń€Ń‚Ń‹", en: "You do not have a card yet" },
-  "SifariĹź tapÄ±lmadÄ±.": { ru: "Đ—Đ°ĐşĐ°Đ· Đ˝Đµ Đ˝Đ°ĐąĐ´ĐµĐ˝.", en: "Order not found." },
-  "Bu sifariĹź artÄ±q Ă¶dÉ™nilib": { ru: "Đ­Ń‚ĐľŃ‚ Đ·Đ°ĐşĐ°Đ· ŃĐ¶Đµ ĐľĐżĐ»Đ°Ń‡ĐµĐ˝", en: "This order is already paid" },
-  "SifariĹźlÉ™rÉ™ qayÄ±t": { ru: "Đ’ĐµŃ€Đ˝ŃŃ‚ŃŚŃŃŹ Đş Đ·Đ°ĐşĐ°Đ·Đ°ĐĽ", en: "Back to orders" },
-  "Ă–dÉ™nilÉ™cÉ™k mÉ™blÉ™Äź": { ru: "ĐˇŃĐĽĐĽĐ° Đş ĐľĐżĐ»Đ°Ń‚Đµ", en: "Amount to pay" },
-  "Kart seĂ§in": { ru: "Đ’Ń‹Đ±ĐµŃ€Đ¸Ń‚Đµ ĐşĐ°Ń€Ń‚Ń", en: "Select a card" },
-  "Yeni kart ilÉ™ Ă¶dÉ™": { ru: "ĐžĐżĐ»Đ°Ń‚Đ¸Ń‚ŃŚ Đ˝ĐľĐ˛ĐľĐą ĐşĐ°Ń€Ń‚ĐľĐą", en: "Pay with a new card" },
-  "NĂ¶vbÉ™ti dÉ™fÉ™ ĂĽĂ§ĂĽn bu kartÄ± yadda saxla": { ru: "ĐˇĐľŃ…Ń€Đ°Đ˝Đ¸Ń‚ŃŚ ŃŤŃ‚Ń ĐşĐ°Ń€Ń‚Ń Đ´Đ»ŃŹ ŃĐ»ĐµĐ´ŃŃŽŃ‰ĐµĐłĐľ Ń€Đ°Đ·Đ°", en: "Save this card for next time" },
+  "Ana səhifəyə qayıt": { ru: "Вернуться на главную", en: "Go back home" },
+  "Çıxış": { ru: "Выйти", en: "Logout" },
+  "Satıcı paneli": { ru: "Панель продавца", en: "Seller panel" },
+  "PVZ PUNKT paneli": { ru: "Панель ПВЗ", en: "PVZ panel" },
+  "Bakı, Azərbaycan": { ru: "Баку, Азербайджан", en: "Baku, Azerbaijan" },
+  "Əlaqə": { ru: "Контакты", en: "Contact" },
+  "Şərtlər və qaydalar": { ru: "Условия и правила", en: "Terms and rules" },
+  "Məxfilik siyasəti": { ru: "Политика конфиденциальности", en: "Privacy policy" },
+  "Müqayisə üçün daxil olun": { ru: "Войдите для сравнения", en: "Sign in to compare" },
+  "Müqayisə siyahınız boşdur": { ru: "Список сравнения пуст", en: "Your comparison list is empty" },
+  "Kataloqa keç": { ru: "Перейти в каталог", en: "Go to catalog" },
+  "Səbətə": { ru: "В корзину", en: "To cart" },
+  "Ödəniş": { ru: "Оплата", en: "Payment" },
+  "Kartlarım": { ru: "Мои карты", en: "My cards" },
+  "Yeni kart əlavə et": { ru: "Добавить новую карту", en: "Add new card" },
+  "Kart nömrəsi": { ru: "Номер карты", en: "Card number" },
+  "Kart sahibinin adı": { ru: "Имя владельца карты", en: "Cardholder name" },
+  "Əlavə et": { ru: "Добавить", en: "Add" },
+  "Ləğv et": { ru: "Отмена", en: "Cancel" },
+  "Hələ kartınız yoxdur": { ru: "У вас пока нет карты", en: "You do not have a card yet" },
+  "Sifariş tapılmadı.": { ru: "Заказ не найден.", en: "Order not found." },
+  "Bu sifariş artıq ödənilib": { ru: "Этот заказ уже оплачен", en: "This order is already paid" },
+  "Sifarişlərə qayıt": { ru: "Вернуться к заказам", en: "Back to orders" },
+  "Ödəniləcək məbləğ": { ru: "Сумма к оплате", en: "Amount to pay" },
+  "Kart seçin": { ru: "Выберите карту", en: "Select a card" },
+  "Yeni kart ilə ödə": { ru: "Оплатить новой картой", en: "Pay with a new card" },
+  "Növbəti dəfə üçün bu kartı yadda saxla": { ru: "Сохранить эту карту для следующего раза", en: "Save this card for next time" },
 };
 
 const exactTranslations: Record<string, TranslationEntry> = { ...EXTRA_PHRASES };
@@ -232,20 +232,17 @@ export function LanguageDomSync() {
       raf = window.requestAnimationFrame(() => applyLanguageToDom(lang));
     };
 
+    schedule();
     const observer = new MutationObserver(schedule);
-    const startTimer = window.setTimeout(() => {
-      schedule();
-      observer.observe(document.body, {
-        childList: true,
-        subtree: true,
-        characterData: true,
-        attributes: true,
-        attributeFilter: [...ATTRS],
-      });
-    }, 800);
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true,
+      characterData: true,
+      attributes: true,
+      attributeFilter: [...ATTRS],
+    });
     window.addEventListener("eg-language-sync", schedule);
     return () => {
-      window.clearTimeout(startTimer);
       window.cancelAnimationFrame(raf);
       observer.disconnect();
       window.removeEventListener("eg-language-sync", schedule);
@@ -254,4 +251,3 @@ export function LanguageDomSync() {
 
   return null;
 }
-

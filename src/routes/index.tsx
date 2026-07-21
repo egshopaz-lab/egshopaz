@@ -11,7 +11,6 @@ import { HomeCategoryBrowser } from "@/components/HomeCategoryBrowser";
 import { FeaturedShops } from "@/components/FeaturedShops";
 import { TrendsFeed } from "@/components/TrendsFeed";
 import { HomeBannerCarousel } from "@/components/HomeBannerCarousel";
-import { MarketplaceShortcuts } from "@/components/MarketplaceShortcuts";
 import i18n from "@/i18n";
 import { absoluteUrl } from "@/lib/site";
 
@@ -41,7 +40,7 @@ interface PromoCode {
 }
 
 const PRODUCT_COLUMNS =
-  "id,title,price,old_price,image_url,video_url,rating,reviews_count,brand,delivery_days_min,delivery_days_max,delivery_city,free_shipping,fast_delivery,stock,seller_id";
+  "id,title,price,old_price,image_url,video_url,rating,reviews_count,brand,delivery_days_min,delivery_days_max,delivery_city,free_shipping,fast_delivery,stock";
 
 function ProductSection({
   title,
@@ -76,7 +75,7 @@ function ProductSection({
           {i18n.t("home.viewAll")} <ArrowRight className="h-3.5 w-3.5" />
         </Link>
       </div>
-      <div className="home-product-strip mobile-product-grid grid grid-cols-2 gap-x-2.5 gap-y-5 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6">
+      <div className="mobile-product-grid grid grid-cols-2 gap-x-2.5 gap-y-5 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6">
         {products.map((product) => (
           <ProductCard key={product.id} p={product} />
         ))}
@@ -105,26 +104,26 @@ function Index() {
         { data: prizes },
         { data: codes },
       ] = await Promise.all([
-        (supabase as any)
+        supabase
           .from("products")
           .select(PRODUCT_COLUMNS)
           .eq("is_active", true)
           .order("created_at", { ascending: false })
           .limit(18),
-        (supabase as any)
+        supabase
           .from("products")
           .select(PRODUCT_COLUMNS)
           .eq("is_active", true)
           .not("old_price", "is", null)
           .order("created_at", { ascending: false })
           .limit(12),
-        (supabase as any)
+        supabase
           .from("products")
           .select(PRODUCT_COLUMNS)
           .eq("is_active", true)
           .order("reviews_count", { ascending: false })
           .limit(12),
-        (supabase as any)
+        supabase
           .from("products")
           .select(PRODUCT_COLUMNS)
           .eq("is_active", true)
@@ -137,22 +136,11 @@ function Index() {
           .eq("is_active", true)
           .limit(6),
       ]);
-      const lists = [latest ?? [], sales ?? [], popular ?? [], prizes ?? []] as ProductCardData[][];
-      const sellerIds = [...new Set(lists.flatMap((list) => list.map((product) => product.seller_id)).filter((value): value is string => Boolean(value)))];
-      let profileMap = new Map<string, ProductCardData["profiles"]>();
-      if (sellerIds.length) {
-        const { data: profiles } = await (supabase as any)
-          .from("profiles_public")
-          .select("id,shop_name,full_name,shop_city")
-          .in("id", sellerIds);
-        profileMap = new Map((profiles ?? []).map((profile: any) => [profile.id, profile]));
-      }
       if (!active) return;
-      const enrich = (list: ProductCardData[]) => list.map((product) => ({ ...product, profiles: product.seller_id ? profileMap.get(product.seller_id) ?? null : null }));
-      setAllProducts(enrich(lists[0]));
-      setDiscounted(enrich(lists[1]));
-      setTrending(enrich(lists[2]));
-      setGiveaways(enrich(lists[3]));
+      setAllProducts((latest ?? []) as ProductCardData[]);
+      setDiscounted((sales ?? []) as ProductCardData[]);
+      setTrending((popular ?? []) as ProductCardData[]);
+      setGiveaways((prizes ?? []) as ProductCardData[]);
       setPromos((codes ?? []) as PromoCode[]);
       setProductsLoaded(true);
     })();
@@ -167,15 +155,15 @@ function Index() {
   };
 
   return (
-    <div className="marketplace-page container mx-auto space-y-7 px-3 py-3 sm:px-4 sm:py-5 lg:space-y-10">
+    <div className="container mx-auto space-y-6 px-3 py-3 sm:px-4 sm:py-5 lg:space-y-9">
       {payment === "success" && (
         <div
           role="status"
           className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-emerald-900"
         >
-          <p className="font-bold">Ă–dÉ™niĹź sorÄźusu qÉ™bul edildi</p>
+          <p className="font-bold">Ödəniş sorğusu qəbul edildi</p>
           <p className="mt-1 text-sm">
-            Bank tÉ™sdiqi yoxlanÄ±lÄ±r. Yekun status sifariĹźinizÉ™ avtomatik tÉ™tbiq edilÉ™cÉ™k.
+            Bank təsdiqi yoxlanılır. Yekun status sifarişinizə avtomatik tətbiq ediləcək.
           </p>
         </div>
       )}
@@ -184,31 +172,17 @@ function Index() {
           role="alert"
           className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-red-900"
         >
-          <p className="font-bold">Ă–dÉ™niĹź tamamlanmadÄ±</p>
+          <p className="font-bold">Ödəniş tamamlanmadı</p>
           <p className="mt-1 text-sm">
-            KartÄ±nÄ±zdan mÉ™blÉ™Äź tutulubsa, dÉ™qiq status bank callback-i ilÉ™ yoxlanÄ±lacaq.
+            Kartınızdan məbləğ tutulubsa, dəqiq status bank callback-i ilə yoxlanılacaq.
           </p>
         </div>
       )}
 
-      <HomeBannerCarousel />
-      <MarketplaceShortcuts />
+        <HomeBannerCarousel />
       <HomeCategoryBrowser />
 
-      {!productsLoaded ? (
-        <section className="space-y-4" aria-hidden="true">
-          <div className="h-8 w-44 animate-pulse rounded-lg bg-secondary" />
-          <div className="home-product-strip grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-            {Array.from({ length: 6 }, (_, index) => (
-              <div key={index} className="min-w-0 animate-pulse">
-                <div className="aspect-[3/4] rounded-2xl bg-secondary" />
-                <div className="mt-3 h-4 w-3/4 rounded bg-secondary" />
-                <div className="mt-2 h-4 w-1/2 rounded bg-secondary" />
-              </div>
-            ))}
-          </div>
-        </section>
-      ) : allProducts.length === 0 ? (
+      {productsLoaded && allProducts.length === 0 ? (
         <section className="rounded-2xl border border-dashed border-violet-200 bg-violet-50/60 px-5 py-8 text-center sm:py-10">
           <span className="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-white text-primary shadow-card">
             <ShoppingBag className="h-5 w-5" />
@@ -217,18 +191,13 @@ function Index() {
           <p className="mx-auto mt-1 max-w-md text-sm text-muted-foreground">
             {t("home.noProductsDesc")}
           </p>
-          <div className="mt-4 flex flex-wrap justify-center gap-2">
-            <Link
-              to="/catalog"
-              search={{ q: undefined, cat: undefined } as never}
-              className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-bold text-primary-foreground"
-            >
-              {t("home.exploreCatalog")} <ArrowRight className="h-4 w-4" />
-            </Link>
-            <Link to="/shops" className="inline-flex items-center gap-2 rounded-xl border border-border bg-white px-4 py-2.5 text-sm font-bold hover:border-primary hover:text-primary">
-              {t("sidebar.shops")} <ArrowRight className="h-4 w-4" />
-            </Link>
-          </div>
+          <Link
+            to="/catalog"
+            search={{ q: undefined, cat: undefined } as never}
+            className="mt-4 inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-bold text-primary-foreground"
+          >
+            {t("home.exploreCatalog")} <ArrowRight className="h-4 w-4" />
+          </Link>
         </section>
       ) : (
         <ProductSection title={t("home.forYou")} products={allProducts} />
@@ -270,10 +239,10 @@ function Index() {
                   <strong className="block text-2xl font-black">
                     {promo.discount_percent
                       ? `-${promo.discount_percent}%`
-                      : `-${promo.discount_amount} â‚Ľ`}
+                      : `-${promo.discount_amount} ₼`}
                   </strong>
                   <span className="text-xs text-white/80">
-                    {t("home.promoMinOrder")}: {promo.min_order} â‚Ľ
+                    {t("home.promoMinOrder")}: {promo.min_order} ₼
                   </span>
                 </div>
                 <button
@@ -294,4 +263,3 @@ function Index() {
     </div>
   );
 }
-

@@ -136,24 +136,13 @@
     min-width: 0;
   }
   body {
-    background:
-      radial-gradient(circle at 8% -12%, oklch(0.96 0.035 295 / 0.65), transparent 26rem),
-      var(--color-background);
+    background-color: var(--color-background);
     color: var(--color-foreground);
     font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     line-height: 1.5;
   }
 
-  ::selection {
-    background: oklch(0.76 0.15 300 / 0.35);
-  }
-
-  :focus-visible {
-    outline: 2px solid var(--color-ring);
-    outline-offset: 2px;
-  }
-
-  /* Mobil vÉ™ plonĹźet: standart, tam enÉ™ oturan gĂ¶rĂĽnĂĽĹź */
+  /* Mobil və plonşet: standart, tam enə oturan görünüş */
   @media (max-width: 1023px) {
     body,
     #root,
@@ -188,7 +177,7 @@
       overscroll-behavior-x: contain;
     }
 
-    /* Standart toxunuĹź hÉ™dÉ™flÉ™ri: bĂ¶yĂĽk, amma kartlarÄ± uzatmayan Ă¶lĂ§ĂĽ */
+    /* Standart toxunuş hədəfləri: böyük, amma kartları uzatmayan ölçü */
     button, [role="button"], input, select, textarea {
       min-height: 40px;
     }
@@ -229,14 +218,6 @@
       scroll-snap-align: start;
       min-width: 0;
     }
-
-    .marketplace-page {
-      padding-bottom: 1rem;
-    }
-
-    .product-card {
-      border-radius: 1rem;
-    }
   }
 
   @media (min-width: 641px) and (max-width: 1023px) {
@@ -244,13 +225,6 @@
       grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
       gap: 0.875rem !important;
     }
-  }
-}
-
-@media (hover: none) {
-  .product-card:hover {
-    transform: none;
-    box-shadow: none;
   }
 }
 
@@ -275,7 +249,7 @@
     display: none;
   }
 
-  /* PC-dÉ™ skroll gĂ¶rĂĽnsĂĽn, mobil/tabletdÉ™ gizlÉ™nsin */
+  /* PC-də skroll görünsün, mobil/tabletdə gizlənsin */
   .scrollbar-responsive {
     overflow-x: auto;
     overscroll-behavior-x: contain;
@@ -342,4 +316,3 @@
     }
   }
 }
-
