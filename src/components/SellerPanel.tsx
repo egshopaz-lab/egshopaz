@@ -4,6 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { SellerReturns } from "@/components/SellerReturns";
 import { supabase } from "@/integrations/supabase/client";
 import { formatAZN, formatDateTime, formatDate } from "@/lib/format";
+import { playNotificationSound, prepareNotificationSound } from "@/lib/notificationSound";
 import {
   Package,
   ShoppingBag,
@@ -371,6 +372,7 @@ export function SellerPanel() {
   // Unread messages counter (with realtime)
   useEffect(() => {
     if (!user || !isSeller) return;
+    prepareNotificationSound();
     const refreshUnread = () => {
       supabase
         .from("shop_messages")
@@ -386,7 +388,13 @@ export function SellerPanel() {
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "shop_messages", filter: `seller_id=eq.${user.id}` },
-        refreshUnread,
+        (payload) => {
+          const message = payload.new as { sender_role?: string };
+          if (payload.eventType === "INSERT" && message.sender_role === "buyer") {
+            playNotificationSound();
+          }
+          refreshUnread();
+        },
       )
       .subscribe();
     return () => {
