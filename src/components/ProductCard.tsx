@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { Heart, ShoppingCart, Star, Truck } from "lucide-react";
+import { BadgeCheck, Heart, ImageOff, ShoppingCart, Star, Store, Truck } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { formatAZN, calcDiscount } from "@/lib/format";
 import { supabase } from "@/integrations/supabase/client";
@@ -25,6 +25,12 @@ export interface ProductCardData {
   free_shipping?: boolean | null;
   fast_delivery?: boolean | null;
   stock?: number | null;
+  seller_id?: string | null;
+  profiles?: {
+    shop_name: string | null;
+    full_name: string | null;
+    shop_city?: string | null;
+  } | null;
 }
 
 export function ProductCard({
@@ -39,6 +45,7 @@ export function ProductCard({
   const [adding, setAdding] = useState(false);
   const { isFav, toggle: toggleFav, busy: favBusy } = useFavorite(p.id, enableFavorite);
   const discount = calcDiscount(Number(p.price), p.old_price ? Number(p.old_price) : undefined);
+  const shopName = p.profiles?.shop_name || p.profiles?.full_name || null;
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const wrapRef = useRef<HTMLDivElement | null>(null);
   const [videoVisible, setVideoVisible] = useState(false);
@@ -102,9 +109,9 @@ export function ProductCard({
     <Link
       to="/product/$id"
       params={{ id: p.id }}
-      className="group flex h-full min-w-0 flex-col overflow-hidden rounded-xl bg-card"
+      className="group product-card flex h-full min-w-0 flex-col overflow-hidden rounded-2xl border border-transparent bg-card p-1 transition duration-300 hover:-translate-y-1 hover:border-violet-100 hover:shadow-[0_18px_40px_-22px_rgba(88,28,135,.45)]"
     >
-      <div ref={wrapRef} className="relative aspect-[3/4] overflow-hidden rounded-xl bg-secondary">
+      <div ref={wrapRef} className="relative aspect-[3/4] overflow-hidden rounded-[0.8rem] bg-secondary">
         {p.image_url ? (
           <img
             src={p.image_url}
@@ -112,11 +119,12 @@ export function ProductCard({
             loading="lazy"
             decoding="async"
             sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
-            className="w-full h-full object-cover"
+            className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.035]"
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-muted-foreground text-xs">
-            —
+          <div className="flex h-full w-full flex-col items-center justify-center gap-2 text-xs text-muted-foreground">
+            <ImageOff className="h-6 w-6" />
+            <span>ĹžÉ™kil yoxdur</span>
           </div>
         )}
         {p.video_url && (
@@ -148,7 +156,7 @@ export function ProductCard({
         )}
       </div>
 
-      <div className="flex flex-1 flex-col gap-1 px-0.5 pb-1 pt-2.5">
+      <div className="flex flex-1 flex-col gap-1 px-1.5 pb-1.5 pt-2.5">
         <div className="flex min-w-0 items-baseline gap-1.5">
           <span className="text-lg font-black leading-none text-foreground sm:text-xl">
             {formatAZN(p.price)}
@@ -163,10 +171,17 @@ export function ProductCard({
           {p.brand && <span className="font-bold mr-1">{p.brand}</span>}
           {p.title}
         </p>
+        <div className="flex min-w-0 items-center gap-1 text-[11px] font-semibold text-primary/90">
+          <Store className="h-3.5 w-3.5 shrink-0" />
+          <span className="truncate">
+            MaÄźaza: {shopName ?? "EG Shop satÄ±cÄ±sÄ±"}
+          </span>
+          {shopName && <BadgeCheck className="h-3.5 w-3.5 shrink-0 text-primary" aria-label="TÉ™sdiqlÉ™nmiĹź maÄźaza" />}
+        </div>
         <div className="mt-auto flex h-4 items-center gap-1 text-xs text-muted-foreground">
           <Star className="h-3.5 w-3.5 fill-warning text-warning" />
           <span className="font-semibold text-foreground">{Number(p.rating).toFixed(1)}</span>
-          <span>· {p.reviews_count}</span>
+          <span>Â· {p.reviews_count}</span>
         </div>
         {(p.fast_delivery || p.free_shipping || p.delivery_days_min) && (
           <div className="mt-0.5 flex items-center gap-1 text-[11px] font-semibold text-emerald-700">
@@ -183,7 +198,7 @@ export function ProductCard({
         <button
           onClick={addToCart}
           disabled={adding || (p.stock != null && p.stock <= 0)}
-          className="mt-1.5 inline-flex h-9 w-full items-center justify-center gap-1.5 rounded-lg bg-gradient-brand text-xs font-bold text-primary-foreground transition hover:opacity-95 disabled:opacity-60 sm:h-10 sm:text-sm"
+          className="mt-2 inline-flex h-9 w-full items-center justify-center gap-1.5 rounded-xl bg-gradient-brand text-xs font-extrabold text-primary-foreground shadow-sm transition hover:brightness-105 disabled:opacity-60 sm:h-10 sm:text-sm"
         >
           <ShoppingCart className="h-4 w-4" />
           <span>
@@ -194,3 +209,4 @@ export function ProductCard({
     </Link>
   );
 }
+

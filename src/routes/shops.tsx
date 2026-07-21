@@ -3,11 +3,11 @@ import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { Store, MapPin, Search, Heart, Check } from "lucide-react";
+import { Store, MapPin, Search, Heart, Check, BadgeCheck } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/shops")({
-  head: () => ({ meta: [{ title: "Mağazalar — EG Shop" }] }),
+  head: () => ({ meta: [{ title: "MaÄźazalar â€” EG Shop" }] }),
   component: ShopsPage,
 });
 
@@ -35,7 +35,7 @@ function ShopsPage() {
       .from("active_seller_storefronts")
       .select("id,shop_name,full_name,shop_logo_url,shop_banner_url,shop_city,shop_description")
       .order("shop_name");
-    if (error) toast.error("Mağazalar yüklənmədi: " + error.message);
+    if (error) toast.error("MaÄźazalar yĂĽklÉ™nmÉ™di");
     setShops((data ?? []) as Shop[]);
     if (user) {
       const { data: f } = await supabase
@@ -75,8 +75,8 @@ function ShopsPage() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-6 space-y-5">
-      <div className="flex items-center gap-3">
+    <div className="container mx-auto space-y-6 px-3 py-5 sm:px-4 sm:py-7">
+      <div className="flex items-center gap-3 rounded-3xl border border-violet-100 bg-gradient-to-br from-violet-50 via-white to-fuchsia-50 p-5 sm:p-7">
         <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary to-blue-500 flex items-center justify-center shadow-card">
           <Store className="h-6 w-6 text-white" />
         </div>
@@ -91,18 +91,29 @@ function ShopsPage() {
         )}
       </div>
 
-      <div className="relative">
+      <div className="relative mx-auto max-w-3xl">
         <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
         <input
           value={q}
           onChange={(e) => setQ(e.target.value)}
           placeholder={t("shops.searchPlaceholder")}
-          className="w-full pl-10 pr-4 py-3 rounded-xl bg-secondary border border-border focus:border-primary outline-none"
+          className="h-12 w-full rounded-2xl border border-border bg-card pl-10 pr-4 shadow-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/15"
         />
       </div>
 
       {loading ? (
-        <div className="text-center py-10 text-muted-foreground">{t("common.loading")}</div>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3" aria-hidden="true">
+          {Array.from({ length: 6 }, (_, index) => (
+            <div key={index} className="animate-pulse overflow-hidden rounded-2xl border border-border bg-card">
+              <div className="aspect-[16/7] bg-secondary" />
+              <div className="space-y-3 p-4">
+                <div className="h-5 w-2/3 rounded bg-secondary" />
+                <div className="h-4 w-1/3 rounded bg-secondary" />
+                <div className="h-9 rounded-xl bg-secondary" />
+              </div>
+            </div>
+          ))}
+        </div>
       ) : filtered.length === 0 ? (
         <div className="text-center py-16 bg-secondary/40 rounded-2xl">
           <Store className="h-10 w-10 mx-auto text-muted-foreground mb-3" />
@@ -115,10 +126,10 @@ function ShopsPage() {
             const isFollowing = following.has(p.id);
             const own = user?.id === p.id;
             return (
-              <div key={p.id} className="bg-card border border-border rounded-2xl overflow-hidden hover:shadow-elegant transition">
+              <div key={p.id} className="group overflow-hidden rounded-2xl border border-border bg-card transition duration-300 hover:-translate-y-1 hover:border-violet-200 hover:shadow-elegant">
                 <Link to="/shop/$id" params={{ id: p.id }} className="block">
-                  <div className="aspect-[16/7] bg-gradient-brand">
-                    {p.shop_banner_url && <img src={p.shop_banner_url} alt={name} loading="lazy" className="w-full h-full object-cover" />}
+                  <div className="aspect-[16/7] overflow-hidden bg-gradient-brand">
+                    {p.shop_banner_url && <img src={p.shop_banner_url} alt={name} loading="lazy" className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.025]" />}
                   </div>
                   <div className="px-4 pt-4 flex items-start gap-3 -mt-8">
                     <div className="w-14 h-14 rounded-2xl bg-card border-2 border-card shadow overflow-hidden shrink-0 flex items-center justify-center">
@@ -127,7 +138,7 @@ function ShopsPage() {
                         : <Store className="h-6 w-6 text-muted-foreground" />}
                     </div>
                     <div className="min-w-0 flex-1 pt-7">
-                      <div className="font-bold line-clamp-1">{name}</div>
+                      <div className="flex items-center gap-1.5 font-bold"><span className="line-clamp-1">{name}</span><BadgeCheck className="h-4 w-4 shrink-0 text-primary" /></div>
                       {p.shop_city && <div className="text-xs text-muted-foreground flex items-center gap-1"><MapPin className="h-3 w-3" />{p.shop_city}</div>}
                     </div>
                   </div>
@@ -139,7 +150,7 @@ function ShopsPage() {
                   ) : (
                     <button
                       onClick={() => toggleFollow(p.id)}
-                      className={`w-full text-xs font-bold py-2 rounded-lg transition inline-flex items-center justify-center gap-1 ${
+                      className={`inline-flex min-h-10 w-full items-center justify-center gap-1 rounded-xl py-2 text-xs font-bold transition ${
                         isFollowing
                           ? "bg-primary/10 text-primary hover:bg-destructive/10 hover:text-destructive"
                           : "bg-primary text-primary-foreground hover:opacity-90"
@@ -157,3 +168,4 @@ function ShopsPage() {
     </div>
   );
 }
+

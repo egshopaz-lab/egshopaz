@@ -25,9 +25,9 @@ export const Route = createFileRoute("/catalog")({
   head: ({ loaderData }) => {
     const focus = loaderData?.cat || loaderData?.brand || loaderData?.q;
     const base = i18n.t("seo.catalogTitle");
-    const title = focus ? `${focus} — EG Shop` : base;
+    const title = focus ? `${focus} â€” EG Shop` : base;
     const desc = focus
-      ? `${focus} kateqoriyasında məhsullar — EG Shop kataloqunda sərfəli qiymət, geniş çeşid və sürətli çatdırılma.`
+      ? `${focus} kateqoriyasÄ±nda mÉ™hsullar â€” EG Shop kataloqunda sÉ™rfÉ™li qiymÉ™t, geniĹź Ă§eĹźid vÉ™ sĂĽrÉ™tli Ă§atdÄ±rÄ±lma.`
       : i18n.t("seo.catalogDescription");
     return {
       meta: [
@@ -56,7 +56,7 @@ function Catalog() {
   const [openParents, setOpenParents] = useState<Record<string, boolean>>({});
   const [filters, setFilters] = useState<Filters>({ sort: "newest", brand });
 
-  // URL-dəki brand dəyişəndə filtrləri yenilə
+  // URL-dÉ™ki brand dÉ™yiĹźÉ™ndÉ™ filtrlÉ™ri yenilÉ™
   useEffect(() => {
     setFilters((f) => ({ ...f, brand: brand || undefined }));
   }, [brand]);
@@ -71,7 +71,7 @@ function Catalog() {
 
   useEffect(() => {
     setLoading(true);
-    // Seçilmiş kateqoriya + bütün alt törəmələri (3 səviyyə)
+    // SeĂ§ilmiĹź kateqoriya + bĂĽtĂĽn alt tĂ¶rÉ™mÉ™lÉ™ri (3 sÉ™viyyÉ™)
     let catSlugs: string[] | null = null;
     if (cat) {
       const root = categories.find((c) => c.slug === cat);
@@ -89,7 +89,7 @@ function Catalog() {
     }
 
     let query: any = supabase.from("products")
-      .select("id,title,price,old_price,image_url,video_url,rating,reviews_count,brand,stock,delivery_days_min,delivery_days_max,delivery_city,free_shipping,fast_delivery,condition,category_id")
+      .select("id,title,price,old_price,image_url,video_url,rating,reviews_count,brand,stock,delivery_days_min,delivery_days_max,delivery_city,free_shipping,fast_delivery,condition,category_id,seller_id,profiles:seller_id(shop_name,full_name,shop_city)")
       .eq("is_active", true);
     if (q) query = query.ilike("title", `%${q}%`);
     if (catSlugs) {
@@ -177,10 +177,30 @@ function Catalog() {
             <h1 className="text-2xl sm:text-3xl font-black tracking-tight">
               {activeCat ? catName(activeCat) : (q ? t("catalog.searchResults", { q }) : t("catalog.allProducts"))}
             </h1>
-            <p className="mt-1 text-sm text-muted-foreground">{productCountLabel} · {t("catalog.headerDescription")}</p>
+            <p className="mt-1 text-sm text-muted-foreground">{productCountLabel} Â· {t("catalog.headerDescription")}</p>
           </div>
         </div>
       </div>
+
+      <nav className="-mx-3 mb-5 flex snap-x gap-2 overflow-x-auto px-3 pb-1 scrollbar-hide xl:hidden" aria-label={t("catalog.categories")}>
+        <Link
+          to="/catalog"
+          search={{ q, cat: undefined } as never}
+          className={`shrink-0 snap-start rounded-full border px-4 py-2 text-sm font-bold transition ${!cat ? "border-primary bg-primary text-primary-foreground" : "border-border bg-card"}`}
+        >
+          {t("catalog.all")}
+        </Link>
+        {parents.map((category) => (
+          <Link
+            key={category.id}
+            to="/catalog"
+            search={{ q, cat: category.slug } as never}
+            className={`inline-flex shrink-0 snap-start items-center gap-2 rounded-full border px-4 py-2 text-sm font-bold transition ${cat === category.slug ? "border-primary bg-primary text-primary-foreground" : "border-border bg-card"}`}
+          >
+            <CategoryIcon category={category} className="h-4 w-4" /> {catName(category)}
+          </Link>
+        ))}
+      </nav>
 
       <div className="grid grid-cols-1 gap-5 xl:grid-cols-[250px_minmax(0,1fr)] xl:gap-7">
         <aside className="hidden xl:block">
@@ -205,7 +225,7 @@ function Catalog() {
                     onClick={() => setOpenParents((p) => ({ ...p, [c.id]: !isOpen }))}
                     className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm transition hover:bg-secondary text-left ${cat === c.slug ? "bg-primary/10 font-bold text-primary" : ""}`}>
                     <span className="flex items-center gap-2"><CategoryIcon category={c} className="h-4 w-4 shrink-0" /> {catName(c)}</span>
-                    {kids.length > 0 && <span className="text-xs">{isOpen ? "−" : "+"}</span>}
+                    {kids.length > 0 && <span className="text-xs">{isOpen ? "â’" : "+"}</span>}
                   </button>
                   {isOpen && kids.length > 0 && (
                     <ul className="ml-4 mt-1 space-y-0.5 border-l border-border pl-2">
@@ -226,7 +246,7 @@ function Catalog() {
                                   onClick={() => setOpenParents((p) => ({ ...p, [k.id]: !kOpen }))}
                                   className={`w-full flex items-center justify-between px-2 py-1 rounded text-xs hover:bg-secondary text-left ${cat === k.slug ? "font-semibold text-primary" : ""}`}>
                                   <span className="flex items-center gap-1.5"><CategoryIcon category={k} className="h-3.5 w-3.5 shrink-0" /> {catName(k)}</span>
-                                  <span className="text-[10px]">{kOpen ? "−" : "+"}</span>
+                                  <span className="text-[10px]">{kOpen ? "â’" : "+"}</span>
                                 </button>
                                 {kOpen && (
                                   <ul className="ml-3 mt-0.5 space-y-0.5 border-l border-border pl-2">
@@ -274,7 +294,7 @@ function Catalog() {
             <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4">
               {Array.from({ length: 8 }).map((_, i) => (
                 <div key={i} className="overflow-hidden rounded-2xl border border-border bg-card p-2 animate-pulse">
-                  <div className="aspect-square rounded-xl bg-secondary" />
+                  <div className="aspect-[3/4] rounded-xl bg-secondary" />
                   <div className="mt-3 h-3 w-4/5 rounded bg-secondary" />
                   <div className="mt-2 h-3 w-1/2 rounded bg-secondary" />
                   <div className="mt-4 h-5 w-2/5 rounded bg-secondary" />
@@ -301,3 +321,4 @@ function Catalog() {
     </div>
   );
 }
+

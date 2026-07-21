@@ -151,7 +151,7 @@ export function HomeCategoryBrowser() {
       </div>
 
       {activeRoot && (
-        <div className="rounded-3xl border border-border/70 bg-card p-4 shadow-sm sm:p-5">
+        <div className="hidden rounded-3xl border border-border/70 bg-card p-4 shadow-sm md:block sm:p-5">
           <div className="mb-4 flex items-center justify-between gap-3 border-b pb-3">
             <div className="flex min-w-0 items-center gap-3">
               <span
@@ -232,3 +232,4 @@ function CategorySkeleton() {
     </section>
   );
 }
+

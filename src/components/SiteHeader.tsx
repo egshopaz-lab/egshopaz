@@ -47,8 +47,8 @@ export function SiteHeader() {
   };
 
   return (
-    <header className="sticky top-0 z-50 border-b border-white/10 bg-gradient-brand text-white shadow-sm">
-      <div className="w-full px-3 py-2 sm:px-4">
+    <header className="sticky top-0 z-50 border-b border-white/10 bg-gradient-brand text-white shadow-[0_8px_28px_-18px_rgba(49,17,91,.7)]">
+      <div className="w-full px-3 py-2.5 sm:px-4">
         <div className="mx-auto flex w-full max-w-7xl items-center gap-2 sm:gap-4">
           <SidebarTrigger className="shrink-0 text-white" />
 
@@ -57,8 +57,7 @@ export function SiteHeader() {
             className="flex shrink-0 items-center gap-2 transition-opacity hover:opacity-90"
             aria-label="EG Shop"
           >
-            <img src="/brand/eg-icon.svg" alt="EG Shop" width={512} height={512} className="h-9 w-9 shrink-0 object-contain sm:hidden" />
-            <img src="/brand/eg-wordmark-light.svg" alt="EG Shop" width={420} height={112} className="hidden h-11 w-[165px] object-contain object-left sm:block" />
+            <img src="/brand/eg-wordmark-light.svg" alt="EG Shop" width={420} height={112} className="h-9 w-[104px] object-contain object-left sm:h-11 sm:w-[150px]" />
           </Link>
 
           <form onSubmit={onSearch} className="hidden max-w-3xl flex-1 lg:flex">
@@ -68,7 +67,7 @@ export function SiteHeader() {
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
                 placeholder={t("common.searchPlaceholder")}
-                className="w-full pl-10 pr-12 h-11 rounded-xl border border-white/20 bg-white text-slate-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-white/70 transition placeholder:text-slate-400"
+              className="h-12 w-full rounded-2xl border border-white/20 bg-white pl-10 pr-12 text-slate-900 shadow-sm transition placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-white/70"
               />
               <button
                 type="button"
@@ -206,7 +205,7 @@ export function SiteHeader() {
           <span className="ml-auto inline-flex items-center gap-1.5 text-xs text-white/75">
             <MapPin className="h-3.5 w-3.5" /> {t("header.location")}
           </span>
-          <div className="ml-auto flex items-center gap-4 text-xs">
+          <div className="flex items-center gap-4 border-l border-white/15 pl-5 text-xs">
             <a
               href={portalUrl("seller", "/register")}
               className="text-white/75 transition hover:text-white"
@@ -231,7 +230,7 @@ export function SiteHeader() {
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder={t("common.search")}
-            className="h-11 w-full rounded-xl border border-white/30 bg-white pl-10 pr-11 text-base text-slate-900 shadow-sm transition placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-white/70 sm:text-sm"
+            className="h-11 w-full rounded-2xl border border-white/30 bg-white pl-10 pr-11 text-base text-slate-900 shadow-sm transition placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-white/70 sm:text-sm"
           />
           <button
             type="button"
@@ -252,3 +251,4 @@ export function SiteHeader() {
     </header>
   );
 }
+
