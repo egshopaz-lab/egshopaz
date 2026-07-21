@@ -27,9 +27,9 @@ export const PORTAL_CONFIG: Record<
   }
 > = {
   marketplace: { label: "Marketplace", role: "buyer", panelPath: "/" },
-  seller: { label: "SatÄ±cÄ± portalÄ±", role: "seller", panelPath: "/seller" },
-  pvz: { label: "PVZ portalÄ±", role: "pvz", panelPath: "/pvz" },
-  admin: { label: "Admin portalÄ±", role: "admin", panelPath: "/admin" },
+  seller: { label: "Satıcı portalı", role: "seller", panelPath: "/seller" },
+  pvz: { label: "PVZ portalı", role: "pvz", panelPath: "/pvz" },
+  admin: { label: "Admin portalı", role: "admin", panelPath: "/admin" },
 };
 
 export function portalFromHostname(hostname: string): Portal {
@@ -82,4 +82,3 @@ export function portalUrl(portal: Portal, path = "/"): string {
 export function replaceWithPortal(portal: Portal, path = "/"): void {
   if (typeof window !== "undefined") window.location.replace(portalUrl(portal, path));
 }
-
