@@ -21,6 +21,7 @@ import { AdminDeliveryManagement } from "@/components/AdminDeliveryManagement";
 import { AdminBannerManager } from "@/components/AdminBannerManager";
 import { AdminCategoryManager } from "@/components/AdminCategoryManager";
 import { AdminOperationsCenter } from "@/components/AdminOperationsCenter";
+import { AdminShopManagement } from "@/components/AdminShopManagement";
 import { toast } from "sonner";
 import { PanelLayout, type PanelNavItem } from "@/components/PanelLayout";
 import { AZ_CITY_NAMES, findCity } from "@/lib/azCities";
@@ -426,7 +427,7 @@ export function AdminPanel() {
       {tab === "pvz_staff" && <AdminAccountManagement initialRole="pvz" />}
       {tab === "categories" && <AdminCategoryManager />}
       {tab === "products" && <ProductsSection products={products} toggleProductActive={toggleProductActive} />}
-      {tab === "shops" && <ShopsSection profiles={profiles} userRoles={userRoles} />}
+      {tab === "shops" && <AdminShopManagement />}
       {tab === "warehouses" && <WarehousesSection warehouses={warehouses} addWarehouse={addWarehouse} />}
       {tab === "pickup_points" && <PickupSection pickups={pickups} addPickup={addPickup} togglePickup={togglePickup} editPickup={editPickup} deletePickup={deletePickup} />}
       {tab === "orders" && <OrdersSection orders={orders} updateOrderStatus={updateOrderStatus} />}
