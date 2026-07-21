@@ -1,6 +1,13 @@
 # The certificate must include egshop.az, www.egshop.az, seller.egshop.az,
 # pvz.egshop.az and admin.egshop.az as SAN names.
 
+map $host $egshop_portal_root {
+    default             /login;
+    seller.egshop.az    /seller;
+    pvz.egshop.az       /pvz;
+    admin.egshop.az     /admin;
+}
+
 server {
     listen 80;
     listen [::]:80;
@@ -70,6 +77,12 @@ server {
     location = /robots.txt {
         default_type text/plain;
         return 200 "User-agent: *\nDisallow: /\n";
+    }
+
+    # Redirect each operational subdomain before the application renders.
+    # This prevents the marketplace SSR shell from flashing on portal roots.
+    location = / {
+        return 302 $egshop_portal_root;
     }
 
     location / {
