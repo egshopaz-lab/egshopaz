@@ -112,7 +112,7 @@ function LiveClock() {
     ? now.toLocaleTimeString("az-AZ", { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false })
     : "--:--:--";
   const date = now
-    ? now.toLocaleDateString("az-AZ", { weekday: "short", day: "2-digit", month: "short" })
+    ? `${String(now.getDate()).padStart(2, "0")} ${["yan", "fev", "mar", "apr", "may", "iyn", "iyl", "avq", "sen", "okt", "noy", "dek"][now.getMonth()]}, ${["Baz", "B.e", "Ç.a", "Ç", "C.a", "C", "Ş"][now.getDay()]}`
     : "-- ---";
   return (
     <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-secondary/80 border border-border">
