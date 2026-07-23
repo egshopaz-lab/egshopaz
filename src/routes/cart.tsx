@@ -9,6 +9,12 @@ import { toast } from "sonner";
 import { clearGuestCart, readGuestCart, removeGuestCartItem, updateGuestCartItem } from "@/lib/guestCart";
 
 export const Route = createFileRoute("/cart")({
+  head: () => ({
+    meta: [
+      { title: "Səbət — EG Shop" },
+      { name: "description", content: "Seçdiyiniz məhsulları, çatdırılmanı və sifariş yekununu yoxlayın." },
+    ],
+  }),
   component: CartPage,
 });
 
