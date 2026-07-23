@@ -46,7 +46,7 @@ interface PickupRow { id: string; name: string; city: string; address: string; p
 interface BannerRow { id: string; title: string; image_url: string | null; link_url: string | null; position: string; is_active: boolean; clicks: number; impressions: number }
 interface DisputeRow { id: string; order_id: string | null; buyer_id: string; seller_id: string | null; reason: string; status: string; compensation: number | null; created_at: string }
 interface PromoRow { id: string; code: string; discount_percent: number | null; discount_amount: number | null; is_active: boolean; used_count: number; usage_limit: number | null; min_order: number }
-interface SettingsRow { id: string; commission_percent: number; delivery_base_fee: number; delivery_confirmation_hours: number; storage_fee_per_day: number; maintenance_mode: boolean; min_payout: number; single_product_promo_price: number; single_product_promo_days: number; single_shop_promo_price: number; single_shop_promo_days: number; single_banner_price: number; single_banner_days: number; promo_terms_text: string; seller_signup_fee: number; acquisition_source_enabled: boolean; acquisition_source_required: boolean }
+interface SettingsRow { id: string; commission_percent: number; delivery_base_fee: number; delivery_confirmation_hours: number; storage_fee_per_day: number; maintenance_mode: boolean; min_payout: number; single_product_promo_price: number; single_product_promo_days: number; single_shop_promo_price: number; single_shop_promo_days: number; single_banner_price: number; single_banner_days: number; slot_product_fee: number; slot_shop_fee: number; slot_banner_fee: number; promo_terms_text: string; seller_signup_fee: number; acquisition_source_enabled: boolean; acquisition_source_required: boolean }
 interface TicketRow { id: string; subject: string; category: string; status: string; user_id: string; created_at: string; admin_reply: string | null }
 interface AdPackageRow {
   id: string; name: string; tier: string; price: number; duration_days: number;
@@ -1168,7 +1168,21 @@ function SettingsSection({ settings, updateSettings }: { settings: SettingsRow |
             <input type="number" defaultValue={settings.single_banner_days ?? 30} onBlur={(e) => updateSettings({ single_banner_days: Number(e.target.value) })}
               className="mt-1 w-full h-10 px-3 rounded-lg border border-input bg-background" />
           </div>
-
+          <div>
+            <label className="text-sm font-semibold">Paketdən məhsul slotu aktivləşdirmə haqqı (AZN)</label>
+            <input type="number" min="0.01" step="0.01" defaultValue={settings.slot_product_fee ?? 1} onBlur={(e) => updateSettings({ slot_product_fee: Number(e.target.value) })}
+              className="mt-1 w-full h-10 px-3 rounded-lg border border-input bg-background" />
+          </div>
+          <div>
+            <label className="text-sm font-semibold">Paketdən mağaza slotu aktivləşdirmə haqqı (AZN)</label>
+            <input type="number" min="0.01" step="0.01" defaultValue={settings.slot_shop_fee ?? 1} onBlur={(e) => updateSettings({ slot_shop_fee: Number(e.target.value) })}
+              className="mt-1 w-full h-10 px-3 rounded-lg border border-input bg-background" />
+          </div>
+          <div>
+            <label className="text-sm font-semibold">Paketdən banner slotu aktivləşdirmə haqqı (AZN)</label>
+            <input type="number" min="0.01" step="0.01" defaultValue={settings.slot_banner_fee ?? 1} onBlur={(e) => updateSettings({ slot_banner_fee: Number(e.target.value) })}
+              className="mt-1 w-full h-10 px-3 rounded-lg border border-input bg-background" />
+          </div>
         </div>
         <div>
           <label className="text-sm font-semibold">Reklam şərtləri (satıcıya göstərilir)</label>
