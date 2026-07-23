@@ -119,7 +119,7 @@ function LiveClock() {
       <Clock className="h-4 w-4 text-primary shrink-0" />
       <div className="min-w-0 text-right">
         <div className="font-mono font-bold text-sm tabular-nums leading-tight">{time}</div>
-        <div className="text-[10px] text-muted-foreground capitalize leading-tight">{date}</div>
+        <div className="text-[10px] text-muted-foreground leading-tight">{date}</div>
       </div>
     </div>
   );
