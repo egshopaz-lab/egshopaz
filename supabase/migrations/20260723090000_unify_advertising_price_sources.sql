@@ -53,6 +53,47 @@ after insert or update of
 on public.system_settings
 for each row execute function public.sync_advertising_settings_to_catalog();
 
+create or replace function public.sync_advertising_catalog_to_settings()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $
+begin
+  if new.slug = 'product_promotion' then
+    update public.system_settings
+    set single_product_promo_price = new.base_price,
+        single_product_promo_days = new.default_duration_days
+    where single_product_promo_price is distinct from new.base_price
+       or single_product_promo_days is distinct from new.default_duration_days;
+  elsif new.slug = 'shop_promotion' then
+    update public.system_settings
+    set single_shop_promo_price = new.base_price,
+        single_shop_promo_days = new.default_duration_days
+    where single_shop_promo_price is distinct from new.base_price
+       or single_shop_promo_days is distinct from new.default_duration_days;
+  elsif new.slug = 'banner_promotion' then
+    update public.system_settings
+    set single_banner_price = new.base_price,
+        single_banner_days = new.default_duration_days
+    where single_banner_price is distinct from new.base_price
+       or single_banner_days is distinct from new.default_duration_days;
+  end if;
+  return new;
+end;
+$;
+
+drop trigger if exists sync_advertising_catalog_to_settings_trigger on public.ad_service_types;
+create trigger sync_advertising_catalog_to_settings_trigger
+after update of base_price, default_duration_days
+on public.ad_service_types
+for each row
+when (
+  old.base_price is distinct from new.base_price
+  or old.default_duration_days is distinct from new.default_duration_days
+)
+execute function public.sync_advertising_catalog_to_settings();
+
 with current_settings as (
   select *
   from public.system_settings
