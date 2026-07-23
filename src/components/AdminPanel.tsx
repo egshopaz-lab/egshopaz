@@ -53,6 +53,11 @@ interface AdPackageRow {
   banner_slots: number; sponsored_product_slots: number; features: string[] | unknown;
   color: string; is_active: boolean; sort_order: number;
 }
+interface AdminPermissionRow {
+  role_key: string;
+  permissions: string[];
+  is_active: boolean;
+}
 
 export function AdminPanel() {
   const { user, isAdmin, loading, signOut } = useAuth();
@@ -73,7 +78,7 @@ export function AdminPanel() {
   const [settings, setSettings] = useState<SettingsRow | null>(null);
   const [tickets, setTickets] = useState<TicketRow[]>([]);
   const [packages, setPackages] = useState<AdPackageRow[]>([]);
-  const [adminPermissions, setAdminPermissions] = useState<string[]>(["*"]);
+  const [adminPermissions, setAdminPermissions] = useState<string[]>([]);
   const [unlocked, setUnlocked] = useState<boolean>(() => {
     if (typeof window === "undefined") return false;
     return sessionStorage.getItem("admin_panel_unlocked") === "1";
@@ -91,9 +96,21 @@ export function AdminPanel() {
 
   useEffect(() => {
     if (!isAdmin || !user?.id) return;
-    void (supabase as any).from("admin_staff_permissions").select("permissions,is_active").eq("admin_id", user.id).maybeSingle()
-      .then(({ data }: { data: { permissions?: string[]; is_active?: boolean } | null }) => {
-        if (data) setAdminPermissions(data.is_active === false ? [] : (data.permissions ?? []));
+    void (supabase as any).from("admin_staff_permissions").select("role_key,permissions,is_active").eq("admin_id", user.id).maybeSingle()
+      .then(({ data, error }: { data: AdminPermissionRow | null; error: unknown }) => {
+        if (error) {
+          setAdminPermissions([]);
+          return;
+        }
+        if (!data) {
+          setAdminPermissions(["*"]);
+          return;
+        }
+        if (data.is_active === false) {
+          setAdminPermissions([]);
+          return;
+        }
+        setAdminPermissions(data.role_key === "super_admin" ? ["*"] : (data.permissions ?? []));
       });
   }, [isAdmin, user?.id]);
 
