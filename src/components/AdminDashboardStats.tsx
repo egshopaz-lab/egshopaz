@@ -12,9 +12,15 @@ const emptyStats: DashboardStats = { total_customers: 0, total_sellers: 0, total
 export function AdminDashboardStats() {
   const [stats, setStats] = useState(emptyStats);
   const [live, setLive] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const load = useCallback(async () => {
     const { data, error } = await supabase.rpc("admin_dashboard_stats" as never);
-    if (!error && data) setStats({ ...emptyStats, ...(data as unknown as DashboardStats) });
+    if (error) {
+      setLoadError(error.message);
+      return;
+    }
+    setLoadError(null);
+    if (data) setStats({ ...emptyStats, ...(data as unknown as DashboardStats) });
   }, []);
   useEffect(() => {
     void load();
@@ -33,6 +39,7 @@ export function AdminDashboardStats() {
   ] as const;
   return <div className="space-y-3">
     <div className="flex items-center justify-between"><h2 className="font-black text-lg">Qeydiyyat statistikası</h2><span className={`text-xs font-bold px-2.5 py-1 rounded-full ${live ? "bg-success/10 text-success" : "bg-warning/10 text-warning"}`}>{live ? "● Real-time" : "Yenilənir"}</span></div>
+    {loadError && <div className="rounded-xl border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">Statistika yüklənmədi: {loadError}</div>}
     <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">{cards.map(([label,value,Icon]) => <div key={label} className="rounded-2xl border border-border bg-card p-4 shadow-card"><div className="flex items-center justify-between gap-3"><div><div className="text-xs text-muted-foreground font-semibold">{label}</div><div className="text-3xl font-black mt-1">{value}</div></div><Icon className="h-7 w-7 text-primary" /></div></div>)}</div>
   </div>;
 }
