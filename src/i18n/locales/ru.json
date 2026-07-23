@@ -52,7 +52,8 @@
     "sellerPanel": "Панель продавца",
     "logout": "Выход",
     "login": "Вход",
-    "language": "Язык"
+    "language": "Язык",
+    "location": "Баку, Азербайджан"
   },
   "sidebar": {
     "mainMenu": "Главное меню",
