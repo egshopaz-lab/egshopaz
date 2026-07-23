@@ -37,7 +37,7 @@ type TabKey =
 interface Stat { users: number; products: number; orders: number; revenue: number; sellers: number }
 interface ProfileRow { id: string; full_name: string | null; shop_name: string | null; created_at: string; phone: string | null }
 interface RoleRow { user_id: string; role: string }
-interface OrderRow { id: string; total: number; status: string; created_at: string; buyer_id: string }
+interface OrderRow { id: string; total: number; status: string; payment_status: string | null; created_at: string; buyer_id: string }
 interface ProductRow { id: string; title: string; price: number; stock: number; is_active: boolean; seller_id: string; image_url: string | null; category_id: string | null }
 interface CategoryRow { id: string; name: string; slug: string; icon: string | null; sort_order: number; parent_id: string | null }
 interface CourierRow { id: string; full_name: string; phone: string; vehicle_type: string; city: string; is_active: boolean; rating: number; total_deliveries: number; earnings: number }
@@ -136,14 +136,10 @@ export function AdminPanel() {
   };
 
   const reload = async () => {
-    const [
-      { count: u }, { count: p }, { data: os }, { data: pr }, { data: rs },
-      { data: prod }, { data: cats }, { data: cour }, { data: wh },
-      { data: pp }, { data: bn }, { data: dsp }, { data: prm }, { data: stg }, { data: tkt }, { data: pkg },
-    ] = await Promise.all([
+    const results = await Promise.all([
       supabase.from("profiles").select("*", { count: "exact", head: true }),
       supabase.from("products").select("*", { count: "exact", head: true }),
-      supabase.from("orders").select("*").order("created_at", { ascending: false }).limit(200),
+      supabase.from("orders").select("id,total,status,payment_status,created_at,buyer_id", { count: "exact" }).order("created_at", { ascending: false }).limit(200),
       supabase.from("profiles").select("id,full_name,shop_name,created_at,phone").order("created_at", { ascending: false }).limit(200),
       supabase.from("user_roles").select("user_id,role"),
       supabase.from("products").select("id,title,price,stock,is_active,seller_id,image_url,category_id").order("created_at", { ascending: false }).limit(200),
@@ -158,7 +154,18 @@ export function AdminPanel() {
       supabase.from("support_tickets").select("*").order("created_at", { ascending: false }).limit(100),
       supabase.from("ad_packages").select("*").order("sort_order", { ascending: true }),
     ]);
+    const [
+      { count: u }, { count: p }, { data: os, count: orderCount }, { data: pr }, { data: rs },
+      { data: prod }, { data: cats }, { data: cour }, { data: wh },
+      { data: pp }, { data: bn }, { data: dsp }, { data: prm }, { data: stg }, { data: tkt }, { data: pkg },
+    ] = results;
+    const firstError = results.find((result) => result.error)?.error;
+    if (firstError) toast.error(`Admin məlumatları tam yüklənmədi: ${firstError.message}`);
     const orderRows = (os ?? []) as OrderRow[];
+    const paidOrderRows = orderRows.filter((order) =>
+      ["paid", "success", "completed"].includes(String(order.payment_status ?? "").toLowerCase())
+      || ["paid", "completed"].includes(String(order.status).toLowerCase()),
+    );
     const roleRows = (rs ?? []) as RoleRow[];
     setOrders(orderRows);
     setProfiles((pr ?? []) as ProfileRow[]);
@@ -175,9 +182,9 @@ export function AdminPanel() {
     setTickets((tkt ?? []) as TicketRow[]);
     setPackages((pkg ?? []) as AdPackageRow[]);
     setStats({
-      users: u ?? 0, products: p ?? 0, orders: orderRows.length,
-      revenue: orderRows.reduce((s, o) => s + Number(o.total), 0),
-      sellers: roleRows.filter((r) => r.role === "seller").length,
+      users: u ?? 0, products: p ?? 0, orders: orderCount ?? orderRows.length,
+      revenue: paidOrderRows.reduce((sum, order) => sum + Number(order.total), 0),
+      sellers: roleRows.filter((role) => role.role === "seller").length,
     });
   };
 
@@ -231,7 +238,8 @@ export function AdminPanel() {
   };
 
   const toggleProductActive = async (id: string, active: boolean) => {
-    await supabase.from("products").update({ is_active: !active }).eq("id", id); reload();
+    const { error } = await supabase.from("products").update({ is_active: !active }).eq("id", id);
+    if (error) toast.error(error.message); else { toast.success("Məhsul statusu yeniləndi"); reload(); }
   };
 
   const addCategory = async () => {
@@ -254,7 +262,8 @@ export function AdminPanel() {
     if (error) toast.error(error.message); else { toast.success("Əlavə edildi"); reload(); }
   };
   const toggleCourier = async (id: string, active: boolean) => {
-    await supabase.from("couriers").update({ is_active: !active }).eq("id", id); reload();
+    const { error } = await supabase.from("couriers").update({ is_active: !active }).eq("id", id);
+    if (error) toast.error(error.message); else { toast.success("Kuryer statusu yeniləndi"); reload(); }
   };
 
   const addWarehouse = async () => {
@@ -279,7 +288,8 @@ export function AdminPanel() {
     if (error) toast.error(error.message); else { toast.success("Əlavə edildi"); reload(); }
   };
   const togglePickup = async (id: string, active: boolean) => {
-    await supabase.from("pickup_points").update({ is_active: !active }).eq("id", id); reload();
+    const { error } = await supabase.from("pickup_points").update({ is_active: !active }).eq("id", id);
+    if (error) toast.error(error.message); else { toast.success("PVZ statusu yeniləndi"); reload(); }
   };
   const editPickup = async (p: PickupRow) => {
     const name = prompt("PVZ adı:", p.name); if (!name) return;
@@ -309,11 +319,13 @@ export function AdminPanel() {
     if (error) toast.error(error.message); else { toast.success("Əlavə edildi"); reload(); }
   };
   const toggleBanner = async (id: string, active: boolean) => {
-    await supabase.from("banners").update({ is_active: !active }).eq("id", id); reload();
+    const { error } = await supabase.from("banners").update({ is_active: !active }).eq("id", id);
+    if (error) toast.error(error.message); else { toast.success("Banner statusu yeniləndi"); reload(); }
   };
   const deleteBanner = async (id: string) => {
     if (!confirm("Silmək?")) return;
-    await supabase.from("banners").delete().eq("id", id); reload();
+    const { error } = await supabase.from("banners").delete().eq("id", id);
+    if (error) toast.error(error.message); else { toast.success("Banner silindi"); reload(); }
   };
 
   const addPromo = async () => {
@@ -323,12 +335,13 @@ export function AdminPanel() {
     if (error) toast.error(error.message); else { toast.success("Əlavə edildi"); reload(); }
   };
   const togglePromo = async (id: string, active: boolean) => {
-    await supabase.from("promo_codes").update({ is_active: !active }).eq("id", id); reload();
+    const { error } = await supabase.from("promo_codes").update({ is_active: !active }).eq("id", id);
+    if (error) toast.error(error.message); else { toast.success("Promokod statusu yeniləndi"); reload(); }
   };
 
   const resolveDispute = async (id: string, decided_for: "buyer" | "seller", compensation = 0) => {
-    await supabase.from("disputes").update({ status: "resolved", decided_for, compensation }).eq("id", id);
-    toast.success("Mübahisə həll edildi"); reload();
+    const { error } = await supabase.from("disputes").update({ status: "resolved", decided_for, compensation }).eq("id", id);
+    if (error) toast.error(error.message); else { toast.success("Mübahisə həll edildi"); reload(); }
   };
 
   const updateSettings = async (patch: Partial<SettingsRow>) => {
@@ -339,8 +352,8 @@ export function AdminPanel() {
 
   const replyTicket = async (id: string) => {
     const reply = prompt("Cavabınız:"); if (!reply) return;
-    await supabase.from("support_tickets").update({ admin_reply: reply, status: "answered" }).eq("id", id);
-    toast.success("Cavab göndərildi"); reload();
+    const { error } = await supabase.from("support_tickets").update({ admin_reply: reply, status: "answered" }).eq("id", id);
+    if (error) toast.error(error.message); else { toast.success("Cavab göndərildi"); reload(); }
   };
 
   // ── Ad packages mutations ────────────────────────────────────
@@ -374,7 +387,8 @@ export function AdminPanel() {
     if (error) toast.error(error.message); else { toast.success("Silindi"); reload(); }
   };
   const togglePackage = async (id: string, active: boolean) => {
-    await supabase.from("ad_packages").update({ is_active: !active }).eq("id", id); reload();
+    const { error } = await supabase.from("ad_packages").update({ is_active: !active }).eq("id", id);
+    if (error) toast.error(error.message); else { toast.success("Paket statusu yeniləndi"); reload(); }
   };
 
   const can = (permission: string) => adminPermissions.includes("*") || adminPermissions.includes(permission);
@@ -514,9 +528,13 @@ function EmptyRow({ cols, text = "Məlumat yoxdur" }: { cols: number; text?: str
 
 function DashboardSection({ stats, orders, couriers, disputes }: { stats: Stat; orders: OrderRow[]; couriers: CourierRow[]; disputes: DisputeRow[] }) {
   const today = new Date(); today.setHours(0, 0, 0, 0);
-  const todayRevenue = orders.filter((o) => new Date(o.created_at) >= today).reduce((s, o) => s + Number(o.total), 0);
+  const paidOrders = orders.filter((order) =>
+    ["paid", "success", "completed"].includes(String(order.payment_status ?? "").toLowerCase())
+    || ["paid", "completed"].includes(String(order.status).toLowerCase()),
+  );
+  const todayRevenue = paidOrders.filter((o) => new Date(o.created_at) >= today).reduce((s, o) => s + Number(o.total), 0);
   const monthAgo = new Date(); monthAgo.setMonth(monthAgo.getMonth() - 1);
-  const monthRevenue = orders.filter((o) => new Date(o.created_at) >= monthAgo).reduce((s, o) => s + Number(o.total), 0);
+  const monthRevenue = paidOrders.filter((o) => new Date(o.created_at) >= monthAgo).reduce((s, o) => s + Number(o.total), 0);
   const openDisputes = disputes.filter((d) => d.status === "open").length;
   const activeCouriers = couriers.filter((c) => c.is_active).length;
 
@@ -525,7 +543,7 @@ function DashboardSection({ stats, orders, couriers, disputes }: { stats: Stat; 
       <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard icon={DollarSign} label="Ümumi dövriyyə" value={formatAZN(stats.revenue)} hint={`Bu gün: ${formatAZN(todayRevenue)}`} />
         <StatCard icon={Store} label="Aktiv satıcılar" value={stats.sellers} />
-        <StatCard icon={Users} label="Müştərilər" value={stats.users} />
+        <StatCard icon={Users} label="Ümumi profillər" value={stats.users} />
         <StatCard icon={ShoppingBag} label="Sifarişlər" value={stats.orders} hint={`Bu ay: ${formatAZN(monthRevenue)}`} />
         <StatCard icon={Package} label="Məhsullar" value={stats.products} />
         <StatCard icon={Truck} label="Aktiv kuryerlər" value={activeCouriers} />
