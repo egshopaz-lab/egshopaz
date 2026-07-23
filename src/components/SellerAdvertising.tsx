@@ -106,6 +106,9 @@ interface PromoSettings {
   single_shop_promo_days: number;
   single_banner_price: number;
   single_banner_days: number;
+  slot_product_fee?: number;
+  slot_shop_fee?: number;
+  slot_banner_fee?: number;
   promo_terms_text: string;
 }
 
@@ -161,7 +164,7 @@ export function SellerAdvertising() {
       supabase.from("sponsored_products").select("*, products(id,title,image_url,price)").eq("seller_id", user.id).order("created_at", { ascending: false }),
       supabase.from("sponsored_shops").select("id,ends_at,is_active").eq("seller_id", user.id).order("created_at", { ascending: false }),
       supabase.from("products").select("id,title,image_url,price").eq("seller_id", user.id).eq("is_active", true).order("created_at", { ascending: false }),
-      supabase.from("system_settings").select("single_product_promo_price,single_product_promo_days,single_shop_promo_price,single_shop_promo_days,single_banner_price,single_banner_days,promo_terms_text").limit(1).maybeSingle(),
+      (supabase as any).from("system_settings").select("single_product_promo_price,single_product_promo_days,single_shop_promo_price,single_shop_promo_days,single_banner_price,single_banner_days,slot_product_fee,slot_shop_fee,slot_banner_fee,promo_terms_text").limit(1).maybeSingle(),
       (supabase as any).from("ad_service_types").select("*").eq("is_active", true).order("sort_order"),
     ]);
     setPackages((pk.data ?? []) as unknown as Pkg[]);
@@ -185,6 +188,7 @@ export function SellerAdvertising() {
       .on("postgres_changes", { event: "*", schema: "public", table: "ad_packages" }, () => void load())
       .on("postgres_changes", { event: "*", schema: "public", table: "ad_service_types" }, () => void load())
       .on("postgres_changes", { event: "*", schema: "public", table: "ad_package_services" }, () => void load())
+      .on("postgres_changes", { event: "*", schema: "public", table: "system_settings" }, () => void load())
       .on("postgres_changes", { event: "*", schema: "public", table: "seller_subscriptions", filter: `seller_id=eq.${user.id}` }, () => void load())
       .subscribe();
     return () => { void supabase.removeChannel(channel); };
@@ -221,12 +225,18 @@ export function SellerAdvertising() {
   const bannerAvailable = activeSub ? (!modularPackage || Boolean(bannerPackageService)) : Boolean(bannerBaseService);
   const productAvailable = activeSub ? (!modularPackage || Boolean(productPackageService)) : Boolean(productBaseService);
   const shopAvailable = activeSub ? (!modularPackage || Boolean(shopPackageService)) : Boolean(shopBaseService);
-  const bannerBasePrice = Number(bannerBaseService?.base_price ?? promoSettings?.single_banner_price ?? 5);
-  const bannerBaseDays = Number(bannerBaseService?.default_duration_days ?? promoSettings?.single_banner_days ?? 30);
-  const productBasePrice = Number(productBaseService?.base_price ?? promoSettings?.single_product_promo_price ?? 5);
-  const productBaseDays = Number(productBaseService?.default_duration_days ?? promoSettings?.single_product_promo_days ?? 7);
-  const shopBasePrice = Number(shopBaseService?.base_price ?? promoSettings?.single_shop_promo_price ?? 10);
-  const shopBaseDays = Number(shopBaseService?.default_duration_days ?? promoSettings?.single_shop_promo_days ?? 7);
+  // payment-init calculates these amounts from system_settings. Keep the seller
+  // preview on that same authoritative source so displayed and charged prices
+  // cannot diverge.
+  const bannerBasePrice = Number(promoSettings?.single_banner_price ?? bannerBaseService?.base_price ?? 5);
+  const bannerBaseDays = Number(promoSettings?.single_banner_days ?? bannerBaseService?.default_duration_days ?? 30);
+  const productBasePrice = Number(promoSettings?.single_product_promo_price ?? productBaseService?.base_price ?? 5);
+  const productBaseDays = Number(promoSettings?.single_product_promo_days ?? productBaseService?.default_duration_days ?? 7);
+  const shopBasePrice = Number(promoSettings?.single_shop_promo_price ?? shopBaseService?.base_price ?? 10);
+  const shopBaseDays = Number(promoSettings?.single_shop_promo_days ?? shopBaseService?.default_duration_days ?? 7);
+  const slotProductFee = Number(promoSettings?.slot_product_fee ?? SLOT_PRODUCT_FEE);
+  const slotShopFee = Number(promoSettings?.slot_shop_fee ?? SLOT_SHOP_FEE);
+  const slotBannerFee = Number(promoSettings?.slot_banner_fee ?? SLOT_BANNER_FEE);
   const packageServiceEndsAt = (service?: PackageService) => {
     const candidate = new Date();
     candidate.setDate(candidate.getDate() + Number(service?.duration_days ?? activeSub?.ad_packages?.duration_days ?? 1));
@@ -321,7 +331,7 @@ export function SellerAdvertising() {
     if (!bannerAvailable) { toast.error("Banner reklamı admin tərəfindən deaktiv edilib"); return; }
     if (activeSub) {
       if (bannersLeft <= 0) { toast.error("Banner limiti dolub. Yeni paket alın."); return; }
-      setCheckout({ kind: "slot_banner", price: Number(bannerPackageService?.activation_price ?? SLOT_BANNER_FEE), form: bannerForm });
+      setCheckout({ kind: "slot_banner", price: slotBannerFee, form: bannerForm });
       return;
     }
 
@@ -352,7 +362,7 @@ export function SellerAdvertising() {
     const product = myProducts.find((p) => p.id === productId);
     if (!product) return;
     setPickProduct(false);
-    setCheckout({ kind: "slot_product", productId, productTitle: product.title, price: Number(productPackageService?.activation_price ?? SLOT_PRODUCT_FEE) });
+    setCheckout({ kind: "slot_product", productId, productTitle: product.title, price: slotProductFee });
   };
 
 
@@ -368,7 +378,7 @@ export function SellerAdvertising() {
     if (!user || !activeSub) return;
     if (!shopAvailable) { toast.error("Mağaza reklamı admin tərəfindən deaktiv edilib"); return; }
     if (shopPromoLeft <= 0) { toast.error("Mağaza reklamı limiti dolub"); return; }
-    setCheckout({ kind: "slot_shop", price: Number(shopPackageService?.activation_price ?? SLOT_SHOP_FEE) });
+    setCheckout({ kind: "slot_shop", price: slotShopFee });
   };
 
   const removeShopPromo = async (id: string) => {
