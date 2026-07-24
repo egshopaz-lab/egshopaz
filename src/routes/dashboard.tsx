@@ -1,5 +1,6 @@
 import { Navigate, createFileRoute } from "@tanstack/react-router";
 import { Suspense, lazy } from "react";
+import { useAuth } from "@/contexts/AuthContext";
 import { usePortal } from "@/lib/portals";
 
 const AdminPanel = lazy(() => import("@/components/AdminPanel").then((module) => ({ default: module.AdminPanel })));
@@ -13,6 +14,16 @@ export const Route = createFileRoute("/dashboard")({
 
 function PortalDashboard() {
   const portal = usePortal();
+  const { user, isSeller, loading } = useAuth();
+
+  if (portal === "seller") {
+    if (loading) {
+      return <div className="min-h-[60vh] animate-pulse bg-muted/20" aria-label="Hesab yoxlanılır" />;
+    }
+    if (!user) return <Navigate to="/login" replace />;
+    if (!isSeller) return <Navigate to="/become-seller" replace />;
+  }
+
   const panel = portal === "admin" ? <AdminPanel /> : portal === "seller" ? <SellerPanel /> : portal === "pvz" ? <PvzPanel /> : null;
   if (panel) {
     return (
