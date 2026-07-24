@@ -13,6 +13,9 @@ import egLogo from "@/assets/eg-logo.svg";
 import { AZ_CITIES } from "@/lib/azCities";
 import { AcquisitionSourceFields } from "@/components/AcquisitionSourceFields";
 import { ACQUISITION_DETAIL_SOURCES, type AcquisitionSource } from "@/lib/acquisitionSources";
+import { PhoneNumberField } from "@/components/PhoneNumberField";
+import { PhoneVerificationCard } from "@/components/PhoneVerificationCard";
+import { isValidE164Phone, normalizeE164Phone } from "@/lib/phone";
 
 const authSearchSchema = z.object({
   role: z.enum(["buyer", "seller", "pvz", "admin"]).optional(),
@@ -172,6 +175,9 @@ export function PortalAuthForm({
     if (fixedRole !== "pvz") return;
 
     const metadata = user.user_metadata ?? {};
+    const metadataPhone = String(metadata.phone ?? "");
+    if (!phone && metadataPhone) setPhone(normalizeE164Phone(metadataPhone));
+    if (!user.phone_confirmed_at) return;
     if (metadata.onboarding_portal !== "pvz") return;
     const args: Record<string, string> = {
       full_name: String(metadata.full_name ?? user.email ?? "PVZ istifadəçisi"),
@@ -192,7 +198,7 @@ export function PortalAuthForm({
       await refreshRoles();
       navigate({ to: "/dashboard", replace: true });
     });
-  }, [fixedMode, fixedRole, navigate, refreshRoles, user]);
+  }, [fixedMode, fixedRole, navigate, phone, refreshRoles, user]);
 
   if (!mounted) {
     return <div className="container mx-auto px-4 py-10 max-w-lg"><div className="bg-card border border-border rounded-2xl p-6 md:p-8 shadow-card h-96 animate-pulse" /></div>;
@@ -263,7 +269,11 @@ export function PortalAuthForm({
     // signup validations
     if (!agree) { toast.error("Müqavilə şərtlərini qəbul etməlisiniz"); return; }
     if (name.trim().length < 2) { toast.error("Ad daxil edin"); return; }
-    if (phone.trim().length < 7) { toast.error("Telefon nömrəsi daxil edin"); return; }
+    const normalizedPhone = normalizeE164Phone(phone);
+    if (!isValidE164Phone(normalizedPhone)) {
+      toast.error("Telefon nömrəsini ölkə kodu ilə düzgün daxil edin");
+      return;
+    }
 
     const normalizedVoen = voen.replace(/\D/g, "");
     if (role === "seller") {
@@ -302,7 +312,7 @@ export function PortalAuthForm({
       account_role: "buyer",
       onboarding_portal: role,
       full_name: name.trim(),
-      phone: phone.trim(),
+      phone: normalizedPhone,
       referral_code: referralCode.trim().toUpperCase() || undefined,
       acquisition_source: acquisitionEnabled && acquisitionSource ? acquisitionSource : undefined,
       acquisition_detail: acquisitionEnabled && acquisitionDetail.trim() ? acquisitionDetail.trim() : undefined,
@@ -353,7 +363,7 @@ export function PortalAuthForm({
 
       const rpcArgs: Record<string, string> = {
         full_name: name.trim(),
-        phone: phone.trim(),
+        phone: normalizedPhone,
         position,
       };
       if (pickupPointId) {
@@ -382,6 +392,19 @@ export function PortalAuthForm({
   };
 
   const inputCls = "w-full h-11 px-3 rounded-lg border border-input bg-background focus:outline-none focus:ring-2 focus:ring-ring";
+
+  if (user && fixedMode === "signup" && fixedRole === "pvz" && !user.phone_confirmed_at) {
+    return (
+      <div className="container mx-auto max-w-lg px-4 py-10">
+        <PhoneVerificationCard
+          phone={phone}
+          onPhoneChange={setPhone}
+          title="PVZ qeydiyyatı üçün telefonu təsdiqləyin"
+          onVerified={() => window.location.reload()}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto px-4 py-10 max-w-lg">
@@ -426,8 +449,11 @@ export function PortalAuthForm({
               <input value={name} onChange={(e) => setName(e.target.value)}
                 placeholder={role === "pvz" ? "Tam ad (Soyad Ad)" : "Ad Soyad"}
                 maxLength={100} className={inputCls} />
-              <input value={phone} onChange={(e) => setPhone(e.target.value)}
-                placeholder="Telefon (məs. +994551234567)" maxLength={20} className={inputCls} />
+              <PhoneNumberField
+                value={phone}
+                onChange={setPhone}
+                required
+              />
             </>
           )}
 
@@ -587,4 +613,5 @@ export function PortalAuthForm({
     </div>
   );
 }
+
 
