@@ -49,6 +49,7 @@ function BecomeSeller() {
   const [acquisitionDetail, setAcquisitionDetail] = useState("");
   const [acquisitionEnabled, setAcquisitionEnabled] = useState(true);
   const [acquisitionRequired, setAcquisitionRequired] = useState(true);
+  const [phoneOtpRequired, setPhoneOtpRequired] = useState(true);
   const [sellerSignupFee, setSellerSignupFee] = useState(20);
   const [busy, setBusy] = useState(false);
   const [checking, setChecking] = useState(true);
@@ -114,7 +115,7 @@ function BecomeSeller() {
       supabase.from("profiles").select("acquisition_source,acquisition_detail").eq("id", user.id).maybeSingle(),
       supabase
         .from("system_settings")
-        .select("acquisition_source_enabled,acquisition_source_required,seller_signup_fee")
+        .select("acquisition_source_enabled,acquisition_source_required,seller_signup_fee,seller_phone_otp_required")
         .limit(1)
         .maybeSingle(),
     ]).then(([profileResult, settingsResult]) => {
@@ -123,11 +124,13 @@ function BecomeSeller() {
         acquisition_source_enabled?: boolean;
         acquisition_source_required?: boolean;
         seller_signup_fee?: number | string | null;
+        seller_phone_otp_required?: boolean;
       } | null;
       setAcquisitionSource((value) => value || profile?.acquisition_source || "");
       setAcquisitionDetail((value) => value || profile?.acquisition_detail || "");
       setAcquisitionEnabled(settings?.acquisition_source_enabled ?? true);
       setAcquisitionRequired(settings?.acquisition_source_required ?? true);
+      setPhoneOtpRequired(settings?.seller_phone_otp_required ?? true);
       const fee = Number(settings?.seller_signup_fee ?? 20);
       setSellerSignupFee(Number.isFinite(fee) && fee > 0 ? fee : 20);
     });
@@ -146,7 +149,11 @@ function BecomeSeller() {
   const startPayment = async (event?: React.FormEvent) => {
     event?.preventDefault();
     if (!user || busy) return;
-    if (!isValidE164Phone(normalizedPhone) || !isPhoneVerified) {
+    if (!isValidE164Phone(normalizedPhone)) {
+      toast.error("Telefon nömrəsini ölkə kodu ilə düzgün daxil edin");
+      return;
+    }
+    if (phoneOtpRequired && !isPhoneVerified) {
       toast.error("Ödənişdən əvvəl telefon nömrənizi SMS kodu ilə təsdiqləyin");
       return;
     }
@@ -203,7 +210,14 @@ function BecomeSeller() {
   };
 
   useEffect(() => {
-    if (!user || loading || checking || busy || autoPaymentStartedRef.current || !isPhoneVerified) return;
+    if (
+      !user
+      || loading
+      || checking
+      || busy
+      || autoPaymentStartedRef.current
+      || (phoneOtpRequired && !isPhoneVerified)
+    ) return;
     if (search.payment) return;
     const metadata = user.user_metadata ?? {};
     const cameFromSellerSignup =
@@ -233,6 +247,7 @@ function BecomeSeller() {
     checking,
     isPhoneVerified,
     loading,
+    phoneOtpRequired,
     search.payment,
     search.start_payment,
     shopName,
@@ -241,7 +256,7 @@ function BecomeSeller() {
 
   if (!user || loading || checking) return null;
 
-  if (!isPhoneVerified) {
+  if (phoneOtpRequired && !isPhoneVerified) {
     return (
       <div className="container mx-auto max-w-lg px-4 py-10">
         <PhoneVerificationCard
