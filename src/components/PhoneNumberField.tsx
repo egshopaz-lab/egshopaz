@@ -22,7 +22,7 @@ export function PhoneNumberField({
   id,
 }: PhoneNumberFieldProps) {
   const detectedDial = useMemo(() => detectDialCode(value), [value]);
-  const [dialCode, setDialCode] = useState(detectedDial || "+994");
+  const [dialCode, setDialCode] = useState<string>(detectedDial || "+994");
   const isCustom = dialCode === "custom";
 
   useEffect(() => {
@@ -33,9 +33,7 @@ export function PhoneNumberField({
     ? value
     : value.startsWith(dialCode)
       ? value.slice(dialCode.length)
-      : value.startsWith("+")
-        ? value
-        : value;
+      : value;
 
   const changeDialCode = (nextDial: string) => {
     if (nextDial === "custom") {
@@ -74,7 +72,7 @@ export function PhoneNumberField({
             {country.flag} {country.dial}
           </option>
         ))}
-        <option value="custom">🌍 Digər</option>
+        <option value="custom">🌐 Digər</option>
       </select>
       <input
         id={id}
@@ -92,5 +90,4 @@ export function PhoneNumberField({
     </div>
   );
 }
-
 
