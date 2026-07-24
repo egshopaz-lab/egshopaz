@@ -168,8 +168,9 @@ function AppShell() {
   // URLs because browser sessions and canonical hosts are origin-scoped.
   useEffect(() => {
     if (typeof window === "undefined") return;
-    // Wait until the browser hostname has resolved to the real portal.
-    // Otherwise the initial marketplace fallback can redirect seller/PVZ to admin.
+    // PortalProvider resolves the hostname after hydration. Acting on the
+    // initial marketplace fallback would send seller/PVZ dashboards to the
+    // admin domain before the real subdomain is known.
     if (!portalReady) return;
     const query = window.location.search;
 
@@ -246,7 +247,10 @@ function AppShell() {
   }
 
   if (isWorkPanel || isSellerTrends || (portal !== "marketplace" && isAuthRoute) || (portal === "seller" && pathname === "/become-seller")) {
-    const label = portal === "seller" ? "Satıcı portalı" : portal === "pvz" ? "PVZ PUNKT portalı" : "Admin portalı";
+    const label = portal === "seller"
+      ? pathname === "/become-seller" ? "Satıcı qeydiyyatı və ödəniş" : "Satıcı portalı"
+      : portal === "pvz" ? "PVZ PUNKT portalı"
+      : "Admin portalı";
     return (
       <div className="flex min-h-screen w-full flex-col overflow-x-hidden bg-background">
         <WorkHeader label={label} />
