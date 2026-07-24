@@ -25,6 +25,7 @@ import {
   type AcquisitionSource,
 } from "@/lib/acquisitionSources";
 import { isValidE164Phone, normalizeE164Phone } from "@/lib/phone";
+import { portalUrl } from "@/lib/portals";
 
 type SellerType = "individual" | "sole_proprietor" | "legal_entity";
 
@@ -246,7 +247,10 @@ export function SellerRegistrationWizard({ referralCode }: SellerRegistrationWiz
       email: form.email.trim().toLowerCase(),
       password: form.password,
       options: {
-        emailRedirectTo: `${window.location.origin}/become-seller?start_payment=1`,
+        // Always return seller onboarding to the seller subdomain. Relying on
+        // the current origin can send confirmation back to the marketplace
+        // and make a pending seller look like an ordinary customer account.
+        emailRedirectTo: portalUrl("seller", "/become-seller?start_payment=1"),
         data: {
           account_role: "buyer",
           onboarding_portal: "seller",
@@ -644,4 +648,3 @@ export function SellerRegistrationWizard({ referralCode }: SellerRegistrationWiz
     </div>
   );
 }
-
