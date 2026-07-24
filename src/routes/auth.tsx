@@ -21,7 +21,7 @@ const authSearchSchema = z.object({
 
 export const Route = createFileRoute("/auth")({
   validateSearch: authSearchSchema,
-  head: () => ({ meta: [{ title: "Giriş / Qeydiyyat — EG Shop" }] }),
+  head: () => ({ meta: [{ title: "GiriĹź / Qeydiyyat â€” EG Shop" }] }),
   component: AuthPage,
 });
 
@@ -30,55 +30,55 @@ export type AuthMode = "login" | "signup";
 
 const TERMS_TEXT: Record<Exclude<RoleTab, "admin">, { title: string; body: string }> = {
   buyer: {
-    title: "Müştəri istifadəçi razılaşması",
-    body: `EG Shop platformasından istifadə etməklə Siz aşağıdakı şərtləri qeyd-şərtsiz qəbul edirsiniz:
+    title: "MĂĽĹźtÉ™ri istifadÉ™Ă§i razÄ±laĹźmasÄ±",
+    body: `EG Shop platformasÄ±ndan istifadÉ™ etmÉ™klÉ™ Siz aĹźaÄźÄ±dakÄ± ĹźÉ™rtlÉ™ri qeyd-ĹźÉ™rtsiz qÉ™bul edirsiniz:
 
-1. ELZAN SHOP YALNIZ TEXNOLOJİ VASİTƏÇİ PLATFORMADIR. Məhsulları EG Shop satmır — satışı müstəqil satıcılar həyata keçirir. Məhsulun keyfiyyəti, orijinallığı, təsvirə uyğunluğu, çatdırılma müddəti və qarantiyasına görə tam məsuliyyət SATICIYA aiddir.
-2. Şəxsi məlumatlarınız (ad, telefon, ünvan) yalnız sifariş və çatdırılma məqsədilə istifadə olunur.
-3. Saxta hesab, saxta sifariş, ödənişdən imtina (kart fırıldaqçılığı), başqa istifadəçiləri narahat etmək və ya platformanı sui-istifadə etmək QƏTİYYƏN qadağandır və hesabın dərhal bağlanmasına, hüquqi orqanlara müraciət olunmasına səbəb olur.
-4. Qadağan olunmuş malların (narkotik, silah, partlayıcı, saxta sənəd, oğurluq mal, müəllif hüquqlarını pozan kontrafakt, qanunla qadağan olunmuş hər hansı məhsul) sifarişi qətiyyən qadağandır. Belə hallarda məsuliyyət tam müştəri/satıcının üzərinə düşür.
-5. Bonus, endirim, promo-kod və qiymətlər platforma tərəfindən istənilən vaxt birtərəfli qaydada dəyişdirilə bilər.
-6. Mübahisə yarandıqda EG Shop könüllü vasitəçi rolunu oynaya bilər, lakin son qərar və kompensasiya öhdəliyi satıcıya aiddir. EG Shop heç bir halda zərərə görə birbaşa cavabdeh deyil.
-7. Çatdırılma zamanı yolda baş verən zədə, itki, gecikmə, hava şəraiti, fors-major hallar — EG Shop-un məsuliyyətindən kənardır.
-8. Bu razılaşma Azərbaycan Respublikası qanunvericiliyinə uyğun tənzimlənir; mübahisələr Bakı şəhəri məhkəmələrinin müstəsna yurisdiksiyasındadır.
+1. ELZAN SHOP YALNIZ TEXNOLOJÄ° VASÄ°TĆŹĂ‡Ä° PLATFORMADIR. MÉ™hsullarÄ± EG Shop satmÄ±r â€” satÄ±ĹźÄ± mĂĽstÉ™qil satÄ±cÄ±lar hÉ™yata keĂ§irir. MÉ™hsulun keyfiyyÉ™ti, orijinallÄ±ÄźÄ±, tÉ™svirÉ™ uyÄźunluÄźu, Ă§atdÄ±rÄ±lma mĂĽddÉ™ti vÉ™ qarantiyasÄ±na gĂ¶rÉ™ tam mÉ™suliyyÉ™t SATICIYA aiddir.
+2. ĹžÉ™xsi mÉ™lumatlarÄ±nÄ±z (ad, telefon, ĂĽnvan) yalnÄ±z sifariĹź vÉ™ Ă§atdÄ±rÄ±lma mÉ™qsÉ™dilÉ™ istifadÉ™ olunur.
+3. Saxta hesab, saxta sifariĹź, Ă¶dÉ™niĹźdÉ™n imtina (kart fÄ±rÄ±ldaqĂ§Ä±lÄ±ÄźÄ±), baĹźqa istifadÉ™Ă§ilÉ™ri narahat etmÉ™k vÉ™ ya platformanÄ± sui-istifadÉ™ etmÉ™k QĆŹTÄ°YYĆŹN qadaÄźandÄ±r vÉ™ hesabÄ±n dÉ™rhal baÄźlanmasÄ±na, hĂĽquqi orqanlara mĂĽraciÉ™t olunmasÄ±na sÉ™bÉ™b olur.
+4. QadaÄźan olunmuĹź mallarÄ±n (narkotik, silah, partlayÄ±cÄ±, saxta sÉ™nÉ™d, oÄźurluq mal, mĂĽÉ™llif hĂĽquqlarÄ±nÄ± pozan kontrafakt, qanunla qadaÄźan olunmuĹź hÉ™r hansÄ± mÉ™hsul) sifariĹźi qÉ™tiyyÉ™n qadaÄźandÄ±r. BelÉ™ hallarda mÉ™suliyyÉ™t tam mĂĽĹźtÉ™ri/satÄ±cÄ±nÄ±n ĂĽzÉ™rinÉ™ dĂĽĹźĂĽr.
+5. Bonus, endirim, promo-kod vÉ™ qiymÉ™tlÉ™r platforma tÉ™rÉ™findÉ™n istÉ™nilÉ™n vaxt birtÉ™rÉ™fli qaydada dÉ™yiĹźdirilÉ™ bilÉ™r.
+6. MĂĽbahisÉ™ yarandÄ±qda EG Shop kĂ¶nĂĽllĂĽ vasitÉ™Ă§i rolunu oynaya bilÉ™r, lakin son qÉ™rar vÉ™ kompensasiya Ă¶hdÉ™liyi satÄ±cÄ±ya aiddir. EG Shop heĂ§ bir halda zÉ™rÉ™rÉ™ gĂ¶rÉ™ birbaĹźa cavabdeh deyil.
+7. Ă‡atdÄ±rÄ±lma zamanÄ± yolda baĹź verÉ™n zÉ™dÉ™, itki, gecikmÉ™, hava ĹźÉ™raiti, fors-major hallar â€” EG Shop-un mÉ™suliyyÉ™tindÉ™n kÉ™nardÄ±r.
+8. Bu razÄ±laĹźma AzÉ™rbaycan RespublikasÄ± qanunvericiliyinÉ™ uyÄźun tÉ™nzimlÉ™nir; mĂĽbahisÉ™lÉ™r BakÄ± ĹźÉ™hÉ™ri mÉ™hkÉ™mÉ™lÉ™rinin mĂĽstÉ™sna yurisdiksiyasÄ±ndadÄ±r.
 
-Qeydiyyatdan keçməklə Siz yuxarıdakı şərtləri tam oxuduğunuzu, başa düşdüyünüzü və qeyd-şərtsiz qəbul etdiyinizi təsdiqləyirsiniz.`,
+Qeydiyyatdan keĂ§mÉ™klÉ™ Siz yuxarÄ±dakÄ± ĹźÉ™rtlÉ™ri tam oxuduÄźunuzu, baĹźa dĂĽĹźdĂĽyĂĽnĂĽzĂĽ vÉ™ qeyd-ĹźÉ™rtsiz qÉ™bul etdiyinizi tÉ™sdiqlÉ™yirsiniz.`,
   },
   seller: {
-    title: "Satıcı razılaşması",
-    body: `EG Shop-da satıcı kimi qeydiyyatdan keçməklə Siz aşağıdakı öhdəlikləri TAM və QEYD-ŞƏRTSİZ qəbul edirsiniz:
+    title: "SatÄ±cÄ± razÄ±laĹźmasÄ±",
+    body: `EG Shop-da satÄ±cÄ± kimi qeydiyyatdan keĂ§mÉ™klÉ™ Siz aĹźaÄźÄ±dakÄ± Ă¶hdÉ™liklÉ™ri TAM vÉ™ QEYD-ĹžĆŹRTSÄ°Z qÉ™bul edirsiniz:
 
-1. SATIŞIN BÜTÜN HÜQUQİ MƏSULİYYƏTİ SATICIYA AİDDİR. EG Shop yalnız texnoloji platforma və ödəniş/çatdırılma vasitəçisidir. Satılan məhsulun keyfiyyəti, orijinallığı, qanuniliyi, sertifikatları, qarantiyası, vergi öhdəlikləri və istehlakçı hüquqlarına dair bütün iddialar üçün yeganə cavabdeh tərəf SATICIDIR.
-2. QADAĞAN OLUNMUŞ MALLARIN SATIŞI QƏTİYYƏN QADAĞANDIR: narkotik və psixotrop maddələr, silah/sursat/partlayıcı, saxta pul və sənədlər, oğurluq mal, kontrafakt (saxta brend), reseptlə buraxılan dərmanlar, insan orqanları, vəhşi heyvan, pornoqrafik məhsullar, AR qanunvericiliyi ilə qadağan olunmuş istənilən digər mal. Belə malın aşkarlanması halında: hesab dərhal bağlanır, vəsait dondurulur və məlumat hüquq-mühafizə orqanlarına ötürülür. Bütün cinayət və mülki məsuliyyət SATICININ üzərindədir.
-3. Satıcı məhsulun orijinal, qanuni, təsvirə tam uyğun, sertifikatlı (tələb olunarsa) olduğuna ZƏMANƏT verir. Yanlış məlumat verilməsi fırıldaqçılıq sayılır.
-4. Sifariş qəbul olunduqdan sonra 48 saat ərzində satıcı paketi göndərməyə borcludur. Vaxtında göndərilməyən sifarişlərə görə cərimə tətbiq oluna bilər.
-5. Yolda zədələnmə, itki, yanlış qablaşdırma, keyfiyyətsiz məhsul, geri qaytarma — bütün xərclər və kompensasiya SATICININ üzərinə düşür. EG Shop bu xərclərə görə cavabdeh deyil.
-6. Müştəri şikayəti və geri ödəniş halında məbləğ avtomatik olaraq satıcının balansından tutulur. Satıcı bunu əvvəlcədən qəbul edir.
-7. Platformanın komissiyası (cari: 10%) hər satışdan tutulur. Komissiya, tariflər və qaydalar EG Shop tərəfindən birtərəfli dəyişdirilə bilər.
-8. Vergi öhdəlikləri (gəlir vergisi, ƏDV, sosial ödənişlər) tam SATICIYA aiddir. EG Shop vergi agenti deyil.
-9. VÖEN/şəxsiyyət vəsiqəsi məlumatları yoxlama, mübahisə və qanuni tələblər üçün saxlanılır və zərurət yarandıqda dövlət orqanlarına təqdim olunur.
-10. Müştəri ilə kobud davranış, qiymət manipulyasiyası, saxta rəy yazmaq, platformadan kənar əlaqə təklif etmək — hesabın bağlanmasına səbəb olur, ödənilməmiş vəsait dondurulur.
-11. Mübahisə yarandıqda EG Shop adminin qərarı son və icbaridir. Satıcı bu qərara qeyd-şərtsiz tabe olur.
-12. EG Shop heç bir halda dolayı zərər, mənfəət itkisi, reputasiya zərəri və ya üçüncü tərəf iddialarına görə cavabdeh deyil. Maksimum məsuliyyət hüdudu — son 30 günün komissiya gəliri ilə məhdudlaşır.
-13. Bu razılaşma Azərbaycan Respublikası qanunvericiliyinə tabedir; bütün mübahisələr Bakı şəhəri məhkəmələrində həll olunur.
+1. SATIĹžIN BĂśTĂśN HĂśQUQÄ° MĆŹSULÄ°YYĆŹTÄ° SATICIYA AÄ°DDÄ°R. EG Shop yalnÄ±z texnoloji platforma vÉ™ Ă¶dÉ™niĹź/Ă§atdÄ±rÄ±lma vasitÉ™Ă§isidir. SatÄ±lan mÉ™hsulun keyfiyyÉ™ti, orijinallÄ±ÄźÄ±, qanuniliyi, sertifikatlarÄ±, qarantiyasÄ±, vergi Ă¶hdÉ™liklÉ™ri vÉ™ istehlakĂ§Ä± hĂĽquqlarÄ±na dair bĂĽtĂĽn iddialar ĂĽĂ§ĂĽn yeganÉ™ cavabdeh tÉ™rÉ™f SATICIDIR.
+2. QADAÄžAN OLUNMUĹž MALLARIN SATIĹžI QĆŹTÄ°YYĆŹN QADAÄžANDIR: narkotik vÉ™ psixotrop maddÉ™lÉ™r, silah/sursat/partlayÄ±cÄ±, saxta pul vÉ™ sÉ™nÉ™dlÉ™r, oÄźurluq mal, kontrafakt (saxta brend), reseptlÉ™ buraxÄ±lan dÉ™rmanlar, insan orqanlarÄ±, vÉ™hĹźi heyvan, pornoqrafik mÉ™hsullar, AR qanunvericiliyi ilÉ™ qadaÄźan olunmuĹź istÉ™nilÉ™n digÉ™r mal. BelÉ™ malÄ±n aĹźkarlanmasÄ± halÄ±nda: hesab dÉ™rhal baÄźlanÄ±r, vÉ™sait dondurulur vÉ™ mÉ™lumat hĂĽquq-mĂĽhafizÉ™ orqanlarÄ±na Ă¶tĂĽrĂĽlĂĽr. BĂĽtĂĽn cinayÉ™t vÉ™ mĂĽlki mÉ™suliyyÉ™t SATICININ ĂĽzÉ™rindÉ™dir.
+3. SatÄ±cÄ± mÉ™hsulun orijinal, qanuni, tÉ™svirÉ™ tam uyÄźun, sertifikatlÄ± (tÉ™lÉ™b olunarsa) olduÄźuna ZĆŹMANĆŹT verir. YanlÄ±Ĺź mÉ™lumat verilmÉ™si fÄ±rÄ±ldaqĂ§Ä±lÄ±q sayÄ±lÄ±r.
+4. SifariĹź qÉ™bul olunduqdan sonra 48 saat É™rzindÉ™ satÄ±cÄ± paketi gĂ¶ndÉ™rmÉ™yÉ™ borcludur. VaxtÄ±nda gĂ¶ndÉ™rilmÉ™yÉ™n sifariĹźlÉ™rÉ™ gĂ¶rÉ™ cÉ™rimÉ™ tÉ™tbiq oluna bilÉ™r.
+5. Yolda zÉ™dÉ™lÉ™nmÉ™, itki, yanlÄ±Ĺź qablaĹźdÄ±rma, keyfiyyÉ™tsiz mÉ™hsul, geri qaytarma â€” bĂĽtĂĽn xÉ™rclÉ™r vÉ™ kompensasiya SATICININ ĂĽzÉ™rinÉ™ dĂĽĹźĂĽr. EG Shop bu xÉ™rclÉ™rÉ™ gĂ¶rÉ™ cavabdeh deyil.
+6. MĂĽĹźtÉ™ri ĹźikayÉ™ti vÉ™ geri Ă¶dÉ™niĹź halÄ±nda mÉ™blÉ™Äź avtomatik olaraq satÄ±cÄ±nÄ±n balansÄ±ndan tutulur. SatÄ±cÄ± bunu É™vvÉ™lcÉ™dÉ™n qÉ™bul edir.
+7. PlatformanÄ±n komissiyasÄ± (cari: 10%) hÉ™r satÄ±Ĺźdan tutulur. Komissiya, tariflÉ™r vÉ™ qaydalar EG Shop tÉ™rÉ™findÉ™n birtÉ™rÉ™fli dÉ™yiĹźdirilÉ™ bilÉ™r.
+8. Vergi Ă¶hdÉ™liklÉ™ri (gÉ™lir vergisi, ĆŹDV, sosial Ă¶dÉ™niĹźlÉ™r) tam SATICIYA aiddir. EG Shop vergi agenti deyil.
+9. VĂ–EN/ĹźÉ™xsiyyÉ™t vÉ™siqÉ™si mÉ™lumatlarÄ± yoxlama, mĂĽbahisÉ™ vÉ™ qanuni tÉ™lÉ™blÉ™r ĂĽĂ§ĂĽn saxlanÄ±lÄ±r vÉ™ zÉ™rurÉ™t yarandÄ±qda dĂ¶vlÉ™t orqanlarÄ±na tÉ™qdim olunur.
+10. MĂĽĹźtÉ™ri ilÉ™ kobud davranÄ±Ĺź, qiymÉ™t manipulyasiyasÄ±, saxta rÉ™y yazmaq, platformadan kÉ™nar É™laqÉ™ tÉ™klif etmÉ™k â€” hesabÄ±n baÄźlanmasÄ±na sÉ™bÉ™b olur, Ă¶dÉ™nilmÉ™miĹź vÉ™sait dondurulur.
+11. MĂĽbahisÉ™ yarandÄ±qda EG Shop adminin qÉ™rarÄ± son vÉ™ icbaridir. SatÄ±cÄ± bu qÉ™rara qeyd-ĹźÉ™rtsiz tabe olur.
+12. EG Shop heĂ§ bir halda dolayÄ± zÉ™rÉ™r, mÉ™nfÉ™É™t itkisi, reputasiya zÉ™rÉ™ri vÉ™ ya ĂĽĂ§ĂĽncĂĽ tÉ™rÉ™f iddialarÄ±na gĂ¶rÉ™ cavabdeh deyil. Maksimum mÉ™suliyyÉ™t hĂĽdudu â€” son 30 gĂĽnĂĽn komissiya gÉ™liri ilÉ™ mÉ™hdudlaĹźÄ±r.
+13. Bu razÄ±laĹźma AzÉ™rbaycan RespublikasÄ± qanunvericiliyinÉ™ tabedir; bĂĽtĂĽn mĂĽbahisÉ™lÉ™r BakÄ± ĹźÉ™hÉ™ri mÉ™hkÉ™mÉ™lÉ™rindÉ™ hÉ™ll olunur.
 
-Qeydiyyatdan keçməklə bu şərtləri tam, qeyd-şərtsiz və geri dönülməz şəkildə qəbul edirsiniz.`,
+Qeydiyyatdan keĂ§mÉ™klÉ™ bu ĹźÉ™rtlÉ™ri tam, qeyd-ĹźÉ™rtsiz vÉ™ geri dĂ¶nĂĽlmÉ™z ĹźÉ™kildÉ™ qÉ™bul edirsiniz.`,
   },
   pvz: {
-    title: "PVZ (çatdırılma nöqtəsi) işçi razılaşması",
-    body: `EG Shop PVZ işçisi kimi qeydiyyatdan keçməklə Siz aşağıdakı qaydaları TAM və QEYD-ŞƏRTSİZ qəbul edirsiniz:
+    title: "PVZ (Ă§atdÄ±rÄ±lma nĂ¶qtÉ™si) iĹźĂ§i razÄ±laĹźmasÄ±",
+    body: `EG Shop PVZ iĹźĂ§isi kimi qeydiyyatdan keĂ§mÉ™klÉ™ Siz aĹźaÄźÄ±dakÄ± qaydalarÄ± TAM vÉ™ QEYD-ĹžĆŹRTSÄ°Z qÉ™bul edirsiniz:
 
-1. Paketləri qəbul etmək və müştəriyə YALNIZ doğru kod/QR yoxlamasından sonra təhvil vermək. Yanlış təhvilə görə tam maddi məsuliyyət PVZ işçisinin üzərindədir.
-2. PVZ işçisi paketin məzmununu yoxlamır və satıcının məhsulun qanuniliyinə görə cavabdehliyini öz üzərinə götürmür. Şübhəli (narkotik, silah, qadağan olunmuş mal) paketləri dərhal admin və hüquq-mühafizə orqanlarına bildirməyə borcludur.
-3. PVZ-nin iş saatlarına dəqiq riayət etmək. İşə çıxmama və ya gecikmə cərimə ilə nəticələnə bilər.
-4. Müştəri ilə hörmətlə davranmaq; kobud davranış, müştəri ilə mübahisə, rüşvət tələbi — dərhal işdən azad olunmaya səbəb olur.
-5. Paketin saxlanma müddətində zədələnməsi, itməsi, oğurlanması halında — maddi məsuliyyət birbaşa PVZ işçisinin və/və ya nöqtə sahibinin üzərinə düşür. EG Shop bu zərərə görə cavabdeh deyil.
-6. Şəxsi və müştəri məlumatlarının məxfiliyini qorumaq. Məlumat sızması cinayət məsuliyyəti yaradır.
-7. PVZ nöqtəsinin avadanlıqlarına (skaner, terminal, rəflər) tam maddi məsuliyyət daşıyırsınız.
-8. EG Shop bu razılaşmanı istənilən vaxt birtərəfli ləğv edə bilər. Ödənilməmiş haqq son hesablama dövrü əsasında ödənilir.
-9. Bu razılaşma Azərbaycan Respublikası qanunvericiliyinə tabedir; mübahisələr Bakı şəhəri məhkəmələrində həll olunur.
+1. PaketlÉ™ri qÉ™bul etmÉ™k vÉ™ mĂĽĹźtÉ™riyÉ™ YALNIZ doÄźru kod/QR yoxlamasÄ±ndan sonra tÉ™hvil vermÉ™k. YanlÄ±Ĺź tÉ™hvilÉ™ gĂ¶rÉ™ tam maddi mÉ™suliyyÉ™t PVZ iĹźĂ§isinin ĂĽzÉ™rindÉ™dir.
+2. PVZ iĹźĂ§isi paketin mÉ™zmununu yoxlamÄ±r vÉ™ satÄ±cÄ±nÄ±n mÉ™hsulun qanuniliyinÉ™ gĂ¶rÉ™ cavabdehliyini Ă¶z ĂĽzÉ™rinÉ™ gĂ¶tĂĽrmĂĽr. ĹžĂĽbhÉ™li (narkotik, silah, qadaÄźan olunmuĹź mal) paketlÉ™ri dÉ™rhal admin vÉ™ hĂĽquq-mĂĽhafizÉ™ orqanlarÄ±na bildirmÉ™yÉ™ borcludur.
+3. PVZ-nin iĹź saatlarÄ±na dÉ™qiq riayÉ™t etmÉ™k. Ä°ĹźÉ™ Ă§Ä±xmama vÉ™ ya gecikmÉ™ cÉ™rimÉ™ ilÉ™ nÉ™ticÉ™lÉ™nÉ™ bilÉ™r.
+4. MĂĽĹźtÉ™ri ilÉ™ hĂ¶rmÉ™tlÉ™ davranmaq; kobud davranÄ±Ĺź, mĂĽĹźtÉ™ri ilÉ™ mĂĽbahisÉ™, rĂĽĹźvÉ™t tÉ™lÉ™bi â€” dÉ™rhal iĹźdÉ™n azad olunmaya sÉ™bÉ™b olur.
+5. Paketin saxlanma mĂĽddÉ™tindÉ™ zÉ™dÉ™lÉ™nmÉ™si, itmÉ™si, oÄźurlanmasÄ± halÄ±nda â€” maddi mÉ™suliyyÉ™t birbaĹźa PVZ iĹźĂ§isinin vÉ™/vÉ™ ya nĂ¶qtÉ™ sahibinin ĂĽzÉ™rinÉ™ dĂĽĹźĂĽr. EG Shop bu zÉ™rÉ™rÉ™ gĂ¶rÉ™ cavabdeh deyil.
+6. ĹžÉ™xsi vÉ™ mĂĽĹźtÉ™ri mÉ™lumatlarÄ±nÄ±n mÉ™xfiliyini qorumaq. MÉ™lumat sÄ±zmasÄ± cinayÉ™t mÉ™suliyyÉ™ti yaradÄ±r.
+7. PVZ nĂ¶qtÉ™sinin avadanlÄ±qlarÄ±na (skaner, terminal, rÉ™flÉ™r) tam maddi mÉ™suliyyÉ™t daĹźÄ±yÄ±rsÄ±nÄ±z.
+8. EG Shop bu razÄ±laĹźmanÄ± istÉ™nilÉ™n vaxt birtÉ™rÉ™fli lÉ™Äźv edÉ™ bilÉ™r. Ă–dÉ™nilmÉ™miĹź haqq son hesablama dĂ¶vrĂĽ É™sasÄ±nda Ă¶dÉ™nilir.
+9. Bu razÄ±laĹźma AzÉ™rbaycan RespublikasÄ± qanunvericiliyinÉ™ tabedir; mĂĽbahisÉ™lÉ™r BakÄ± ĹźÉ™hÉ™ri mÉ™hkÉ™mÉ™lÉ™rindÉ™ hÉ™ll olunur.
 
-Qeydiyyatdan keçməklə bu qaydalara qeyd-şərtsiz əməl etməyə razılıq verirsiniz.`,
+Qeydiyyatdan keĂ§mÉ™klÉ™ bu qaydalara qeyd-ĹźÉ™rtsiz É™mÉ™l etmÉ™yÉ™ razÄ±lÄ±q verirsiniz.`,
   },
 };
 
@@ -174,7 +174,7 @@ export function PortalAuthForm({
     const metadata = user.user_metadata ?? {};
     if (metadata.onboarding_portal !== "pvz") return;
     const args: Record<string, string> = {
-      full_name: String(metadata.full_name ?? user.email ?? "PVZ istifadəçisi"),
+      full_name: String(metadata.full_name ?? user.email ?? "PVZ istifadÉ™Ă§isi"),
       phone: String(metadata.phone ?? ""),
       position: String(metadata.position ?? "operator"),
     };
@@ -186,7 +186,7 @@ export function PortalAuthForm({
     }
     void supabase.functions.invoke("pvz-registration", { body: args }).then(async ({ error }) => {
       if (error) {
-        toast.error("PVZ qeydiyyatı tamamlana bilmədi: " + error.message);
+        toast.error("PVZ qeydiyyatÄ± tamamlana bilmÉ™di: " + error.message);
         return;
       }
       await refreshRoles();
@@ -199,7 +199,7 @@ export function PortalAuthForm({
   }
 
   const sendReset = async () => {
-    const v = z.string().trim().email("Yanlış e-poçt").safeParse(forgotEmail);
+    const v = z.string().trim().email("YanlÄ±Ĺź e-poĂ§t").safeParse(forgotEmail);
     if (!v.success) { toast.error(v.error.issues[0].message); return; }
     setForgotBusy(true);
     const { error } = await supabase.auth.resetPasswordForEmail(forgotEmail, {
@@ -207,7 +207,7 @@ export function PortalAuthForm({
     });
     setForgotBusy(false);
     if (error) { toast.error(error.message); return; }
-    toast.success("Bərpa linki e-poçtunuza göndərildi");
+    toast.success("BÉ™rpa linki e-poĂ§tunuza gĂ¶ndÉ™rildi");
     setForgotOpen(false);
     setForgotEmail("");
   };
@@ -215,17 +215,17 @@ export function PortalAuthForm({
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const emailV = z.string().trim().email("Yanlış e-poçt").max(255).safeParse(email);
+    const emailV = z.string().trim().email("YanlÄ±Ĺź e-poĂ§t").max(255).safeParse(email);
     if (!emailV.success) { toast.error(emailV.error.issues[0].message); return; }
-    const passV = z.string().min(6, "Şifrə minimum 6 simvol").max(72).safeParse(password);
+    const passV = z.string().min(6, "ĹžifrÉ™ minimum 6 simvol").max(72).safeParse(password);
     if (!passV.success) { toast.error(passV.error.issues[0].message); return; }
 
     if (mode === "login") {
       setBusy(true);
       const { data: signInData, error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error || !signInData.user) { setBusy(false); toast.error("E-poçt və ya şifrə yanlışdır"); return; }
+      if (error || !signInData.user) { setBusy(false); toast.error("E-poĂ§t vÉ™ ya ĹźifrÉ™ yanlÄ±ĹźdÄ±r"); return; }
 
-      // Rol uyğunluğunu yoxla — hər rol yalnız öz panelinə daxil ola bilər
+      // Rol uyÄźunluÄźunu yoxla â€” hÉ™r rol yalnÄ±z Ă¶z panelinÉ™ daxil ola bilÉ™r
       const { data: rolesData } = await supabase
         .from("user_roles").select("role").eq("user_id", signInData.user.id);
       const roles = (rolesData ?? []).map((r) => r.role as string);
@@ -233,13 +233,13 @@ export function PortalAuthForm({
       if (role === "buyer" && (roles.includes("seller") || roles.includes("pvz"))) {
         await supabase.auth.signOut();
         setBusy(false);
-        toast.error("Bu hesab müştəri deyil. Satıcı və ya PVZ PUNKT seçimini istifadə edin.");
+        toast.error("Bu hesab mĂĽĹźtÉ™ri deyil. SatÄ±cÄ± vÉ™ ya PVZ PUNKT seĂ§imini istifadÉ™ edin.");
         return;
       }
       if (role === "pvz" && !roles.includes("pvz")) {
         await supabase.auth.signOut();
         setBusy(false);
-        toast.error("Bu hesab PVZ PUNKT işçisi kimi qeydiyyatdan keçməyib.");
+        toast.error("Bu hesab PVZ PUNKT iĹźĂ§isi kimi qeydiyyatdan keĂ§mÉ™yib.");
         return;
       }
       if (role === "admin" && !roles.includes("admin")) {
@@ -250,7 +250,7 @@ export function PortalAuthForm({
       }
 
       setBusy(false);
-      toast.success("Xoş gəldiniz!");
+      toast.success("XoĹź gÉ™ldiniz!");
       const dest = role === "seller"
         ? (roles.includes("seller") ? "/dashboard" : "/become-seller")
         : role === "pvz" ? "/dashboard"
@@ -261,36 +261,36 @@ export function PortalAuthForm({
     }
 
     // signup validations
-    if (!agree) { toast.error("Müqavilə şərtlərini qəbul etməlisiniz"); return; }
+    if (!agree) { toast.error("MĂĽqavilÉ™ ĹźÉ™rtlÉ™rini qÉ™bul etmÉ™lisiniz"); return; }
     if (name.trim().length < 2) { toast.error("Ad daxil edin"); return; }
-    if (phone.trim().length < 7) { toast.error("Telefon nömrəsi daxil edin"); return; }
+    if (phone.trim().length < 7) { toast.error("Telefon nĂ¶mrÉ™si daxil edin"); return; }
 
     const normalizedVoen = voen.replace(/\D/g, "");
     if (role === "seller") {
-      if (shopName.trim().length < 2) { toast.error("Mağaza adı daxil edin"); return; }
+      if (shopName.trim().length < 2) { toast.error("MaÄźaza adÄ± daxil edin"); return; }
       if (!/^\d{10}$/.test(normalizedVoen)) {
-        toast.error("VÖEN 10 rəqəmdən ibarət olmalıdır");
+        toast.error("VĂ–EN 10 rÉ™qÉ™mdÉ™n ibarÉ™t olmalÄ±dÄ±r");
         return;
       }
     }
     if (role === "pvz") {
       if (!pickupPointId) {
-        // creating a new PVZ PUNKT — require all fields
-        if (newPvzName.trim().length < 2) { toast.error("PVZ PUNKT adını daxil edin"); return; }
-        if (newPvzCity.trim().length < 2) { toast.error("Şəhəri daxil edin"); return; }
-        if (newPvzAddress.trim().length < 5) { toast.error("PVZ PUNKT-un tam ünvanını daxil edin"); return; }
+        // creating a new PVZ PUNKT â€” require all fields
+        if (newPvzName.trim().length < 2) { toast.error("PVZ PUNKT adÄ±nÄ± daxil edin"); return; }
+        if (newPvzCity.trim().length < 2) { toast.error("ĹžÉ™hÉ™ri daxil edin"); return; }
+        if (newPvzAddress.trim().length < 5) { toast.error("PVZ PUNKT-un tam ĂĽnvanÄ±nÄ± daxil edin"); return; }
       }
     }
     if (acquisitionEnabled && (role === "seller" || role === "pvz")) {
       if (acquisitionRequired && !acquisitionSource) {
-        toast.error("Sizi haradan tanıdığımızı seçin");
+        toast.error("Sizi haradan tanÄ±dÄ±ÄźÄ±mÄ±zÄ± seĂ§in");
         return;
       }
       if (
         ACQUISITION_DETAIL_SOURCES.has(acquisitionSource as AcquisitionSource)
         && !acquisitionDetail.trim()
       ) {
-        toast.error("Kim tərəfindən cəlb olunduğunuzu qeyd edin");
+        toast.error("Kim tÉ™rÉ™findÉ™n cÉ™lb olunduÄźunuzu qeyd edin");
         return;
       }
     }
@@ -328,22 +328,29 @@ export function PortalAuthForm({
     });
     if (error) { setBusy(false); toast.error(error.message); return; }
 
-    // ensure session available for RPC
+    // When email confirmation is enabled Supabase intentionally returns no
+    // session. Clear a session that may belong to a previously signed-in
+    // customer and never bypass confirmation with a password sign-in attempt.
     if (!data.session) {
-      // try sign-in (works when auto-confirm is on)
-      await supabase.auth.signInWithPassword({ email, password }).catch(() => {});
+      await supabase.auth.signOut({ scope: "local" }).catch(() => {});
     }
 
     if (role === "seller") {
       toast.success(data.session
-        ? "Hesab yaradıldı. Satıcı müraciətini və 20 AZN ödənişi tamamlayın."
-        : "Hesab yaradıldı. E-poçtunuzu təsdiqləyib satıcı müraciətini tamamlayın.");
+        ? "Hesab yaradÄ±ldÄ±. SatÄ±cÄ± mĂĽraciÉ™tini vÉ™ 20 AZN Ă¶dÉ™niĹźi tamamlayÄ±n."
+        : "Hesab yaradÄ±ldÄ±. E-poĂ§tunuzu tÉ™sdiqlÉ™yib satÄ±cÄ± mĂĽraciÉ™tini tamamlayÄ±n.");
       setBusy(false);
       if (data.session) navigate({ to: "/become-seller" });
       return;
     }
 
     if (role === "pvz") {
+      if (!data.session) {
+        toast.success("Hesab yaradÄ±ldÄ±. E-poĂ§tunuzu tÉ™sdiqlÉ™yib PVZ qeydiyyatÄ±nÄ± tamamlayÄ±n.");
+        setBusy(false);
+        return;
+      }
+
       const rpcArgs: Record<string, string> = {
         full_name: name.trim(),
         phone: phone.trim(),
@@ -358,7 +365,7 @@ export function PortalAuthForm({
       }
       const { error: e3 } = await supabase.functions.invoke("pvz-registration", { body: rpcArgs });
       if (e3) { setBusy(false); toast.error(e3.message); return; }
-      toast.success("PVZ PUNKT qeydiyyatı tamamlandı");
+      toast.success("PVZ PUNKT qeydiyyatÄ± tamamlandÄ±");
       setBusy(false);
       navigate({ to: "/dashboard" });
       return;
@@ -366,7 +373,11 @@ export function PortalAuthForm({
 
     // buyer
     setBusy(false);
-    toast.success("Qeydiyyat uğurla tamamlandı");
+    if (!data.session) {
+      toast.success("Hesab yaradÄ±ldÄ±. Daxil olmaq ĂĽĂ§ĂĽn e-poĂ§tunuzu tÉ™sdiqlÉ™yin.");
+      return;
+    }
+    toast.success("Qeydiyyat uÄźurla tamamlandÄ±");
     navigate({ to: "/" });
   };
 
@@ -378,15 +389,15 @@ export function PortalAuthForm({
         <div className="flex justify-center mb-4">
           <img src={egLogo} alt="EG Shop logo" className="h-24 w-24 rounded-full object-cover ring-2 ring-primary/30 shadow-lg bg-white" />
         </div>
-        <h1 className="text-2xl font-extrabold mb-1 text-center">{mode === "login" ? "Giriş" : "Qeydiyyat"}</h1>
+        <h1 className="text-2xl font-extrabold mb-1 text-center">{mode === "login" ? "GiriĹź" : "Qeydiyyat"}</h1>
         <p className="text-sm text-muted-foreground mb-4 text-center">
-          {portalLabel ?? "Hesab növünü seçin"}
+          {portalLabel ?? "Hesab nĂ¶vĂĽnĂĽ seĂ§in"}
         </p>
 
         <div className="mb-5 grid grid-cols-4 gap-2">
           {([
-            { key: "buyer", label: "Müştəri", Icon: ShoppingBag },
-            { key: "seller", label: "Satıcı", Icon: Store },
+            { key: "buyer", label: "MĂĽĹźtÉ™ri", Icon: ShoppingBag },
+            { key: "seller", label: "SatÄ±cÄ±", Icon: Store },
             { key: "pvz", label: "PVZ PUNKT", Icon: Building2 },
             { key: "admin", label: "Admin", Icon: Shield },
           ] as const)
@@ -416,18 +427,18 @@ export function PortalAuthForm({
                 placeholder={role === "pvz" ? "Tam ad (Soyad Ad)" : "Ad Soyad"}
                 maxLength={100} className={inputCls} />
               <input value={phone} onChange={(e) => setPhone(e.target.value)}
-                placeholder="Telefon (məs. +994551234567)" maxLength={20} className={inputCls} />
+                placeholder="Telefon (mÉ™s. +994551234567)" maxLength={20} className={inputCls} />
             </>
           )}
 
           <input type="email" value={email} onChange={(e) => setEmail(e.target.value)}
-            placeholder="E-poçt" maxLength={255} autoComplete="email" className={inputCls} />
+            placeholder="E-poĂ§t" maxLength={255} autoComplete="email" className={inputCls} />
           <div className="relative">
             <input type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)}
-              placeholder="Şifrə (minimum 6 simvol)" maxLength={72}
+              placeholder="ĹžifrÉ™ (minimum 6 simvol)" maxLength={72}
               autoComplete={mode === "login" ? "current-password" : "new-password"} className={`${inputCls} pr-11`} />
             <button type="button" onClick={() => setShowPassword((v) => !v)}
-              aria-label={showPassword ? "Şifrəni gizlə" : "Şifrəni göstər"}
+              aria-label={showPassword ? "ĹžifrÉ™ni gizlÉ™" : "ĹžifrÉ™ni gĂ¶stÉ™r"}
               className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-muted-foreground hover:text-primary transition">
               {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             </button>
@@ -445,12 +456,12 @@ export function PortalAuthForm({
           {mode === "signup" && role === "seller" && (
             <div className="space-y-3">
               <input value={shopName} onChange={(e) => setShopName(e.target.value)}
-                placeholder="Mağaza adı" maxLength={100} className={inputCls} required />
+                placeholder="MaÄźaza adÄ±" maxLength={100} className={inputCls} required />
               <div>
                 <input
                   value={voen}
                   onChange={(e) => setVoen(e.target.value.replace(/\D/g, "").slice(0, 10))}
-                  placeholder="VÖEN (10 rəqəm)"
+                  placeholder="VĂ–EN (10 rÉ™qÉ™m)"
                   inputMode="numeric"
                   pattern="[0-9]{10}"
                   minLength={10}
@@ -461,7 +472,7 @@ export function PortalAuthForm({
                   required
                 />
                 <p id="voen-help" className="mt-1 text-xs text-muted-foreground">
-                  Satıcı hesabının təsdiqi üçün 10 rəqəmli VÖEN məcburidir.
+                  SatÄ±cÄ± hesabÄ±nÄ±n tÉ™sdiqi ĂĽĂ§ĂĽn 10 rÉ™qÉ™mli VĂ–EN mÉ™cburidir.
                 </p>
               </div>
             </div>
@@ -470,7 +481,7 @@ export function PortalAuthForm({
           {mode === "signup" && role === "pvz" && (
             <>
               <div>
-                <label className="text-xs font-semibold text-primary mb-1 block">PVZ PUNKT seçimi</label>
+                <label className="text-xs font-semibold text-primary mb-1 block">PVZ PUNKT seĂ§imi</label>
                 <select
                   value={pickupPointId}
                   onChange={(e) => setPickupPointId(e.target.value)}
@@ -478,29 +489,29 @@ export function PortalAuthForm({
                 >
                   <option value="">+ Yeni PVZ PUNKT yarat</option>
                   {pvzList.map((p) => (
-                    <option key={p.id} value={p.id}>{p.city} — {p.name}</option>
+                    <option key={p.id} value={p.id}>{p.city} â€” {p.name}</option>
                   ))}
                 </select>
                 {!pickupPointId && (
                   <p className="text-[11px] text-primary mt-1 font-medium">
-                    ✓ Yeni PVZ PUNKT yaradılır — məlumatları aşağıda doldurun
+                    âś“ Yeni PVZ PUNKT yaradÄ±lÄ±r â€” mÉ™lumatlarÄ± aĹźaÄźÄ±da doldurun
                   </p>
                 )}
               </div>
 
               {!pickupPointId && (
                 <div className="space-y-2 p-3 rounded-lg border-2 border-primary/40 bg-primary/5">
-                  <div className="text-xs font-bold text-primary">Yeni PVZ PUNKT məlumatları</div>
+                  <div className="text-xs font-bold text-primary">Yeni PVZ PUNKT mÉ™lumatlarÄ±</div>
                   <input value={newPvzName} onChange={(e) => setNewPvzName(e.target.value)}
-                    placeholder="PVZ PUNKT adı (məs. Mərkəz-1)" maxLength={80} className={inputCls} />
+                    placeholder="PVZ PUNKT adÄ± (mÉ™s. MÉ™rkÉ™z-1)" maxLength={80} className={inputCls} />
                   <select value={newPvzCity} onChange={(e) => setNewPvzCity(e.target.value)} className={inputCls}>
-                    <option value="">Şəhər seçin</option>
+                    <option value="">ĹžÉ™hÉ™r seĂ§in</option>
                     {AZ_CITIES.map((c) => (
                       <option key={c.name} value={c.name}>{c.name}</option>
                     ))}
                   </select>
                   <input value={newPvzAddress} onChange={(e) => setNewPvzAddress(e.target.value)}
-                    placeholder="Tam ünvan (küçə, bina, mənzil)" maxLength={200} className={inputCls} />
+                    placeholder="Tam ĂĽnvan (kĂĽĂ§É™, bina, mÉ™nzil)" maxLength={200} className={inputCls} />
                 </div>
               )}
 
@@ -530,7 +541,7 @@ export function PortalAuthForm({
                     </ScrollArea>
                   </DialogContent>
                 </Dialog>
-                {" "}— oxudum və qəbul edirəm.
+                {" "}â€” oxudum vÉ™ qÉ™bul edirÉ™m.
               </span>
             </label>
           )}
@@ -538,7 +549,7 @@ export function PortalAuthForm({
           <button type="submit" disabled={busy}
             className="w-full h-11 bg-primary text-primary-foreground rounded-lg font-bold hover:bg-primary/90 disabled:opacity-60">
             {busy ? "..." : mode === "login" ? "Daxil ol" : (
-              role === "seller" ? "Satıcı kimi qeydiyyat" : role === "pvz" ? "PVZ PUNKT qeydiyyatı" : "Qeydiyyat"
+              role === "seller" ? "SatÄ±cÄ± kimi qeydiyyat" : role === "pvz" ? "PVZ PUNKT qeydiyyatÄ±" : "Qeydiyyat"
             )}
           </button>
         </form>
@@ -546,33 +557,34 @@ export function PortalAuthForm({
         {mode === "login" && (
           <button type="button" onClick={() => { setForgotEmail(email); setForgotOpen(true); }}
             className="mt-3 w-full text-sm text-primary hover:underline">
-            Şifrəmi unutdum
+            ĹžifrÉ™mi unutdum
           </button>
         )}
 
         {role !== "admin" && !fixedMode && (
           <button onClick={() => setMode(mode === "login" ? "signup" : "login")}
             className="mt-4 w-full text-sm text-muted-foreground hover:text-primary">
-            {mode === "login" ? "Hesabınız yoxdur? Qeydiyyat" : "Artıq hesabınız var? Daxil olun"}
+            {mode === "login" ? "HesabÄ±nÄ±z yoxdur? Qeydiyyat" : "ArtÄ±q hesabÄ±nÄ±z var? Daxil olun"}
           </button>
         )}
       </div>
 
       <Dialog open={forgotOpen} onOpenChange={setForgotOpen}>
         <DialogContent className="max-w-sm">
-          <DialogHeader><DialogTitle>Şifrəni bərpa et</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>ĹžifrÉ™ni bÉ™rpa et</DialogTitle></DialogHeader>
           <p className="text-sm text-muted-foreground">
-            E-poçtunuzu daxil edin — bərpa linki göndəriləcək. Müştəri, satıcı və PVZ işçiləri üçün eyni qaydada işləyir.
+            E-poĂ§tunuzu daxil edin â€” bÉ™rpa linki gĂ¶ndÉ™rilÉ™cÉ™k. MĂĽĹźtÉ™ri, satÄ±cÄ± vÉ™ PVZ iĹźĂ§ilÉ™ri ĂĽĂ§ĂĽn eyni qaydada iĹźlÉ™yir.
           </p>
           <input type="email" value={forgotEmail} onChange={(e) => setForgotEmail(e.target.value)}
-            placeholder="E-poçt" maxLength={255}
+            placeholder="E-poĂ§t" maxLength={255}
             className="w-full h-11 px-3 rounded-lg border border-input bg-background focus:outline-none focus:ring-2 focus:ring-ring" />
           <button onClick={sendReset} disabled={forgotBusy}
             className="w-full h-11 bg-primary text-primary-foreground rounded-lg font-bold hover:bg-primary/90 disabled:opacity-60">
-            {forgotBusy ? "..." : "Bərpa linkini göndər"}
+            {forgotBusy ? "..." : "BÉ™rpa linkini gĂ¶ndÉ™r"}
           </button>
         </DialogContent>
       </Dialog>
     </div>
   );
 }
+
