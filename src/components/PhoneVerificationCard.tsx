@@ -13,6 +13,16 @@ interface PhoneVerificationCardProps {
   title?: string;
 }
 
+function friendlyPhoneError(message: string) {
+  if (message.includes("20003") || message.toLowerCase().includes("authentication failed")) {
+    return "SMS xidməti autentifikasiya xətası verdi. Twilio məlumatlarını admin yoxlamalıdır.";
+  }
+  if (message.includes("21608")) {
+    return "Twilio sınaq rejimində bu nömrəyə SMS göndərməyə icazə vermir.";
+  }
+  return message || "SMS kodu göndərilə bilmədi";
+}
+
 export function PhoneVerificationCard({
   phone,
   onPhoneChange,
@@ -59,7 +69,7 @@ export function PhoneVerificationCard({
     const { error } = await supabase.auth.updateUser({ phone: normalizedPhone });
     setBusy(false);
     if (error) {
-      toast.error(error.message || "SMS kodu göndərilə bilmədi");
+      toast.error(friendlyPhoneError(error.message));
       return;
     }
     onPhoneChange(normalizedPhone);
@@ -151,32 +161,20 @@ export function PhoneVerificationCard({
 
       <div className="mt-4 flex flex-col gap-2 sm:flex-row">
         {!sent ? (
-          <button
-            type="button"
-            onClick={sendCode}
-            disabled={busy}
-            className="inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-lg bg-primary px-4 font-bold text-primary-foreground disabled:opacity-60"
-          >
+          <button type="button" onClick={sendCode} disabled={busy}
+            className="inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-lg bg-primary px-4 font-bold text-primary-foreground disabled:opacity-60">
             {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <MessageSquareText className="h-4 w-4" />}
             SMS kodu göndər
           </button>
         ) : (
           <>
-            <button
-              type="button"
-              onClick={verifyCode}
-              disabled={busy || code.length !== 6}
-              className="inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-lg bg-primary px-4 font-bold text-primary-foreground disabled:opacity-60"
-            >
+            <button type="button" onClick={verifyCode} disabled={busy || code.length !== 6}
+              className="inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-lg bg-primary px-4 font-bold text-primary-foreground disabled:opacity-60">
               {busy && <Loader2 className="h-4 w-4 animate-spin" />}
               Kodu təsdiqlə
             </button>
-            <button
-              type="button"
-              onClick={sendCode}
-              disabled={busy || cooldown > 0}
-              className="h-11 rounded-lg border border-border px-4 text-sm font-semibold disabled:opacity-50"
-            >
+            <button type="button" onClick={sendCode} disabled={busy || cooldown > 0}
+              className="h-11 rounded-lg border border-border px-4 text-sm font-semibold disabled:opacity-50">
               {cooldown > 0 ? `Yenidən göndər (${cooldown})` : "Yenidən göndər"}
             </button>
           </>
