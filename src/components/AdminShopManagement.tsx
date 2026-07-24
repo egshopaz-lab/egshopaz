@@ -94,7 +94,30 @@ export function AdminShopManagement() {
     const granting = !selected.product_access_override;
     const reason = window.prompt(granting ? "Xüsusi məhsul icazəsinin səbəbi:" : "İcazənin ləğv səbəbi:", granting ? "Admin tərəfindən xüsusi icazə" : "");
     if (reason === null) return;
-    await invokeAccountAction(granting ? "grant_product_access" : "revoke_product_access", reason);
+    setBusy("product_access");
+    const { data: authData } = await supabase.auth.getUser();
+    const adminId = authData.user?.id;
+    if (!adminId) {
+      setBusy(null);
+      toast.error("Admin sessiyası tapılmadı");
+      return;
+    }
+    const { error } = await supabase.rpc("admin_set_seller_product_access" as never, {
+      _admin_id: adminId,
+      _target_id: selected.seller_id,
+      _allowed: granting,
+      _reason: reason,
+      _admin_email: authData.user?.email ?? null,
+      _ip_address: null,
+      _user_agent: navigator.userAgent,
+    } as never);
+    setBusy(null);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    toast.success(granting ? "Məhsul yerləşdirmə icazəsi verildi" : "Məhsul yerləşdirmə icazəsi ləğv edildi");
+    await Promise.all([load(), loadDetail(selected.seller_id)]);
   };
 
   const editShop = async () => {
@@ -188,4 +211,3 @@ function ListCard({ title, empty, children }: { title: string; empty: string; ch
   const items = Array.isArray(children) ? children : [children];
   return <section className="space-y-3 rounded-2xl border border-border p-4"><h3 className="font-black">{title}</h3>{items.length ? items : <p className="py-8 text-center text-sm text-muted-foreground">{empty}</p>}</section>;
 }
-
