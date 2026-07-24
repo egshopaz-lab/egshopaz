@@ -1,5 +1,6 @@
 import { ShieldCheck } from "lucide-react";
 import { PortalAuthForm, type AuthMode } from "@/routes/auth";
+import { SellerRegistrationWizard } from "@/components/SellerRegistrationWizard";
 import { PORTAL_CONFIG, portalUrl, usePortal, usePortalReady } from "@/lib/portals";
 
 export function PortalAuthRoute({ mode, referralCode }: { mode: AuthMode; referralCode?: string }) {
@@ -9,6 +10,10 @@ export function PortalAuthRoute({ mode, referralCode }: { mode: AuthMode; referr
   if (!ready) return <div className="min-h-[420px]" />;
 
   const config = PORTAL_CONFIG[portal];
+  if (portal === "seller" && mode === "signup") {
+    return <SellerRegistrationWizard referralCode={referralCode} />;
+  }
+
   if (portal === "admin" && mode === "signup") {
     return (
       <div className="container mx-auto max-w-lg px-4 py-12">
@@ -50,3 +55,4 @@ export function PortalAuthRoute({ mode, referralCode }: { mode: AuthMode; referr
     </div>
   );
 }
+
