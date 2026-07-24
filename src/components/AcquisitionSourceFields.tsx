@@ -30,13 +30,13 @@ export function AcquisitionSourceFields({
     <div className={`space-y-2 ${className}`}>
       <div>
         <label className="text-sm font-semibold">
-          Sizi haradan tanıdıq? {required && <span className="text-destructive">*</span>}
+          Bizi necə tanıdınız? {required && <span className="text-destructive">*</span>}
         </label>
         <select
           value={source}
           onChange={(event) => onSourceChange(event.target.value)}
           required={required}
-          className="mt-1 w-full h-11 px-3 rounded-lg border border-input bg-background"
+          className="mt-1 h-11 w-full rounded-lg border border-input bg-background px-3"
         >
           <option value="">Mənbəni seçin</option>
           {ACQUISITION_SOURCES.map((item) => (
@@ -55,10 +55,11 @@ export function AcquisitionSourceFields({
             required
             maxLength={250}
             placeholder="Ad, telefon, kod və ya digər məlumat"
-            className="mt-1 w-full h-11 px-3 rounded-lg border border-input bg-background"
+            className="mt-1 h-11 w-full rounded-lg border border-input bg-background px-3"
           />
         </div>
       )}
     </div>
   );
 }
+
