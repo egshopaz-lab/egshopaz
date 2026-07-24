@@ -8,6 +8,9 @@ import { toast } from "sonner";
 import { AcquisitionSourceFields } from "@/components/AcquisitionSourceFields";
 import { ACQUISITION_DETAIL_SOURCES, type AcquisitionSource } from "@/lib/acquisitionSources";
 import { getFunctionErrorMessage } from "@/lib/functionError";
+import { PhoneNumberField } from "@/components/PhoneNumberField";
+import { PhoneVerificationCard } from "@/components/PhoneVerificationCard";
+import { isValidE164Phone, normalizeE164Phone } from "@/lib/phone";
 
 type PaymentSearch = { payment?: "success" | "error"; start_payment?: string };
 
@@ -49,6 +52,13 @@ function BecomeSeller() {
   const [sellerSignupFee, setSellerSignupFee] = useState(20);
   const [busy, setBusy] = useState(false);
   const [checking, setChecking] = useState(true);
+  const normalizedPhone = normalizeE164Phone(phone);
+  const verifiedPhone = user?.phone ? normalizeE164Phone(user.phone) : "";
+  const isPhoneVerified = Boolean(
+    user?.phone_confirmed_at
+    && verifiedPhone
+    && verifiedPhone === normalizedPhone,
+  );
 
   const loadApplication = useCallback(async () => {
     if (!user) return null;
@@ -136,6 +146,10 @@ function BecomeSeller() {
   const startPayment = async (event?: React.FormEvent) => {
     event?.preventDefault();
     if (!user || busy) return;
+    if (!isValidE164Phone(normalizedPhone) || !isPhoneVerified) {
+      toast.error("Ödənişdən əvvəl telefon nömrənizi SMS kodu ilə təsdiqləyin");
+      return;
+    }
     if (shopName.trim().length < 2) {
       toast.error("Mağaza adı minimum 2 simvol olmalıdır");
       return;
@@ -166,7 +180,7 @@ function BecomeSeller() {
       body: {
         shop_name: shopName.trim(),
         shop_city: shopCity.trim() || null,
-        phone: phone.trim() || null,
+        phone: normalizedPhone,
         voen: voen.trim() || null,
         language,
       },
@@ -189,7 +203,7 @@ function BecomeSeller() {
   };
 
   useEffect(() => {
-    if (!user || loading || checking || busy || autoPaymentStartedRef.current) return;
+    if (!user || loading || checking || busy || autoPaymentStartedRef.current || !isPhoneVerified) return;
     if (search.payment) return;
     const metadata = user.user_metadata ?? {};
     const cameFromSellerSignup =
@@ -217,6 +231,7 @@ function BecomeSeller() {
     application?.status,
     busy,
     checking,
+    isPhoneVerified,
     loading,
     search.payment,
     search.start_payment,
@@ -225,6 +240,22 @@ function BecomeSeller() {
   ]);
 
   if (!user || loading || checking) return null;
+
+  if (!isPhoneVerified) {
+    return (
+      <div className="container mx-auto max-w-lg px-4 py-10">
+        <PhoneVerificationCard
+          phone={phone}
+          onPhoneChange={setPhone}
+          title="Satıcı qeydiyyatı üçün telefonu təsdiqləyin"
+          onVerified={() => window.location.reload()}
+        />
+        <p className="mt-4 text-center text-sm text-muted-foreground">
+          Telefon təsdiqləndikdən sonra satıcı ödənişi və mağaza aktivləşdirməsi açılacaq.
+        </p>
+      </div>
+    );
+  }
 
   const isPending = application?.status === "pending_payment";
   const isBlocked =
@@ -319,12 +350,10 @@ function BecomeSeller() {
           </div>
           <div>
             <label className="text-sm font-semibold">Telefon</label>
-            <input
+            <PhoneNumberField
               value={phone}
-              onChange={(event) => setPhone(event.target.value)}
-              maxLength={30}
-              placeholder="+994 50 000 00 00"
-              className="mt-1 w-full h-11 px-3 rounded-lg border border-input bg-background"
+              onChange={setPhone}
+              required
             />
           </div>
         </div>
@@ -372,3 +401,4 @@ function BecomeSeller() {
     </div>
   );
 }
+
