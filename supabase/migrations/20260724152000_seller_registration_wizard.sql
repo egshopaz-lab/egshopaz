@@ -16,6 +16,9 @@ alter table public.seller_applications
   add column if not exists seller_agreement_accepted_at timestamptz,
   add column if not exists phone_verified_at timestamptz;
 
+alter table public.system_settings
+  add column if not exists seller_phone_otp_required boolean not null default true;
+
 alter table public.seller_applications
   drop constraint if exists seller_applications_seller_type_check;
 
@@ -43,6 +46,7 @@ declare
   _seller_type text;
   _voen text;
   _phone_confirmed_at timestamptz;
+  _phone_otp_required boolean := true;
 begin
   select
     coalesce(raw_user_meta_data, '{}'::jsonb),
@@ -54,6 +58,11 @@ begin
   if coalesce(_metadata->>'registration_version', '') <> 'seller_wizard_v1' then
     return new;
   end if;
+
+  select coalesce(seller_phone_otp_required, true)
+  into _phone_otp_required
+  from public.system_settings
+  limit 1;
 
   begin
     _birth_date := nullif(_metadata->>'date_of_birth', '')::date;
@@ -92,7 +101,7 @@ begin
     or coalesce(_metadata->>'seller_agreement_accepted', '') <> 'true' then
     raise exception 'Məcburi razılıqlar təsdiqlənməyib';
   end if;
-  if _phone_confirmed_at is null then
+  if _phone_otp_required and _phone_confirmed_at is null then
     raise exception 'Telefon nömrəsi təsdiqlənməyib';
   end if;
 
@@ -166,4 +175,6 @@ comment on column public.seller_applications.identity_document_number is
   'Protected seller identity field. Never expose through public storefront APIs.';
 comment on column public.seller_applications.residential_address is
   'Protected seller identity field. Never expose through public storefront APIs.';
+comment on column public.system_settings.seller_phone_otp_required is
+  'Admin-controlled seller phone OTP gate. Disabling skips verification without deleting provider configuration.';
 
