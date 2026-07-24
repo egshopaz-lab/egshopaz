@@ -175,6 +175,14 @@ function AppShell() {
     const query = window.location.search;
 
     if (portal === "marketplace") {
+      const onboardingPortal = String(user?.user_metadata?.onboarding_portal ?? "");
+      // Some confirmation emails can return to the Auth site URL instead of
+      // RedirectTo. A confirmed, unpaid seller must continue with payment and
+      // must never fall through to the customer cabinet on the marketplace.
+      if (!loading && user && onboardingPortal === "seller" && !isSeller) {
+        window.location.replace(portalUrl("seller", "/become-seller?start_payment=1"));
+        return;
+      }
       if (pathname === "/become-seller") window.location.replace(portalUrl("seller", "/register"));
       else if (isDashboardPanel) window.location.replace(portalUrl("admin", pathname + query));
       else if (pathname === "/auth") {
