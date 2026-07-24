@@ -15,9 +15,13 @@ export const ACQUISITION_SOURCES = [
 export type AcquisitionSource = (typeof ACQUISITION_SOURCES)[number]["value"];
 
 export const ACQUISITION_DETAIL_SOURCES = new Set<AcquisitionSource>([
-  "seller_referral", "pvz_referral", "employee_referral", "other",
+  "seller_referral",
+  "pvz_referral",
+  "employee_referral",
+  "other",
 ]);
 
 export function acquisitionSourceLabel(value: string | null | undefined) {
   return ACQUISITION_SOURCES.find((item) => item.value === value)?.label ?? "Məlum deyil";
 }
+
