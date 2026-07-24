@@ -122,6 +122,7 @@ export function SellerRegistrationWizard({ referralCode }: SellerRegistrationWiz
   const [submittedEmail, setSubmittedEmail] = useState("");
   const [acquisitionEnabled, setAcquisitionEnabled] = useState(true);
   const [acquisitionRequired, setAcquisitionRequired] = useState(true);
+  const [phoneOtpRequired, setPhoneOtpRequired] = useState(true);
 
   const normalizedPhone = useMemo(() => normalizeE164Phone(form.phone), [form.phone]);
   const needsVoen = form.sellerType !== "individual";
@@ -134,16 +135,18 @@ export function SellerRegistrationWizard({ referralCode }: SellerRegistrationWiz
   useEffect(() => {
     void supabase
       .from("system_settings")
-      .select("acquisition_source_enabled,acquisition_source_required")
+      .select("acquisition_source_enabled,acquisition_source_required,seller_phone_otp_required")
       .limit(1)
       .maybeSingle()
       .then(({ data }) => {
         const settings = data as {
           acquisition_source_enabled?: boolean;
           acquisition_source_required?: boolean;
+          seller_phone_otp_required?: boolean;
         } | null;
         setAcquisitionEnabled(settings?.acquisition_source_enabled ?? true);
         setAcquisitionRequired(settings?.acquisition_source_required ?? true);
+        setPhoneOtpRequired(settings?.seller_phone_otp_required ?? true);
       });
   }, []);
 
@@ -303,7 +306,8 @@ export function SellerRegistrationWizard({ referralCode }: SellerRegistrationWiz
           <h1 className="text-2xl font-black md:text-3xl">E-poçtunuzu təsdiqləyin</h1>
           <p className="mt-3 text-muted-foreground">
             Təsdiq linkini <strong className="text-foreground">{submittedEmail}</strong> ünvanına
-            göndərdik. Linki açdıqdan sonra telefon SMS kodu və ödəniş mərhələsi görünəcək.
+            göndərdik. Linki açdıqdan sonra {phoneOtpRequired ? "telefon SMS kodu və " : ""}
+            ödəniş mərhələsi görünəcək.
           </p>
           <div className="mt-6 rounded-2xl bg-secondary/60 p-4 text-left text-sm">
             <div className="flex items-center gap-2 font-bold">
@@ -312,7 +316,9 @@ export function SellerRegistrationWizard({ referralCode }: SellerRegistrationWiz
             </div>
             <ol className="mt-3 list-inside list-decimal space-y-2 text-muted-foreground">
               <li>E-poçtdakı EG Shop təsdiq linkini açın.</li>
-              <li>Telefonunuza göndərilən 6 rəqəmli SMS kodunu daxil edin.</li>
+              {phoneOtpRequired && (
+                <li>Telefonunuza göndərilən 6 rəqəmli SMS kodunu daxil edin.</li>
+              )}
               <li>Qeydiyyat ödənişini tamamlayın.</li>
             </ol>
           </div>
@@ -416,7 +422,9 @@ export function SellerRegistrationWizard({ referralCode }: SellerRegistrationWiz
                     onChange={(value) => update("phone", value)} required />
                 </div>
                 <p className="mt-1 text-xs text-muted-foreground">
-                  E-poçt təsdiqindən sonra bu nömrəyə SMS kodu göndəriləcək.
+                  {phoneOtpRequired
+                    ? "E-poçt təsdiqindən sonra bu nömrəyə SMS kodu göndəriləcək."
+                    : "Telefon nömrəsi qeydiyyat və sifariş əlaqəsi üçün istifadə ediləcək."}
                 </p>
               </div>
             </div>
@@ -595,8 +603,14 @@ export function SellerRegistrationWizard({ referralCode }: SellerRegistrationWiz
               </div>
               <ol className="mt-3 space-y-2 text-sm text-muted-foreground">
                 <li>1. EG Shop təsdiq linki e-poçt ünvanınıza göndəriləcək.</li>
-                <li>2. Linki açdıqdan sonra telefonunuza SMS OTP kodu göndəriləcək.</li>
-                <li>3. Telefon təsdiqindən sonra qeydiyyat ödənişinə keçəcəksiniz.</li>
+                {phoneOtpRequired ? (
+                  <>
+                    <li>2. Linki açdıqdan sonra telefonunuza SMS OTP kodu göndəriləcək.</li>
+                    <li>3. Telefon təsdiqindən sonra qeydiyyat ödənişinə keçəcəksiniz.</li>
+                  </>
+                ) : (
+                  <li>2. Linki açdıqdan sonra qeydiyyat ödənişinə keçəcəksiniz.</li>
+                )}
               </ol>
             </div>
             <button type="button" onClick={submit} disabled={busy}
