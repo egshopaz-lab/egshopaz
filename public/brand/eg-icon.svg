@@ -13,19 +13,15 @@
       <stop offset="1" stop-color="#F43F5E"/>
     </linearGradient>
   </defs>
-  <rect x="20" y="20" width="472" height="472" rx="142" fill="#FAF8FF"/>
-  <rect x="20.75" y="20.75" width="470.5" height="470.5" rx="141.25" stroke="#6D28D9" stroke-opacity=".12" stroke-width="1.5"/>
-  <path d="M45 220H151" stroke="url(#speed)" stroke-width="25" stroke-linecap="round"/>
-  <path d="M26 267H139" stroke="url(#speed)" stroke-width="25" stroke-linecap="round"/>
-  <path d="M55 314H157" stroke="url(#speed)" stroke-width="25" stroke-linecap="round"/>
-  <path d="M164 207L255 250L255 409L164 361V207Z" fill="url(#boxFront)"/>
-  <path d="M255 250L348 205V360L255 409V250Z" fill="url(#boxSide)"/>
-  <path d="M164 207L231 169L319 207L255 250L164 207Z" fill="#5B21B6"/>
-  <path d="M231 169L319 207L348 188L260 150L231 169Z" fill="#7C3AED"/>
-  <path d="M164 207L231 169L199 151L132 188L164 207Z" fill="#8B5CF6"/>
-  <path d="M255 250L255 409" stroke="white" stroke-opacity=".9" stroke-width="10"/>
-  <path d="M222 234L255 250L291 233L291 287L270 299V267L255 275L222 258V234Z" fill="white"/>
-  <path d="M198 315L235 335" stroke="white" stroke-opacity=".82" stroke-width="13" stroke-linecap="round"/>
-  <path d="M198 342L226 357" stroke="white" stroke-opacity=".58" stroke-width="10" stroke-linecap="round"/>
+  <path d="M28 205H154" stroke="url(#speed)" stroke-width="27" stroke-linecap="round"/>
+  <path d="M8 258H137" stroke="url(#speed)" stroke-width="27" stroke-linecap="round"/>
+  <path d="M39 311H160" stroke="url(#speed)" stroke-width="27" stroke-linecap="round"/>
+  <path d="M161 183L270 235V428L161 371V183Z" fill="url(#boxFront)"/>
+  <path d="M270 235L383 181V370L270 428V235Z" fill="url(#boxSide)"/>
+  <path d="M161 183L242 137L349 183L270 235L161 183Z" fill="#5B21B6"/>
+  <path d="M242 137L349 183L383 162L277 116L242 137Z" fill="#7C3AED"/>
+  <path d="M161 183L242 137L203 116L122 162L161 183Z" fill="#8B5CF6"/>
+  <path d="M270 235V428" stroke="white" stroke-opacity=".92" stroke-width="11"/>
+  <path d="M230 216L270 235L313 214V278L288 292V254L270 264L230 244V216Z" fill="white"/>
 </svg>
 
