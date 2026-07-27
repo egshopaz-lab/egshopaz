@@ -162,6 +162,17 @@ interface Profile {
   payout_method: string | null;
   created_at?: string | null;
 }
+
+type OrderViewFilter =
+  | "all"
+  | "paid"
+  | "pending"
+  | "preparing"
+  | "shipped"
+  | "completed"
+  | "cancelled"
+  | "returned";
+type ProductViewFilter = "all" | "active" | "low_stock" | "out_of_stock";
 interface SellerNotif {
   id: string;
   title: string;
@@ -232,6 +243,8 @@ export function SellerPanel() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
   const [ordersDateRange, setOrdersDateRange] = useState<DateRange>(emptyRange);
+  const [orderViewFilter, setOrderViewFilter] = useState<OrderViewFilter>("all");
+  const [productViewFilter, setProductViewFilter] = useState<ProductViewFilter>("all");
   const [profile, setProfile] = useState<Profile | null>(null);
   const [editing, setEditing] = useState<Partial<Product> | null>(null);
   const [qrProduct, setQrProduct] = useState<Product | null>(null);
@@ -557,6 +570,53 @@ export function SellerPanel() {
   const recentOrders = [...orderGroups]
     .sort((a, b) => (b.createdAt ?? "").localeCompare(a.createdAt ?? ""))
     .slice(0, 5);
+  const toDateInput = (date: Date) => {
+    const pad = (value: number) => value.toString().padStart(2, "0");
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+  };
+  const openOrderDetails = (filter: OrderViewFilter, from?: Date, to: Date = todayStart) => {
+    setOrderViewFilter(filter);
+    setOrdersDateRange(
+      from ? { from: toDateInput(from), to: toDateInput(to) } : emptyRange,
+    );
+    setTab("orders");
+  };
+  const openProductDetails = (filter: ProductViewFilter) => {
+    setProductViewFilter(filter);
+    setTab("products");
+  };
+  const orderMatchesFilter = (item: OrderItem, filter: OrderViewFilter) => {
+    if (filter === "all") return true;
+    if (filter === "paid") {
+      return (
+        item.order_payment_status === "paid" ||
+        ["paid", "delivered", "completed"].includes(item.status)
+      );
+    }
+    const statusGroups: Record<Exclude<OrderViewFilter, "all" | "paid">, string[]> = {
+      pending: ["pending", "paid"],
+      preparing: ["preparing", "packed"],
+      shipped: ["shipped", "handed_to_courier", "in_transit"],
+      completed: ["delivered", "completed"],
+      cancelled: ["cancelled"],
+      returned: ["returned"],
+    };
+    return statusGroups[filter].includes(item.status);
+  };
+  const filteredProducts = products.filter((product) => {
+    if (productViewFilter === "active") return product.is_active;
+    if (productViewFilter === "low_stock") {
+      return (
+        product.is_active &&
+        product.stock > 0 &&
+        product.stock <= (product.min_stock ?? 5)
+      );
+    }
+    if (productViewFilter === "out_of_stock") {
+      return product.is_active && product.stock === 0;
+    }
+    return true;
+  });
 
   const uploadImages = async (files: FileList | null) => {
     if (!files || !user || !editing) return;
@@ -925,7 +985,7 @@ export function SellerPanel() {
       icon: Package,
       badge: products.length,
       active: tab === "products",
-      onClick: () => setTab("products"),
+      onClick: () => openProductDetails("all"),
     },
     {
       key: "bulk",
@@ -948,7 +1008,7 @@ export function SellerPanel() {
       icon: ShoppingBag,
       badge: pendingOrders,
       active: tab === "orders",
-      onClick: () => setTab("orders"),
+      onClick: () => openOrderDetails("all"),
     },
     {
       key: "returns",
@@ -1040,81 +1100,99 @@ export function SellerPanel() {
                 label: "Bugünkü satışlar",
                 value: formatAZN(todaySales.revenue),
                 note: `${todaySales.orders} ödənilmiş sifariş`,
+                onClick: () => openOrderDetails("paid", todayStart),
               },
               {
                 icon: TrendingUp,
                 label: "Həftəlik satışlar",
                 value: formatAZN(weekSales.revenue),
                 note: `${weekSales.orders} ödənilmiş sifariş`,
+                onClick: () => openOrderDetails("paid", weekStart),
               },
               {
                 icon: BarChart3,
                 label: "Aylıq satışlar",
                 value: formatAZN(monthSales.revenue),
                 note: `${monthSales.orders} ödənilmiş sifariş`,
+                onClick: () => openOrderDetails("paid", monthStart),
               },
               {
                 icon: DollarSign,
                 label: "Ümumi gəlir",
                 value: formatAZN(totalRevenue),
                 note: `${totalOrders} ödənilmiş sifariş`,
+                onClick: () => openOrderDetails("paid"),
               },
               {
                 icon: Package,
                 label: "Aktiv məhsullar",
                 value: products.filter((p) => p.is_active).length,
                 note: `${products.length} ümumi məhsul`,
+                onClick: () => openProductDetails("active"),
               },
               {
                 icon: ShoppingBag,
                 label: "Gözləyən sifarişlər",
                 value: pendingOrders,
                 note: "Emal tələb edir",
+                onClick: () => openOrderDetails("pending"),
               },
               {
                 icon: Boxes,
                 label: "Hazırlanan sifarişlər",
                 value: preparingOrders,
                 note: "Hazırlanır və ya paketlənib",
+                onClick: () => openOrderDetails("preparing"),
               },
               {
                 icon: Rocket,
                 label: "Göndərilən sifarişlər",
                 value: shippedOrders,
                 note: "Çatdırılma prosesindədir",
+                onClick: () => openOrderDetails("shipped"),
               },
               {
                 icon: BadgeCheck,
                 label: "Tamamlanan sifarişlər",
                 value: completedOrders,
                 note: "Uğurla təhvil verilib",
+                onClick: () => openOrderDetails("completed"),
               },
               {
                 icon: X,
                 label: "Ləğv edilən sifarişlər",
                 value: cancelledOrders,
                 note: "Ləğv olunub",
+                onClick: () => openOrderDetails("cancelled"),
               },
               {
                 icon: Undo2,
                 label: "Qaytarılan sifarişlər",
                 value: returnedOrders,
                 note: "Geri qaytarılıb",
+                onClick: () => openOrderDetails("returned"),
               },
               {
                 icon: AlertTriangle,
                 label: "Bitmək üzrə olan məhsullar",
                 value: lowStock,
                 note: "Minimum stok həddinə çatıb",
+                onClick: () => openProductDetails("low_stock"),
               },
               {
                 icon: PackageX,
                 label: "Stoku bitən",
                 value: outOfStock,
                 note: "Satış dayandırılıb",
+                onClick: () => openProductDetails("out_of_stock"),
               },
             ].map((s, i) => (
-              <div key={i} className="bg-card border border-border rounded-2xl p-5 shadow-card">
+              <button
+                type="button"
+                key={i}
+                onClick={s.onClick}
+                className="bg-card border border-border rounded-2xl p-5 shadow-card text-left hover:border-primary hover:shadow-md transition focus:outline-none focus:ring-2 focus:ring-primary/40"
+              >
                 <div className="flex items-center justify-between">
                   <div>
                     <div className="text-sm text-muted-foreground">{s.label}</div>
@@ -1125,7 +1203,8 @@ export function SellerPanel() {
                     <s.icon className="h-6 w-6" />
                   </div>
                 </div>
-              </div>
+                <div className="text-xs text-primary font-semibold mt-3">Detallara bax →</div>
+              </button>
             ))}
           </div>
           {lowStock > 0 && (
@@ -1193,7 +1272,7 @@ export function SellerPanel() {
             <div className="flex items-center justify-between gap-3 mb-4">
               <h3 className="font-bold text-lg">Son sifarişlər</h3>
               <button
-                onClick={() => setTab("orders")}
+                onClick={() => openOrderDetails("all")}
                 className="text-sm text-primary font-semibold hover:underline"
               >
                 Hamısına bax
@@ -1297,7 +1376,7 @@ export function SellerPanel() {
                 <span className="font-semibold text-sm">Yeni məhsul əlavə et</span>
               </button>
               <button
-                onClick={() => setTab("orders")}
+                onClick={() => openOrderDetails("all")}
                 className="flex items-center gap-3 p-4 rounded-xl border border-border hover:border-primary hover:bg-secondary/50 transition text-left"
               >
                 <ShoppingBag className="h-5 w-5 text-primary" />
@@ -1316,29 +1395,59 @@ export function SellerPanel() {
       )}
 
       {tab === "products" && (
-        <div>
-          <button
-            onClick={() =>
-              setEditing({ title: "", price: 0, stock: 0, images: [], is_active: true })
-            }
-            className="mb-4 bg-primary text-primary-foreground px-4 py-2 rounded-lg font-bold hover:bg-primary/90 inline-flex items-center gap-2"
-          >
-            <Plus className="h-4 w-4" /> Yeni məhsul
-          </button>
-          {products.length === 0 ? (
+        <div className="space-y-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex flex-wrap gap-2">
+              {[
+                { value: "all", label: `Hamısı (${products.length})` },
+                {
+                  value: "active",
+                  label: `Aktiv (${products.filter((product) => product.is_active).length})`,
+                },
+                { value: "low_stock", label: `Bitmək üzrə (${lowStock})` },
+                { value: "out_of_stock", label: `Stoku bitən (${outOfStock})` },
+              ].map((filter) => (
+                <button
+                  type="button"
+                  key={filter.value}
+                  onClick={() => setProductViewFilter(filter.value as ProductViewFilter)}
+                  className={`px-3 py-2 rounded-lg text-xs font-bold border transition ${
+                    productViewFilter === filter.value
+                      ? "bg-primary text-primary-foreground border-primary"
+                      : "bg-card border-border hover:border-primary"
+                  }`}
+                >
+                  {filter.label}
+                </button>
+              ))}
+            </div>
+            <button
+              onClick={() =>
+                setEditing({ title: "", price: 0, stock: 0, images: [], is_active: true })
+              }
+              className="bg-primary text-primary-foreground px-4 py-2 rounded-lg font-bold hover:bg-primary/90 inline-flex items-center gap-2"
+            >
+              <Plus className="h-4 w-4" /> Yeni məhsul
+            </button>
+          </div>
+          {filteredProducts.length === 0 ? (
             <div className="bg-secondary/40 rounded-2xl p-10 text-center">
               <Package className="h-12 w-12 mx-auto text-muted-foreground mb-3" />
               <p className="text-muted-foreground mb-4">
-                Hələ məhsul yoxdur. İlk məhsulunuzu əlavə edin.
+                {products.length === 0
+                  ? "Hələ məhsul yoxdur. İlk məhsulunuzu əlavə edin."
+                  : "Bu filtrə uyğun məhsul yoxdur."}
               </p>
-              <button
-                onClick={() =>
-                  setEditing({ title: "", price: 0, stock: 0, images: [], is_active: true })
-                }
-                className="bg-primary text-primary-foreground px-6 py-2 rounded-lg font-bold"
-              >
-                Məhsul əlavə et
-              </button>
+              {products.length === 0 && (
+                <button
+                  onClick={() =>
+                    setEditing({ title: "", price: 0, stock: 0, images: [], is_active: true })
+                  }
+                  className="bg-primary text-primary-foreground px-6 py-2 rounded-lg font-bold"
+                >
+                  Məhsul əlavə et
+                </button>
+              )}
             </div>
           ) : (
             <div className="bg-card border border-border rounded-2xl overflow-x-auto">
@@ -1353,7 +1462,7 @@ export function SellerPanel() {
                   </tr>
                 </thead>
                 <tbody>
-                  {products.map((p) => (
+                  {filteredProducts.map((p) => (
                     <tr key={p.id} className="border-t border-border">
                       <td className="p-3">
                         <div className="flex items-center gap-3">
@@ -1437,27 +1546,71 @@ export function SellerPanel() {
 
       {tab === "orders" && (
         <div className="space-y-3">
+          <div className="flex flex-wrap gap-2">
+            {[
+              { value: "all", label: "Bütün sifarişlər" },
+              { value: "paid", label: "Ödənilmiş" },
+              { value: "pending", label: `Gözləyən (${pendingOrders})` },
+              { value: "preparing", label: `Hazırlanan (${preparingOrders})` },
+              { value: "shipped", label: `Göndərilən (${shippedOrders})` },
+              { value: "completed", label: `Tamamlanan (${completedOrders})` },
+              { value: "cancelled", label: `Ləğv edilən (${cancelledOrders})` },
+              { value: "returned", label: `Qaytarılan (${returnedOrders})` },
+            ].map((filter) => (
+              <button
+                type="button"
+                key={filter.value}
+                onClick={() => setOrderViewFilter(filter.value as OrderViewFilter)}
+                className={`px-3 py-2 rounded-lg text-xs font-bold border transition ${
+                  orderViewFilter === filter.value
+                    ? "bg-primary text-primary-foreground border-primary"
+                    : "bg-card border-border hover:border-primary"
+                }`}
+              >
+                {filter.label}
+              </button>
+            ))}
+          </div>
           <DateRangeFilter value={ordersDateRange} onChange={setOrdersDateRange} />
           {(() => {
-            const visibleOrders = orderItems.filter((i) =>
-              inRange(i.order_created_at ?? null, ordersDateRange),
+            const visibleOrders = orderItems.filter(
+              (item) =>
+                orderMatchesFilter(item, orderViewFilter) &&
+                inRange(item.order_created_at ?? null, ordersDateRange),
+            );
+            const visibleOrderCount = new Set(visibleOrders.map((item) => item.order_id)).size;
+            const visibleTotal = visibleOrders.reduce(
+              (sum, item) => sum + Number(item.price) * item.quantity,
+              0,
             );
             if (visibleOrders.length === 0) {
               return (
                 <div className="bg-secondary/40 rounded-2xl p-10 text-center text-muted-foreground">
                   <ShoppingBag className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                  Hələ sifariş yoxdur
+                  Bu filtrə uyğun sifariş yoxdur
                 </div>
               );
             }
-            return visibleOrders.map((i) => {
+            return (
+              <>
+                <div className="grid sm:grid-cols-2 gap-3">
+                  <div className="bg-card border border-border rounded-xl p-4">
+                    <div className="text-xs text-muted-foreground">Sifariş sayı</div>
+                    <div className="text-2xl font-extrabold">{visibleOrderCount}</div>
+                  </div>
+                  <div className="bg-card border border-border rounded-xl p-4">
+                    <div className="text-xs text-muted-foreground">Filtr üzrə məbləğ</div>
+                    <div className="text-2xl font-extrabold">{formatAZN(visibleTotal)}</div>
+                  </div>
+                </div>
+                {visibleOrders.map((i) => {
               const st = ORDER_STATUSES.find((s) => s.v === i.status) ?? ORDER_STATUSES[0];
               const canPack = i.status === "pending" || i.status === "preparing";
               const canShip =
                 !i.accepted_at &&
                 !i.delivered_at &&
                 (i.status === "pending" || i.status === "packed");
-              return (
+                  return (
                 <div key={i.id} className="bg-card border border-border rounded-xl p-4 space-y-3">
                   <div className="flex flex-wrap items-center gap-3">
                     <div className="w-14 h-14 bg-secondary rounded-lg overflow-hidden shrink-0">
@@ -1567,7 +1720,9 @@ export function SellerPanel() {
                   )}
                 </div>
               );
-            });
+                })}
+              </>
+            );
           })()}
         </div>
       )}
