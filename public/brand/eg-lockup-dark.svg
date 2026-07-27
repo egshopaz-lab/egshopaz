@@ -1,0 +1,22 @@
+<svg width="360" height="320" viewBox="0 0 360 320" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="EG Shop">
+  <defs>
+    <linearGradient id="front" x1="110" y1="95" x2="216" y2="246" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#7C3AED"/>
+      <stop offset="1" stop-color="#4C1D95"/>
+    </linearGradient>
+    <linearGradient id="speed" x1="54" y1="144" x2="119" y2="144" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FF7A66"/>
+      <stop offset="1" stop-color="#F43F5E"/>
+    </linearGradient>
+  </defs>
+  <path d="M55 119H119M44 145H110M60 171H122" stroke="url(#speed)" stroke-width="14" stroke-linecap="round"/>
+  <path d="M123 108L178 134V231L123 202V108Z" fill="url(#front)"/>
+  <path d="M178 134L234 107V202L178 231V134Z" fill="#4C1D95"/>
+  <path d="M123 108L164 85L217 108L178 134L123 108Z" fill="#5B21B6"/>
+  <path d="M164 85L217 108L234 97L181 74L164 85Z" fill="#7C3AED"/>
+  <path d="M123 108L164 85L145 74L104 97L123 108Z" fill="#8B5CF6"/>
+  <path d="M178 134V231" stroke="white" stroke-width="6"/>
+  <path d="M158 124L178 134L199 123V155L187 162V143L178 148L158 138V124Z" fill="white"/>
+  <text x="180" y="292" text-anchor="middle" fill="#111827" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="54" font-weight="850" letter-spacing="-2.5">EG Shop</text>
+</svg>
+
