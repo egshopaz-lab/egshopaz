@@ -29,67 +29,67 @@ const REGISTER_URL = "https://seller.egshop.az/register";
 const benefits = [
   {
     icon: Users,
-    title: "Yeni müştərilərə çatın",
+    title: "Yeni mĂĽĹźtÉ™rilÉ™rÉ™ Ă§atÄ±n",
     description:
-      "Məhsullarınızı Azərbaycanın hər yerindən alış-veriş edən müştərilərə təqdim edin.",
+      "MÉ™hsullarÄ±nÄ±zÄ± AzÉ™rbaycanÄ±n hÉ™r yerindÉ™n alÄ±Ĺź-veriĹź edÉ™n mĂĽĹźtÉ™rilÉ™rÉ™ tÉ™qdim edin.",
   },
   {
     icon: Boxes,
-    title: "Məhsulları rahat idarə edin",
+    title: "MÉ™hsullarÄ± rahat idarÉ™ edin",
     description:
-      "Stok, qiymət, sifariş və kampaniyaları vahid, aydın satıcı panelindən idarə edin.",
+      "Stok, qiymÉ™t, sifariĹź vÉ™ kampaniyalarÄ± vahid, aydÄ±n satÄ±cÄ± panelindÉ™n idarÉ™ edin.",
   },
   {
     icon: LineChart,
-    title: "Satışınızı məlumatla böyüdün",
+    title: "SatÄ±ĹźÄ±nÄ±zÄ± mÉ™lumatla bĂ¶yĂĽdĂĽn",
     description:
-      "Satış göstəricilərini, gəliri və məhsul performansını real vaxtda izləyin.",
+      "SatÄ±Ĺź gĂ¶stÉ™ricilÉ™rini, gÉ™liri vÉ™ mÉ™hsul performansÄ±nÄ± real vaxtda izlÉ™yin.",
   },
 ];
 
 const capabilities = [
   {
     icon: PackageCheck,
-    title: "Sifariş idarəetməsi",
-    description: "Yeni sifarişdən təhvilə qədər bütün mərhələləri izləyin.",
+    title: "SifariĹź idarÉ™etmÉ™si",
+    description: "Yeni sifariĹźdÉ™n tÉ™hvilÉ™ qÉ™dÉ™r bĂĽtĂĽn mÉ™rhÉ™lÉ™lÉ™ri izlÉ™yin.",
   },
   {
     icon: Megaphone,
-    title: "Reklam və kampaniyalar",
-    description: "Məhsul və mağazanızı düzgün auditoriyaya daha görünən edin.",
+    title: "Reklam vÉ™ kampaniyalar",
+    description: "MÉ™hsul vÉ™ maÄźazanÄ±zÄ± dĂĽzgĂĽn auditoriyaya daha gĂ¶rĂĽnÉ™n edin.",
   },
   {
     icon: WalletCards,
-    title: "Şəffaf maliyyə",
-    description: "Gəlir, komissiya, ödəniş və çıxarışları detallı görün.",
+    title: "ĹžÉ™ffaf maliyyÉ™",
+    description: "GÉ™lir, komissiya, Ă¶dÉ™niĹź vÉ™ Ă§Ä±xarÄ±ĹźlarÄ± detallÄ± gĂ¶rĂĽn.",
   },
   {
     icon: ShieldCheck,
-    title: "Təhlükəsiz əməliyyatlar",
-    description: "Hesab və ödəniş axınları təhlükəsizlik nəzarəti ilə qorunur.",
+    title: "TÉ™hlĂĽkÉ™siz É™mÉ™liyyatlar",
+    description: "Hesab vÉ™ Ă¶dÉ™niĹź axÄ±nlarÄ± tÉ™hlĂĽkÉ™sizlik nÉ™zarÉ™ti ilÉ™ qorunur.",
   },
 ];
 
 const steps = [
   {
     number: "01",
-    title: "Qeydiyyatdan keçin",
-    description: "Satıcı və biznes məlumatlarınızı mərhələli formada daxil edin.",
+    title: "Qeydiyyatdan keĂ§in",
+    description: "SatÄ±cÄ± vÉ™ biznes mÉ™lumatlarÄ±nÄ±zÄ± mÉ™rhÉ™lÉ™li formada daxil edin.",
   },
   {
     number: "02",
-    title: "Hesabınızı təsdiqləyin",
-    description: "E-poçt təsdiqini və tələb olunan aktivləşdirmə addımlarını tamamlayın.",
+    title: "HesabÄ±nÄ±zÄ± tÉ™sdiqlÉ™yin",
+    description: "E-poĂ§t tÉ™sdiqini vÉ™ tÉ™lÉ™b olunan aktivlÉ™ĹźdirmÉ™ addÄ±mlarÄ±nÄ± tamamlayÄ±n.",
   },
   {
     number: "03",
-    title: "Mağazanızı hazırlayın",
-    description: "Loqo, mağaza məlumatları və ilk məhsullarınızı əlavə edin.",
+    title: "MaÄźazanÄ±zÄ± hazÄ±rlayÄ±n",
+    description: "Loqo, maÄźaza mÉ™lumatlarÄ± vÉ™ ilk mÉ™hsullarÄ±nÄ±zÄ± É™lavÉ™ edin.",
   },
   {
     number: "04",
-    title: "Satışa başlayın",
-    description: "Sifarişləri qəbul edin, nəticələri izləyin və biznesinizi böyüdün.",
+    title: "SatÄ±Ĺźa baĹźlayÄ±n",
+    description: "SifariĹźlÉ™ri qÉ™bul edin, nÉ™ticÉ™lÉ™ri izlÉ™yin vÉ™ biznesinizi bĂ¶yĂĽdĂĽn.",
   },
 ];
 
@@ -101,34 +101,33 @@ export function SellerLanding() {
       <div className="bg-slate-950 px-4 py-2.5 text-center text-xs font-semibold text-white sm:text-sm">
         <span className="inline-flex items-center gap-2">
           <Rocket className="h-4 w-4 text-violet-300" />
-          EG Shop-da mağazanızı yaradın və onlayn satışa başlayın
+          EG Shop-da maÄźazanÄ±zÄ± yaradÄ±n vÉ™ onlayn satÄ±Ĺźa baĹźlayÄ±n
         </span>
       </div>
 
       <header className="sticky top-0 z-50 border-b border-slate-200/80 bg-white/95 backdrop-blur">
         <div className="mx-auto flex h-18 max-w-7xl items-center gap-8 px-4 sm:px-6 lg:px-8">
-          <a href="/" className="flex shrink-0 items-center gap-3" aria-label="EG Shop Satıcı">
-            <img src="/brand/eg-icon.svg" alt="" className="h-10 w-10" />
+          <a href="/" className="flex shrink-0 items-center gap-3" aria-label="EG Shop SatÄ±cÄ±">
+            <img src="/brand/eg-wordmark-dark.svg" alt="EG Shop" className="h-10 w-[145px] object-contain object-left" />
             <div>
-              <div className="text-lg font-black leading-none tracking-tight">EG Shop</div>
               <div className="mt-1 text-[11px] font-bold uppercase tracking-[0.16em] text-violet-600">
-                Satıcı
+                SatÄ±cÄ±
               </div>
             </div>
           </a>
 
           <nav className="hidden items-center gap-7 text-sm font-bold text-slate-700 lg:flex">
             <a href="#why-egshop" className="transition hover:text-violet-700">
-              Niyə EG Shop?
+              NiyÉ™ EG Shop?
             </a>
             <a href="#how-it-works" className="transition hover:text-violet-700">
-              Necə işləyir?
+              NecÉ™ iĹźlÉ™yir?
             </a>
             <a href="#seller-tools" className="transition hover:text-violet-700">
-              Satıcı imkanları
+              SatÄ±cÄ± imkanlarÄ±
             </a>
             <a href="https://egshop.az/support" className="transition hover:text-violet-700">
-              Dəstək
+              DÉ™stÉ™k
             </a>
           </nav>
 
@@ -144,7 +143,7 @@ export function SellerLanding() {
               href={REGISTER_URL}
               className="inline-flex h-11 items-center justify-center gap-2 rounded-full bg-violet-600 px-6 text-sm font-black text-white shadow-lg shadow-violet-600/20 transition hover:bg-violet-700"
             >
-              Qeydiyyatdan keç
+              Qeydiyyatdan keĂ§
               <ArrowRight className="h-4 w-4" />
             </a>
           </div>
@@ -154,7 +153,7 @@ export function SellerLanding() {
             onClick={() => setMobileMenuOpen((open) => !open)}
             className="ml-auto grid h-11 w-11 place-items-center rounded-xl border border-slate-200 sm:hidden"
             aria-expanded={mobileMenuOpen}
-            aria-label={mobileMenuOpen ? "Menyunu bağla" : "Menyunu aç"}
+            aria-label={mobileMenuOpen ? "Menyunu baÄźla" : "Menyunu aĂ§"}
           >
             {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
@@ -164,13 +163,13 @@ export function SellerLanding() {
           <div className="border-t border-slate-100 bg-white px-4 py-4 sm:hidden">
             <nav className="grid gap-1 text-sm font-bold">
               <a href="#why-egshop" className="rounded-xl px-3 py-3" onClick={() => setMobileMenuOpen(false)}>
-                Niyə EG Shop?
+                NiyÉ™ EG Shop?
               </a>
               <a href="#how-it-works" className="rounded-xl px-3 py-3" onClick={() => setMobileMenuOpen(false)}>
-                Necə işləyir?
+                NecÉ™ iĹźlÉ™yir?
               </a>
               <a href="#seller-tools" className="rounded-xl px-3 py-3" onClick={() => setMobileMenuOpen(false)}>
-                Satıcı imkanları
+                SatÄ±cÄ± imkanlarÄ±
               </a>
             </nav>
             <div className="mt-3 grid grid-cols-2 gap-2">
@@ -192,36 +191,36 @@ export function SellerLanding() {
             <div>
               <span className="inline-flex items-center gap-2 rounded-full border border-violet-200 bg-violet-50 px-3 py-1.5 text-xs font-black text-violet-700">
                 <BadgeCheck className="h-4 w-4" />
-                Azərbaycanın yerli onlayn marketplace-i
+                AzÉ™rbaycanÄ±n yerli onlayn marketplace-i
               </span>
               <h1 className="mt-6 max-w-3xl text-4xl font-black leading-[1.03] tracking-[-0.04em] text-slate-950 sm:text-5xl lg:text-7xl">
                 Biznesinizi
                 <span className="block bg-gradient-to-r from-violet-700 to-fuchsia-600 bg-clip-text text-transparent">
-                  onlayn böyüdün
+                  onlayn bĂ¶yĂĽdĂĽn
                 </span>
               </h1>
               <p className="mt-6 max-w-xl text-base font-medium leading-7 text-slate-600 sm:text-lg">
-                EG Shop satıcı hesabınızı yaradın, məhsullarınızı minlərlə alıcıya təqdim edin və
-                bütün satış prosesini bir paneldən idarə edin.
+                EG Shop satÄ±cÄ± hesabÄ±nÄ±zÄ± yaradÄ±n, mÉ™hsullarÄ±nÄ±zÄ± minlÉ™rlÉ™ alÄ±cÄ±ya tÉ™qdim edin vÉ™
+                bĂĽtĂĽn satÄ±Ĺź prosesini bir paneldÉ™n idarÉ™ edin.
               </p>
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">
                 <a
                   href={REGISTER_URL}
                   className="inline-flex h-13 items-center justify-center gap-2 rounded-full bg-violet-600 px-7 text-sm font-black text-white shadow-xl shadow-violet-600/25 transition hover:-translate-y-0.5 hover:bg-violet-700"
                 >
-                  Satışa başla
+                  SatÄ±Ĺźa baĹźla
                   <ArrowRight className="h-4 w-4" />
                 </a>
                 <a
                   href="#how-it-works"
                   className="inline-flex h-13 items-center justify-center gap-2 rounded-full border border-slate-300 bg-white px-7 text-sm font-black text-slate-900 transition hover:bg-slate-50"
                 >
-                  Necə işlədiyini öyrən
+                  NecÉ™ iĹźlÉ™diyini Ă¶yrÉ™n
                   <ChevronRight className="h-4 w-4" />
                 </a>
               </div>
               <div className="mt-7 flex flex-wrap gap-x-5 gap-y-2 text-xs font-bold text-slate-600">
-                {["Sadə qeydiyyat", "Şəffaf maliyyə", "Satıcı dəstəyi"].map((item) => (
+                {["SadÉ™ qeydiyyat", "ĹžÉ™ffaf maliyyÉ™", "SatÄ±cÄ± dÉ™stÉ™yi"].map((item) => (
                   <span key={item} className="inline-flex items-center gap-1.5">
                     <span className="grid h-5 w-5 place-items-center rounded-full bg-emerald-100 text-emerald-700">
                       <Check className="h-3 w-3" />
@@ -238,8 +237,8 @@ export function SellerLanding() {
                 <div className="rounded-[1.4rem] bg-white p-4 sm:p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-xs font-bold text-slate-400">Satıcı iş mərkəzi</p>
-                      <p className="mt-1 text-lg font-black">Mağazanızın icmalı</p>
+                      <p className="text-xs font-bold text-slate-400">SatÄ±cÄ± iĹź mÉ™rkÉ™zi</p>
+                      <p className="mt-1 text-lg font-black">MaÄźazanÄ±zÄ±n icmalÄ±</p>
                     </div>
                     <span className="grid h-11 w-11 place-items-center rounded-2xl bg-violet-100 text-violet-700">
                       <Store className="h-5 w-5" />
@@ -249,23 +248,23 @@ export function SellerLanding() {
                   <div className="mt-5 grid grid-cols-2 gap-3">
                     <div className="rounded-2xl bg-violet-600 p-4 text-white">
                       <CircleDollarSign className="h-5 w-5 text-violet-200" />
-                      <p className="mt-4 text-[11px] font-bold text-violet-200">Aylıq satış</p>
-                      <p className="mt-1 text-2xl font-black">12 480 ₼</p>
-                      <p className="mt-2 text-[10px] font-bold text-emerald-200">↑ 18.4% artım</p>
+                      <p className="mt-4 text-[11px] font-bold text-violet-200">AylÄ±q satÄ±Ĺź</p>
+                      <p className="mt-1 text-2xl font-black">12 480 â‚Ľ</p>
+                      <p className="mt-2 text-[10px] font-bold text-emerald-200">â†‘ 18.4% artÄ±m</p>
                     </div>
                     <div className="rounded-2xl bg-slate-100 p-4">
                       <ShoppingBag className="h-5 w-5 text-slate-600" />
-                      <p className="mt-4 text-[11px] font-bold text-slate-500">Yeni sifarişlər</p>
+                      <p className="mt-4 text-[11px] font-bold text-slate-500">Yeni sifariĹźlÉ™r</p>
                       <p className="mt-1 text-2xl font-black">36</p>
-                      <p className="mt-2 text-[10px] font-bold text-violet-700">8-i hazırlanır</p>
+                      <p className="mt-2 text-[10px] font-bold text-violet-700">8-i hazÄ±rlanÄ±r</p>
                     </div>
                   </div>
 
                   <div className="mt-3 rounded-2xl border border-slate-100 p-4">
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-xs font-black">Satış dinamikası</p>
-                        <p className="mt-0.5 text-[10px] font-semibold text-slate-400">Son 7 gün</p>
+                        <p className="text-xs font-black">SatÄ±Ĺź dinamikasÄ±</p>
+                        <p className="mt-0.5 text-[10px] font-semibold text-slate-400">Son 7 gĂĽn</p>
                       </div>
                       <BarChart3 className="h-5 w-5 text-violet-600" />
                     </div>
@@ -288,8 +287,8 @@ export function SellerLanding() {
                   <Truck className="h-5 w-5" />
                 </span>
                 <div>
-                  <p className="text-[10px] font-bold text-slate-400">Çatdırılma</p>
-                  <p className="text-xs font-black">Sifariş təhvil verildi</p>
+                  <p className="text-[10px] font-bold text-slate-400">Ă‡atdÄ±rÄ±lma</p>
+                  <p className="text-xs font-black">SifariĹź tÉ™hvil verildi</p>
                 </div>
               </div>
             </div>
@@ -300,10 +299,10 @@ export function SellerLanding() {
           <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-22">
             <div className="max-w-2xl">
               <span className="text-xs font-black uppercase tracking-[0.18em] text-violet-600">
-                Satış üçün doğru başlanğıc
+                SatÄ±Ĺź ĂĽĂ§ĂĽn doÄźru baĹźlanÄźÄ±c
               </span>
               <h2 className="mt-3 text-3xl font-black tracking-tight sm:text-5xl">
-                EG Shop-da satmağın üstünlükləri
+                EG Shop-da satmaÄźÄ±n ĂĽstĂĽnlĂĽklÉ™ri
               </h2>
             </div>
             <div className="mt-10 grid gap-5 md:grid-cols-3">
@@ -327,20 +326,20 @@ export function SellerLanding() {
           <div className="grid items-center gap-12 lg:grid-cols-[0.85fr_1.15fr]">
             <div>
               <span className="text-xs font-black uppercase tracking-[0.18em] text-violet-600">
-                Vahid idarəetmə
+                Vahid idarÉ™etmÉ™
               </span>
               <h2 className="mt-3 text-3xl font-black tracking-tight sm:text-5xl">
-                Satış üçün lazım olan hər şey bir paneldə
+                SatÄ±Ĺź ĂĽĂ§ĂĽn lazÄ±m olan hÉ™r Ĺźey bir paneldÉ™
               </h2>
               <p className="mt-5 text-base font-medium leading-7 text-slate-600">
-                Gündəlik əməliyyatları fərqli sistemlərdə axtarmayın. Məhsuldan maliyyəyə qədər
-                bütün əsas prosesləri EG Shop satıcı panelində idarə edin.
+                GĂĽndÉ™lik É™mÉ™liyyatlarÄ± fÉ™rqli sistemlÉ™rdÉ™ axtarmayÄ±n. MÉ™hsuldan maliyyÉ™yÉ™ qÉ™dÉ™r
+                bĂĽtĂĽn É™sas proseslÉ™ri EG Shop satÄ±cÄ± panelindÉ™ idarÉ™ edin.
               </p>
               <a
                 href={REGISTER_URL}
                 className="mt-7 inline-flex items-center gap-2 text-sm font-black text-violet-700"
               >
-                Pulsuz hesab yaradın
+                Pulsuz hesab yaradÄ±n
                 <ArrowRight className="h-4 w-4" />
               </a>
             </div>
@@ -360,10 +359,10 @@ export function SellerLanding() {
           <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
             <div className="max-w-2xl">
               <span className="text-xs font-black uppercase tracking-[0.18em] text-violet-300">
-                Dörd sadə addım
+                DĂ¶rd sadÉ™ addÄ±m
               </span>
               <h2 className="mt-3 text-3xl font-black tracking-tight sm:text-5xl">
-                Bu gün başlayın
+                Bu gĂĽn baĹźlayÄ±n
               </h2>
             </div>
             <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -381,16 +380,16 @@ export function SellerLanding() {
         <section className="px-4 py-14 sm:px-6 lg:py-20">
           <div className="mx-auto max-w-7xl overflow-hidden rounded-[2rem] bg-gradient-to-br from-violet-700 via-violet-600 to-fuchsia-600 px-6 py-12 text-center text-white shadow-2xl shadow-violet-600/20 sm:px-12 sm:py-16">
             <h2 className="mx-auto max-w-3xl text-3xl font-black tracking-tight sm:text-5xl">
-              Mağazanızı onlayn böyütməyə hazırsınız?
+              MaÄźazanÄ±zÄ± onlayn bĂ¶yĂĽtmÉ™yÉ™ hazÄ±rsÄ±nÄ±z?
             </h2>
             <p className="mx-auto mt-5 max-w-2xl text-sm font-medium leading-6 text-violet-100 sm:text-base">
-              EG Shop satıcı icmasına qoşulun və satış prosesinizi peşəkar alətlərlə idarə edin.
+              EG Shop satÄ±cÄ± icmasÄ±na qoĹźulun vÉ™ satÄ±Ĺź prosesinizi peĹźÉ™kar alÉ™tlÉ™rlÉ™ idarÉ™ edin.
             </p>
             <a
               href={REGISTER_URL}
               className="mt-8 inline-flex h-13 items-center justify-center gap-2 rounded-full bg-white px-8 text-sm font-black text-violet-700 transition hover:-translate-y-0.5"
             >
-              Qeydiyyatdan keç
+              Qeydiyyatdan keĂ§
               <ArrowRight className="h-4 w-4" />
             </a>
           </div>
@@ -400,18 +399,18 @@ export function SellerLanding() {
       <footer className="border-t border-slate-200 bg-slate-50">
         <div className="mx-auto flex max-w-7xl flex-col gap-6 px-4 py-10 sm:px-6 lg:flex-row lg:items-center lg:px-8">
           <div className="flex items-center gap-3">
-            <img src="/brand/eg-icon.svg" alt="" className="h-9 w-9" />
+            <img src="/brand/eg-wordmark-dark.svg" alt="EG Shop" className="h-9 w-[132px] object-contain object-left" />
             <div>
-              <p className="font-black">EG Shop Satıcı</p>
-              <p className="text-xs font-semibold text-slate-500">Biznesiniz üçün etibarlı tərəfdaş</p>
+              <p className="font-black">SatÄ±cÄ± portalÄ±</p>
+              <p className="text-xs font-semibold text-slate-500">Biznesiniz ĂĽĂ§ĂĽn etibarlÄ± tÉ™rÉ™fdaĹź</p>
             </div>
           </div>
           <div className="flex flex-wrap gap-x-6 gap-y-3 text-xs font-bold text-slate-600 lg:ml-auto">
-            <a href="https://egshop.az/terms" className="hover:text-violet-700">İstifadəçi şərtləri</a>
-            <a href="https://egshop.az/privacy" className="hover:text-violet-700">Məxfilik siyasəti</a>
+            <a href="https://egshop.az/terms" className="hover:text-violet-700">Ä°stifadÉ™Ă§i ĹźÉ™rtlÉ™ri</a>
+            <a href="https://egshop.az/privacy" className="hover:text-violet-700">MÉ™xfilik siyasÉ™ti</a>
             <a href="https://egshop.az/support" className="inline-flex items-center gap-1.5 hover:text-violet-700">
               <Headphones className="h-3.5 w-3.5" />
-              Dəstək
+              DÉ™stÉ™k
             </a>
           </div>
         </div>
