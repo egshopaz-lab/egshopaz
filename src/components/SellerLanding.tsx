@@ -23,7 +23,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 
-const LOGIN_URL = "https://seller.egshop.az/login";
+const LOGIN_URL = "https://seller.egshop.az/login?form=1";
 const REGISTER_URL = "https://seller.egshop.az/register";
 
 const benefits = [
