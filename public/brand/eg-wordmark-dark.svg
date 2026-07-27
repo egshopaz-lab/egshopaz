@@ -1,7 +1,22 @@
-<svg width="420" height="112" viewBox="0 0 420 112" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="EG Shop">
-  <defs><linearGradient id="b" x1="8" y1="5" x2="108" y2="108" gradientUnits="userSpaceOnUse"><stop stop-color="#9B5CFF"/><stop offset="1" stop-color="#5B21B6"/></linearGradient></defs>
-  <rect x="4" y="4" width="104" height="104" rx="32" fill="url(#b)"/>
-  <path d="M24 29h29v12H37v9h14v11H37v10h17v12H24V29Z" fill="white"/>
-  <path d="M62 31c11-6 27-4 37 1l-5 11c-7-3-15-4-20 0-6 4-8 10-8 18 0 10 6 17 15 17 2 0 4 0 6-1v-9H77V57h23v28c-6 4-13 6-20 6-18 0-30-12-30-31 0-13 4-23 12-29Z" fill="white"/>
-  <text x="128" y="76" fill="#17112B" font-family="Inter,Arial,sans-serif" font-size="56" font-weight="800" letter-spacing="-2">EG Shop</text>
+<svg width="520" height="128" viewBox="0 0 520 128" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="EG Shop">
+  <defs>
+    <linearGradient id="dBox" x1="39" y1="46" x2="104" y2="111" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#7C3AED"/>
+      <stop offset="1" stop-color="#4C1D95"/>
+    </linearGradient>
+    <linearGradient id="dSpeed" x1="7" y1="68" x2="42" y2="68" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FF7A66"/>
+      <stop offset="1" stop-color="#F43F5E"/>
+    </linearGradient>
+  </defs>
+  <path d="M8 56H39M3 72H35M12 88H41" stroke="url(#dSpeed)" stroke-width="9" stroke-linecap="round"/>
+  <path d="M43 52L73 66V112L43 96V52Z" fill="url(#dBox)"/>
+  <path d="M73 66L104 51V96L73 112V66Z" fill="#4C1D95"/>
+  <path d="M43 52L65 39L94 52L73 66L43 52Z" fill="#5B21B6"/>
+  <path d="M65 39L94 52L104 46L75 33L65 39Z" fill="#7C3AED"/>
+  <path d="M43 52L65 39L54 33L32 46L43 52Z" fill="#8B5CF6"/>
+  <path d="M73 66V112" stroke="white" stroke-width="3.5"/>
+  <path d="M62 61L73 66L85 60V78L78 82V71L73 74L62 68V61Z" fill="white"/>
+  <text x="126" y="87" fill="#111827" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="67" font-weight="850" letter-spacing="-3.2">EG Shop</text>
 </svg>
+
