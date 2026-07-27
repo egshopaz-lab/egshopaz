@@ -13,6 +13,8 @@ import { TrendsFeed } from "@/components/TrendsFeed";
 import { HomeBannerCarousel } from "@/components/HomeBannerCarousel";
 import i18n from "@/i18n";
 import { absoluteUrl } from "@/lib/site";
+import { SellerLanding } from "@/components/SellerLanding";
+import { usePortal, usePortalReady } from "@/lib/portals";
 
 export const Route = createFileRoute("/")({
   validateSearch: z.object({ payment: z.enum(["success", "error"]).optional() }),
@@ -85,6 +87,8 @@ function ProductSection({
 }
 
 function Index() {
+  const portal = usePortal();
+  const portalReady = usePortalReady();
   const { payment } = Route.useSearch();
   const { t } = useTranslation();
   const [allProducts, setAllProducts] = useState<ProductCardData[]>([]);
@@ -153,6 +157,10 @@ function Index() {
     await navigator.clipboard.writeText(code);
     toast.success(t("home.codeCopied", { code }));
   };
+
+  if (portalReady && portal === "seller") {
+    return <SellerLanding />;
+  }
 
   return (
     <div className="container mx-auto space-y-6 px-3 py-3 sm:px-4 sm:py-5 lg:space-y-9">
