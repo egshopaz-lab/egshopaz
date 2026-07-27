@@ -6,7 +6,7 @@ import { z } from "zod";
 
 export const Route = createFileRoute("/login")({
   validateSearch: z.object({
-    form: z.enum(["1"]).optional(),
+    form: z.union([z.literal(1), z.literal("1")]).optional(),
   }),
   head: () => ({
     meta: [{ title: "Giriş — EG Shop" }, { name: "robots", content: "noindex, nofollow" }],
