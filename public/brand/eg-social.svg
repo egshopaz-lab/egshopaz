@@ -26,7 +26,7 @@
   <path d="M284 300V487" stroke="white" stroke-width="11"/>
   <path d="M244 281L284 300L327 279V342L302 356V318L284 328L244 308V281Z" fill="white"/>
   <text x="470" y="305" fill="white" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="112" font-weight="850" letter-spacing="-5">EG Shop</text>
-  <text x="477" y="374" fill="white" fill-opacity=".82" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="34" font-weight="600">Azərbaycanın onlayn marketplace-i</text>
+  <text x="477" y="374" fill="white" fill-opacity=".82" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="34" font-weight="600">AzÉ™rbaycanÄ±n onlayn marketplace-i</text>
   <rect x="475" y="413" width="218" height="56" rx="28" fill="white"/>
   <text x="584" y="449" text-anchor="middle" fill="#5B21B6" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="24" font-weight="800">egshop.az</text>
 </svg>
