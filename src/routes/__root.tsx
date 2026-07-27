@@ -161,6 +161,10 @@ function AppShell() {
   const isDashboardPanel = pathname === "/dashboard" || pathname.startsWith("/dashboard/");
   const isSellerTrends = portal === "seller" && pathname === "/trends";
   const isSellerLanding = portal === "seller" && pathname === "/";
+  const isSellerLoginLanding =
+    portal === "seller" &&
+    pathname === "/login" &&
+    (typeof window === "undefined" || new URLSearchParams(window.location.search).get("form") !== "1");
   const isWorkPanel = isDashboardPanel;
   const isAuthRoute = pathname === "/auth" || pathname.startsWith("/auth/") || pathname === "/login" || pathname === "/register" || pathname === "/reset-password";
 
@@ -256,7 +260,7 @@ function AppShell() {
     );
   }
 
-  if (isSellerLanding) {
+  if (isSellerLanding || isSellerLoginLanding) {
     return <Outlet />;
   }
 
