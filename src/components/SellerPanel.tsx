@@ -60,6 +60,15 @@ import { DateRangeFilter, emptyRange, inRange, type DateRange } from "@/componen
 import { SellerExternalDelivery } from "@/components/SellerExternalDelivery";
 import { SellerInventory } from "@/components/SellerInventory";
 import { SellerCustomers } from "@/components/SellerCustomers";
+import {
+  CartesianGrid,
+  Line,
+  LineChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 
 interface Product {
   id: string;
@@ -124,6 +133,7 @@ interface OrderItem {
   delivered_at: string | null;
   pickup_point_id: string | null;
   order_created_at?: string | null;
+  order_payment_status?: string | null;
   pickup_point: {
     id: string;
     name: string;
@@ -243,6 +253,24 @@ export function SellerPanel() {
 
   const load = async () => {
     if (!user) return;
+    const loadAllOrderItems = async () => {
+      const pageSize = 1000;
+      const rows: unknown[] = [];
+      for (let from = 0; ; from += pageSize) {
+        const result = await supabase
+          .from("order_items")
+          .select(
+            "id,title,price,quantity,image_url,order_id,status,product_id,pickup_code,customer_name,customer_phone,accepted_at,delivered_at,pickup_point_id",
+          )
+          .eq("seller_id", user.id)
+          .order("id", { ascending: false })
+          .range(from, from + pageSize - 1);
+        if (result.error) return { data: null, error: result.error };
+        rows.push(...(result.data ?? []));
+        if ((result.data?.length ?? 0) < pageSize) break;
+      }
+      return { data: rows, error: null };
+    };
     const [
       { data: ps, error: productsError },
       { data: cs, error: categoriesError },
@@ -259,14 +287,7 @@ export function SellerPanel() {
         .from("categories")
         .select("id,name,name_ru,name_en,slug,parent_id,icon")
         .order("sort_order"),
-      supabase
-        .from("order_items")
-        .select(
-          "id,title,price,quantity,image_url,order_id,status,product_id,pickup_code,customer_name,customer_phone,accepted_at,delivered_at,pickup_point_id",
-        )
-        .eq("seller_id", user.id)
-        .order("id", { ascending: false })
-        .limit(100),
+      loadAllOrderItems(),
       supabase
         .from("profiles")
         .select(
@@ -289,7 +310,7 @@ export function SellerPanel() {
     const { data: orderRows, error: ordersError } = orderIds.length
       ? await supabase
           .from("orders")
-          .select("id,pickup_point_id,recipient_name,recipient_phone,created_at")
+          .select("id,pickup_point_id,recipient_name,recipient_phone,created_at,payment_status")
           .in("id", orderIds)
       : { data: [], error: null };
     if (ordersError) {
@@ -327,6 +348,7 @@ export function SellerPanel() {
             customer_name: item.customer_name ?? order?.recipient_name ?? null,
             customer_phone: item.customer_phone ?? order?.recipient_phone ?? null,
             order_created_at: order?.created_at ?? null,
+            order_payment_status: order?.payment_status ?? null,
             pickup_point: pickupPointId
               ? ((pickupMap.get(pickupPointId) as OrderItem["pickup_point"]) ?? null)
               : null,
@@ -438,22 +460,63 @@ export function SellerPanel() {
 
   if (!mounted || authLoading || !user || !isSeller) return null;
 
-  const revenueItems = orderItems.filter(
-    (item) => !["cancelled", "returned"].includes(item.status),
+  const paidItems = orderItems.filter(
+    (item) =>
+      item.order_payment_status === "paid" ||
+      ["paid", "delivered", "completed"].includes(item.status),
   );
-  const totalRevenue = revenueItems.reduce((s, i) => s + Number(i.price) * i.quantity, 0);
-  const totalOrders = new Set(orderItems.map((i) => i.order_id)).size;
-  const pendingOrders = orderItems.filter((i) => i.status === "pending").length;
+  const totalRevenue = paidItems.reduce((sum, item) => sum + Number(item.price) * item.quantity, 0);
+  const totalOrders = new Set(paidItems.map((item) => item.order_id)).size;
+  const orderGroups = [...orderItems.reduce((groups, item) => {
+    const current = groups.get(item.order_id) ?? [];
+    current.push(item);
+    groups.set(item.order_id, current);
+    return groups;
+  }, new Map<string, OrderItem[]>()).entries()].map(([orderId, items]) => {
+    const activeItems = items.filter((item) => !["cancelled", "returned"].includes(item.status));
+    const statusRank = [
+      "pending",
+      "paid",
+      "preparing",
+      "packed",
+      "shipped",
+      "handed_to_courier",
+      "in_transit",
+      "delivered",
+      "completed",
+    ];
+    const status =
+      activeItems.length > 0
+        ? [...activeItems].sort(
+            (a, b) => statusRank.indexOf(a.status) - statusRank.indexOf(b.status),
+          )[0].status
+        : items.some((item) => item.status === "returned")
+          ? "returned"
+          : "cancelled";
+    return {
+      orderId,
+      items,
+      status,
+      createdAt: items.find((item) => item.order_created_at)?.order_created_at ?? null,
+      customerName: items.find((item) => item.customer_name)?.customer_name ?? null,
+      total: items.reduce((sum, item) => sum + Number(item.price) * item.quantity, 0),
+    };
+  });
+  const countOrders = (statuses: string[]) =>
+    orderGroups.filter((order) => statuses.includes(order.status)).length;
+  const pendingOrders = countOrders(["pending", "paid"]);
+  const preparingOrders = countOrders(["preparing", "packed"]);
+  const shippedOrders = countOrders(["shipped", "handed_to_courier", "in_transit"]);
+  const completedOrders = countOrders(["delivered", "completed"]);
+  const cancelledOrders = countOrders(["cancelled"]);
+  const returnedOrders = countOrders(["returned"]);
   const lowStock = products.filter(
     (p) => p.stock > 0 && p.stock <= (p.min_stock ?? 5) && p.is_active,
   ).length;
   const outOfStock = products.filter((p) => p.stock === 0 && p.is_active).length;
   const unreadSellerNotifs = sellerNotifs.filter((n) => !n.is_read).length;
-  const salesSince = (days: number) => {
-    const threshold = new Date();
-    threshold.setHours(0, 0, 0, 0);
-    threshold.setDate(threshold.getDate() - (days - 1));
-    const list = revenueItems.filter(
+  const salesFrom = (threshold: Date) => {
+    const list = paidItems.filter(
       (item) =>
         item.order_created_at && new Date(item.order_created_at).getTime() >= threshold.getTime(),
     );
@@ -462,9 +525,38 @@ export function SellerPanel() {
       orders: new Set(list.map((item) => item.order_id)).size,
     };
   };
-  const todaySales = salesSince(1);
-  const weekSales = salesSince(7);
-  const monthSales = salesSince(30);
+  const todayStart = new Date();
+  todayStart.setHours(0, 0, 0, 0);
+  const weekStart = new Date(todayStart);
+  const dayFromMonday = (weekStart.getDay() + 6) % 7;
+  weekStart.setDate(weekStart.getDate() - dayFromMonday);
+  const monthStart = new Date(todayStart.getFullYear(), todayStart.getMonth(), 1);
+  const todaySales = salesFrom(todayStart);
+  const weekSales = salesFrom(weekStart);
+  const monthSales = salesFrom(monthStart);
+  const salesChart = Array.from({ length: 14 }, (_, index) => {
+    const day = new Date(todayStart);
+    day.setDate(day.getDate() - (13 - index));
+    const nextDay = new Date(day);
+    nextDay.setDate(nextDay.getDate() + 1);
+    const items = paidItems.filter((item) => {
+      if (!item.order_created_at) return false;
+      const createdAt = new Date(item.order_created_at).getTime();
+      return createdAt >= day.getTime() && createdAt < nextDay.getTime();
+    });
+    return {
+      date: day.toLocaleDateString("az-AZ", { day: "2-digit", month: "2-digit" }),
+      revenue: Number(
+        items
+          .reduce((sum, item) => sum + Number(item.price) * item.quantity, 0)
+          .toFixed(2),
+      ),
+      orders: new Set(items.map((item) => item.order_id)).size,
+    };
+  });
+  const recentOrders = [...orderGroups]
+    .sort((a, b) => (b.createdAt ?? "").localeCompare(a.createdAt ?? ""))
+    .slice(0, 5);
 
   const uploadImages = async (files: FileList | null) => {
     if (!files || !user || !editing) return;
@@ -945,45 +1037,75 @@ export function SellerPanel() {
             {[
               {
                 icon: DollarSign,
-                label: "Bugünkü satış",
+                label: "Bugünkü satışlar",
                 value: formatAZN(todaySales.revenue),
-                note: `${todaySales.orders} sifariş`,
+                note: `${todaySales.orders} ödənilmiş sifariş`,
               },
               {
                 icon: TrendingUp,
-                label: "Son 7 gün",
+                label: "Həftəlik satışlar",
                 value: formatAZN(weekSales.revenue),
-                note: `${weekSales.orders} sifariş`,
+                note: `${weekSales.orders} ödənilmiş sifariş`,
               },
               {
                 icon: BarChart3,
-                label: "Son 30 gün",
+                label: "Aylıq satışlar",
                 value: formatAZN(monthSales.revenue),
-                note: `${monthSales.orders} sifariş`,
+                note: `${monthSales.orders} ödənilmiş sifariş`,
               },
               {
                 icon: DollarSign,
                 label: "Ümumi gəlir",
                 value: formatAZN(totalRevenue),
-                note: `${totalOrders} sifariş`,
+                note: `${totalOrders} ödənilmiş sifariş`,
               },
               {
                 icon: Package,
                 label: "Aktiv məhsullar",
                 value: products.filter((p) => p.is_active).length,
-                note: `${products.length} ümumi`,
+                note: `${products.length} ümumi məhsul`,
               },
               {
                 icon: ShoppingBag,
-                label: "Gözləyən sifariş",
+                label: "Gözləyən sifarişlər",
                 value: pendingOrders,
                 note: "Emal tələb edir",
               },
               {
+                icon: Boxes,
+                label: "Hazırlanan sifarişlər",
+                value: preparingOrders,
+                note: "Hazırlanır və ya paketlənib",
+              },
+              {
+                icon: Rocket,
+                label: "Göndərilən sifarişlər",
+                value: shippedOrders,
+                note: "Çatdırılma prosesindədir",
+              },
+              {
+                icon: BadgeCheck,
+                label: "Tamamlanan sifarişlər",
+                value: completedOrders,
+                note: "Uğurla təhvil verilib",
+              },
+              {
+                icon: X,
+                label: "Ləğv edilən sifarişlər",
+                value: cancelledOrders,
+                note: "Ləğv olunub",
+              },
+              {
+                icon: Undo2,
+                label: "Qaytarılan sifarişlər",
+                value: returnedOrders,
+                note: "Geri qaytarılıb",
+              },
+              {
                 icon: AlertTriangle,
-                label: "Az qalan stok",
+                label: "Bitmək üzrə olan məhsullar",
                 value: lowStock,
-                note: "Minimum həddə çatıb",
+                note: "Minimum stok həddinə çatıb",
               },
               {
                 icon: PackageX,
@@ -1023,6 +1145,51 @@ export function SellerPanel() {
             </button>
           )}
           <div className="bg-card border border-border rounded-2xl p-6">
+            <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+              <div>
+                <h3 className="font-bold text-lg">Satış qrafiki</h3>
+                <p className="text-xs text-muted-foreground">
+                  Son 14 gün üzrə ödənilmiş satışlar
+                </p>
+              </div>
+              <button
+                onClick={() => setTab("analytics")}
+                className="text-sm text-primary font-semibold hover:underline"
+              >
+                Ətraflı analitika
+              </button>
+            </div>
+            <div className="h-72 w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={salesChart} margin={{ top: 8, right: 8, left: -12, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                  <XAxis dataKey="date" tick={{ fontSize: 11 }} minTickGap={20} />
+                  <YAxis tick={{ fontSize: 11 }} width={55} />
+                  <Tooltip
+                    formatter={(value, name) => [
+                      name === "revenue" ? formatAZN(Number(value)) : Number(value),
+                      name === "revenue" ? "Gəlir" : "Sifariş",
+                    ]}
+                    contentStyle={{
+                      background: "hsl(var(--card))",
+                      border: "1px solid hsl(var(--border))",
+                      borderRadius: "12px",
+                    }}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="revenue"
+                    name="revenue"
+                    stroke="hsl(var(--primary))"
+                    strokeWidth={3}
+                    dot={{ r: 3 }}
+                    activeDot={{ r: 5 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+          <div className="bg-card border border-border rounded-2xl p-6">
             <div className="flex items-center justify-between gap-3 mb-4">
               <h3 className="font-bold text-lg">Son sifarişlər</h3>
               <button
@@ -1032,35 +1199,38 @@ export function SellerPanel() {
                 Hamısına bax
               </button>
             </div>
-            {orderItems.length === 0 ? (
+            {recentOrders.length === 0 ? (
               <div className="text-sm text-muted-foreground text-center py-6">
                 Hələ sifariş yoxdur
               </div>
             ) : (
               <div className="space-y-2">
-                {orderItems.slice(0, 5).map((item) => {
-                  const status = ORDER_STATUSES.find((entry) => entry.v === item.status);
+                {recentOrders.map((order) => {
+                  const status = ORDER_STATUSES.find((entry) => entry.v === order.status);
+                  const firstItem = order.items[0];
+                  const extraItemCount = order.items.length - 1;
                   return (
                     <div
-                      key={item.id}
+                      key={order.orderId}
                       className="flex items-center justify-between gap-3 rounded-xl border border-border p-3"
                     >
                       <div className="min-w-0">
-                        <div className="font-semibold text-sm truncate">{item.title}</div>
+                        <div className="font-semibold text-sm truncate">
+                          {firstItem.title}
+                          {extraItemCount > 0 ? ` və daha ${extraItemCount} məhsul` : ""}
+                        </div>
                         <div className="text-xs text-muted-foreground">
-                          #{item.order_id.slice(0, 8).toUpperCase()} ·{" "}
-                          {item.customer_name ?? "Müştəri"} ·{" "}
-                          {item.order_created_at ? formatDateTime(item.order_created_at) : "—"}
+                          #{order.orderId.slice(0, 8).toUpperCase()} ·{" "}
+                          {order.customerName ?? "Müştəri"} ·{" "}
+                          {order.createdAt ? formatDateTime(order.createdAt) : "—"}
                         </div>
                       </div>
                       <div className="text-right shrink-0">
-                        <div className="font-bold text-sm">
-                          {formatAZN(Number(item.price) * item.quantity)}
-                        </div>
+                        <div className="font-bold text-sm">{formatAZN(order.total)}</div>
                         <span
                           className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${status?.c ?? "bg-secondary"}`}
                         >
-                          {status?.l ?? item.status}
+                          {status?.l ?? order.status}
                         </span>
                       </div>
                     </div>
