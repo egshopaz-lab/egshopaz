@@ -1,7 +1,6 @@
 import { useTranslation } from "react-i18next";
 import { Link } from "@tanstack/react-router";
 import { Mail, ShieldCheck, CreditCard, Store, MapPin } from "lucide-react";
-import egLogo from "@/assets/eg-logo.svg";
 import { portalUrl } from "@/lib/portals";
 
 export function SiteFooter() {
@@ -10,9 +9,8 @@ export function SiteFooter() {
     <footer className="mt-16 border-t border-border bg-slate-950 text-slate-300">
       <div className="mx-auto grid max-w-7xl gap-10 px-4 py-12 sm:grid-cols-2 lg:grid-cols-[1.35fr_1fr_1fr_1fr]">
         <div>
-          <Link to="/" className="inline-flex items-center gap-2.5 text-white" aria-label="EG Shop">
-            <img src={egLogo} alt="" className="h-11 w-11" />
-            <span className="text-xl tracking-tight"><strong className="font-black">EG</strong> <span className="font-semibold">Shop</span></span>
+          <Link to="/" className="inline-flex items-center text-white" aria-label="EG Shop">
+            <img src="/brand/eg-wordmark-light.svg" alt="EG Shop" className="h-12 w-[175px] object-contain object-left" />
           </Link>
           <p className="mt-4 max-w-sm text-sm leading-6 text-slate-400">{t("footer.description")}</p>
         </div>
@@ -50,7 +48,7 @@ export function SiteFooter() {
 
       <div className="border-t border-white/10">
         <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-5 text-xs text-slate-500 sm:flex-row sm:items-center sm:justify-between">
-          <p>© {new Date().getFullYear()} EG Shop — {t("footer.rights")}</p>
+          <p>Â© {new Date().getFullYear()} EG Shop â€” {t("footer.rights")}</p>
           <div className="flex items-center gap-2" aria-label={t("footer.paymentMethods")}>
             <CreditCard className="h-4 w-4" />
             <span className="rounded border border-white/10 px-2 py-1 text-slate-300">VISA</span>
@@ -62,3 +60,4 @@ export function SiteFooter() {
     </footer>
   );
 }
+
