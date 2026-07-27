@@ -160,6 +160,7 @@ function AppShell() {
   } = useAuth();
   const isDashboardPanel = pathname === "/dashboard" || pathname.startsWith("/dashboard/");
   const isSellerTrends = portal === "seller" && pathname === "/trends";
+  const isSellerLanding = portal === "seller" && pathname === "/";
   const isWorkPanel = isDashboardPanel;
   const isAuthRoute = pathname === "/auth" || pathname.startsWith("/auth/") || pathname === "/login" || pathname === "/register" || pathname === "/reset-password";
 
@@ -204,6 +205,7 @@ function AppShell() {
 
     if (pathname === "/") {
       if (loading) return;
+      if (portal === "seller" && !user) return;
       const target = !user
         ? "/login"
         : portal === "seller" ? (isSeller ? "/dashboard" : "/become-seller")
@@ -252,6 +254,10 @@ function AppShell() {
         </div>
       </div>
     );
+  }
+
+  if (isSellerLanding) {
+    return <Outlet />;
   }
 
   if (isWorkPanel || isSellerTrends || (portal !== "marketplace" && isAuthRoute) || (portal === "seller" && pathname === "/become-seller")) {
