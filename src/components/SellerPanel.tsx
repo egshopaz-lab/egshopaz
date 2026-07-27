@@ -36,6 +36,10 @@ import {
   Calendar,
   Star,
   Wallet,
+  Boxes,
+  UserRound,
+  PackageX,
+  AlertTriangle,
 } from "lucide-react";
 import { SellerBalance } from "@/components/SellerBalance";
 import { toast } from "sonner";
@@ -54,6 +58,8 @@ import { CategoryCascade } from "@/components/CategoryCascade";
 import { findCity } from "@/lib/azCities";
 import { DateRangeFilter, emptyRange, inRange, type DateRange } from "@/components/DateRangeFilter";
 import { SellerExternalDelivery } from "@/components/SellerExternalDelivery";
+import { SellerInventory } from "@/components/SellerInventory";
+import { SellerCustomers } from "@/components/SellerCustomers";
 
 interface Product {
   id: string;
@@ -68,6 +74,16 @@ interface Product {
   brand: string | null;
   description: string | null;
   sku: string | null;
+  barcode?: string | null;
+  min_stock?: number | null;
+  variants?: Array<{
+    name: string;
+    value: string;
+    sku?: string;
+    stock?: number;
+    price?: number;
+  }> | null;
+  stock_updated_at?: string | null;
   weight: number | null;
   rating: number;
   reviews_count: number;
@@ -153,6 +169,8 @@ const productSchema = z.object({
   stock: z.number().int().min(0).max(100000),
   brand: z.string().trim().min(2, "Marka daxil edilməlidir").max(100),
   sku: z.string().trim().max(50),
+  barcode: z.string().trim().max(80),
+  min_stock: z.number().int().min(0).max(100000),
   description: z.string().trim().min(40, "Təsvir minimum 40 simvol olmalıdır").max(2000),
   category_id: z.string().uuid("Kateqoriya seçilməlidir"),
   weight: z.number().min(0).max(10000).nullable(),
@@ -189,7 +207,14 @@ export function SellerPanel() {
     | "support"
     | "returns"
     | "followers"
-  >(typeof window !== "undefined" && new URLSearchParams(window.location.search).has("trends_payment") ? "trends" : "dashboard");
+    | "inventory"
+    | "customers"
+  >(
+    typeof window !== "undefined" &&
+      new URLSearchParams(window.location.search).has("trends_payment")
+      ? "trends"
+      : "dashboard",
+  );
 
   const [unreadMsgs, setUnreadMsgs] = useState(0);
   const [sellerNotifs, setSellerNotifs] = useState<SellerNotif[]>([]);
@@ -207,13 +232,14 @@ export function SellerPanel() {
   const [myFollowers, setMyFollowers] = useState(0);
   const fileRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => { setMounted(true); }, []);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (!authLoading && !user) navigate({ to: "/login" });
     if (!authLoading && user && !isSeller) navigate({ to: "/become-seller" });
   }, [user, isSeller, authLoading, navigate]);
-
 
   const load = async () => {
     if (!user) return;
@@ -229,7 +255,10 @@ export function SellerPanel() {
         .select("*")
         .eq("seller_id", user.id)
         .order("created_at", { ascending: false }),
-      supabase.from("categories").select("id,name,name_ru,name_en,slug,parent_id,icon").order("sort_order"),
+      supabase
+        .from("categories")
+        .select("id,name,name_ru,name_en,slug,parent_id,icon")
+        .order("sort_order"),
       supabase
         .from("order_items")
         .select(
@@ -245,7 +274,10 @@ export function SellerPanel() {
         )
         .eq("id", user.id)
         .maybeSingle(),
-      supabase.from("shop_followers").select("id", { count: "exact", head: true }).eq("seller_id", user.id),
+      supabase
+        .from("shop_followers")
+        .select("id", { count: "exact", head: true })
+        .eq("seller_id", user.id),
     ]);
     const firstError = productsError ?? categoriesError ?? itemsError ?? profileError;
     if (firstError) {
@@ -286,23 +318,25 @@ export function SellerPanel() {
     setProducts((ps ?? []) as unknown as Product[]);
     setCategories((cs ?? []) as Category[]);
     setOrderItems(
-      rawItems.map((item) => {
-        const order = orderMap.get(item.order_id);
-        const pickupPointId = item.pickup_point_id ?? order?.pickup_point_id ?? null;
-        return {
-          ...item,
-          customer_name: item.customer_name ?? order?.recipient_name ?? null,
-          customer_phone: item.customer_phone ?? order?.recipient_phone ?? null,
-          order_created_at: order?.created_at ?? null,
-          pickup_point: pickupPointId
-            ? ((pickupMap.get(pickupPointId) as OrderItem["pickup_point"]) ?? null)
-            : null,
-        };
-      }).sort((a, b) => {
-        const aDate = orderMap.get(a.order_id)?.created_at ?? "";
-        const bDate = orderMap.get(b.order_id)?.created_at ?? "";
-        return bDate.localeCompare(aDate);
-      }),
+      rawItems
+        .map((item) => {
+          const order = orderMap.get(item.order_id);
+          const pickupPointId = item.pickup_point_id ?? order?.pickup_point_id ?? null;
+          return {
+            ...item,
+            customer_name: item.customer_name ?? order?.recipient_name ?? null,
+            customer_phone: item.customer_phone ?? order?.recipient_phone ?? null,
+            order_created_at: order?.created_at ?? null,
+            pickup_point: pickupPointId
+              ? ((pickupMap.get(pickupPointId) as OrderItem["pickup_point"]) ?? null)
+              : null,
+          };
+        })
+        .sort((a, b) => {
+          const aDate = orderMap.get(a.order_id)?.created_at ?? "";
+          const bDate = orderMap.get(b.order_id)?.created_at ?? "";
+          return bDate.localeCompare(aDate);
+        }),
     );
     setProfile(
       (pr as Profile) ?? {
@@ -404,11 +438,33 @@ export function SellerPanel() {
 
   if (!mounted || authLoading || !user || !isSeller) return null;
 
-  const totalRevenue = orderItems.reduce((s, i) => s + Number(i.price) * i.quantity, 0);
+  const revenueItems = orderItems.filter(
+    (item) => !["cancelled", "returned"].includes(item.status),
+  );
+  const totalRevenue = revenueItems.reduce((s, i) => s + Number(i.price) * i.quantity, 0);
   const totalOrders = new Set(orderItems.map((i) => i.order_id)).size;
   const pendingOrders = orderItems.filter((i) => i.status === "pending").length;
-  const lowStock = products.filter((p) => p.stock < 5 && p.is_active).length;
+  const lowStock = products.filter(
+    (p) => p.stock > 0 && p.stock <= (p.min_stock ?? 5) && p.is_active,
+  ).length;
+  const outOfStock = products.filter((p) => p.stock === 0 && p.is_active).length;
   const unreadSellerNotifs = sellerNotifs.filter((n) => !n.is_read).length;
+  const salesSince = (days: number) => {
+    const threshold = new Date();
+    threshold.setHours(0, 0, 0, 0);
+    threshold.setDate(threshold.getDate() - (days - 1));
+    const list = revenueItems.filter(
+      (item) =>
+        item.order_created_at && new Date(item.order_created_at).getTime() >= threshold.getTime(),
+    );
+    return {
+      revenue: list.reduce((sum, item) => sum + Number(item.price) * item.quantity, 0),
+      orders: new Set(list.map((item) => item.order_id)).size,
+    };
+  };
+  const todaySales = salesSince(1);
+  const weekSales = salesSince(7);
+  const monthSales = salesSince(30);
 
   const uploadImages = async (files: FileList | null) => {
     if (!files || !user || !editing) return;
@@ -502,6 +558,8 @@ export function SellerPanel() {
       stock: Number(editing.stock ?? 0),
       brand: (editing.brand ?? "").trim(),
       sku: (editing.sku ?? "").trim(),
+      barcode: (editing.barcode ?? "").trim(),
+      min_stock: Number(editing.min_stock ?? 5),
       description: (editing.description ?? "").trim(),
       category_id: editing.category_id ?? null,
       weight: editing.weight ? Number(editing.weight) : null,
@@ -523,6 +581,8 @@ export function SellerPanel() {
       image_url: editing.image_url || images[0] || null,
       brand: payload.brand || null,
       sku: payload.sku || null,
+      barcode: payload.barcode || null,
+      min_stock: payload.min_stock,
       description: payload.description || null,
       seller_id: user.id,
       // Hər yeni və redaktə edilmiş məhsul admin yoxlamasından sonra yayımlanır.
@@ -536,6 +596,7 @@ export function SellerPanel() {
       is_giveaway: !!editing.is_giveaway,
       video_url: editing.video_url ?? null,
       video_duration: editing.video_duration ?? null,
+      variants: editing.variants ?? [],
     };
 
     if (editing.id) {
@@ -572,10 +633,16 @@ export function SellerPanel() {
 
   const promote = async (p: Product) => {
     if (!user) return;
-    const raw = window.prompt(`"${p.title}" məhsulunu neçə gün irəli çəkmək istəyirsiniz? (1-30)`, "7");
+    const raw = window.prompt(
+      `"${p.title}" məhsulunu neçə gün irəli çəkmək istəyirsiniz? (1-30)`,
+      "7",
+    );
     if (!raw) return;
     const days = Math.min(30, Math.max(1, parseInt(raw, 10) || 0));
-    if (days < 1) { toast.error("Düzgün gün sayı daxil edin"); return; }
+    if (days < 1) {
+      toast.error("Düzgün gün sayı daxil edin");
+      return;
+    }
     const endsAt = new Date(Date.now() + days * 24 * 60 * 60 * 1000).toISOString();
     const { error } = await supabase.from("sponsored_products").insert({
       product_id: p.id,
@@ -584,7 +651,10 @@ export function SellerPanel() {
       ends_at: endsAt,
       is_active: true,
     });
-    if (error) { toast.error("Reklam yaradılmadı: " + error.message); return; }
+    if (error) {
+      toast.error("Reklam yaradılmadı: " + error.message);
+      return;
+    }
     toast.success(`✨ "${p.title}" ${days} gün irəli çəkildi!`);
   };
 
@@ -773,6 +843,14 @@ export function SellerPanel() {
       onClick: () => setTab("bulk"),
     },
     {
+      key: "inventory",
+      label: "Stok idarəsi",
+      icon: Boxes,
+      badge: lowStock + outOfStock,
+      active: tab === "inventory",
+      onClick: () => setTab("inventory"),
+    },
+    {
       key: "orders",
       label: "Sifarişlər",
       icon: ShoppingBag,
@@ -786,6 +864,13 @@ export function SellerPanel() {
       icon: Undo2,
       active: tab === "returns",
       onClick: () => setTab("returns"),
+    },
+    {
+      key: "customers",
+      label: "Müştərilər",
+      icon: UserRound,
+      active: tab === "customers",
+      onClick: () => setTab("customers"),
     },
     {
       key: "notifications",
@@ -856,22 +941,63 @@ export function SellerPanel() {
     <PanelLayout title="Satıcı paneli" subtitle={profile?.shop_name ?? "Mağazam"} items={navItems}>
       {tab === "dashboard" && (
         <div className="space-y-6">
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid sm:grid-cols-2 xl:grid-cols-4 gap-4">
             {[
-              { icon: DollarSign, label: "Ümumi gəlir", value: formatAZN(totalRevenue) },
-              { icon: ShoppingBag, label: "Sifarişlər", value: totalOrders },
+              {
+                icon: DollarSign,
+                label: "Bugünkü satış",
+                value: formatAZN(todaySales.revenue),
+                note: `${todaySales.orders} sifariş`,
+              },
+              {
+                icon: TrendingUp,
+                label: "Son 7 gün",
+                value: formatAZN(weekSales.revenue),
+                note: `${weekSales.orders} sifariş`,
+              },
+              {
+                icon: BarChart3,
+                label: "Son 30 gün",
+                value: formatAZN(monthSales.revenue),
+                note: `${monthSales.orders} sifariş`,
+              },
+              {
+                icon: DollarSign,
+                label: "Ümumi gəlir",
+                value: formatAZN(totalRevenue),
+                note: `${totalOrders} sifariş`,
+              },
               {
                 icon: Package,
                 label: "Aktiv məhsullar",
                 value: products.filter((p) => p.is_active).length,
+                note: `${products.length} ümumi`,
               },
-              { icon: TrendingUp, label: "Gözləyən sifariş", value: pendingOrders },
+              {
+                icon: ShoppingBag,
+                label: "Gözləyən sifariş",
+                value: pendingOrders,
+                note: "Emal tələb edir",
+              },
+              {
+                icon: AlertTriangle,
+                label: "Az qalan stok",
+                value: lowStock,
+                note: "Minimum həddə çatıb",
+              },
+              {
+                icon: PackageX,
+                label: "Stoku bitən",
+                value: outOfStock,
+                note: "Satış dayandırılıb",
+              },
             ].map((s, i) => (
               <div key={i} className="bg-card border border-border rounded-2xl p-5 shadow-card">
                 <div className="flex items-center justify-between">
                   <div>
                     <div className="text-sm text-muted-foreground">{s.label}</div>
                     <div className="text-2xl font-extrabold mt-1">{s.value}</div>
+                    <div className="text-xs text-muted-foreground mt-1">{s.note}</div>
                   </div>
                   <div className="w-12 h-12 rounded-xl bg-gradient-soft flex items-center justify-center text-primary">
                     <s.icon className="h-6 w-6" />
@@ -881,10 +1007,68 @@ export function SellerPanel() {
             ))}
           </div>
           {lowStock > 0 && (
-            <div className="bg-warning/10 border border-warning/20 text-warning-foreground rounded-2xl p-4">
-              <strong>{lowStock}</strong> məhsulun stoku azdır (5-dən az). Stoku yeniləyin.
-            </div>
+            <button
+              onClick={() => setTab("inventory")}
+              className="w-full text-left bg-warning/10 border border-warning/20 text-warning-foreground rounded-2xl p-4 hover:bg-warning/15"
+            >
+              <strong>{lowStock}</strong> məhsul minimum stok həddinə çatıb. Stok idarəsini açın.
+            </button>
           )}
+          {outOfStock > 0 && (
+            <button
+              onClick={() => setTab("inventory")}
+              className="w-full text-left bg-destructive/10 border border-destructive/20 text-destructive rounded-2xl p-4 hover:bg-destructive/15"
+            >
+              <strong>{outOfStock}</strong> aktiv məhsulun stoku bitib.
+            </button>
+          )}
+          <div className="bg-card border border-border rounded-2xl p-6">
+            <div className="flex items-center justify-between gap-3 mb-4">
+              <h3 className="font-bold text-lg">Son sifarişlər</h3>
+              <button
+                onClick={() => setTab("orders")}
+                className="text-sm text-primary font-semibold hover:underline"
+              >
+                Hamısına bax
+              </button>
+            </div>
+            {orderItems.length === 0 ? (
+              <div className="text-sm text-muted-foreground text-center py-6">
+                Hələ sifariş yoxdur
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {orderItems.slice(0, 5).map((item) => {
+                  const status = ORDER_STATUSES.find((entry) => entry.v === item.status);
+                  return (
+                    <div
+                      key={item.id}
+                      className="flex items-center justify-between gap-3 rounded-xl border border-border p-3"
+                    >
+                      <div className="min-w-0">
+                        <div className="font-semibold text-sm truncate">{item.title}</div>
+                        <div className="text-xs text-muted-foreground">
+                          #{item.order_id.slice(0, 8).toUpperCase()} ·{" "}
+                          {item.customer_name ?? "Müştəri"} ·{" "}
+                          {item.order_created_at ? formatDateTime(item.order_created_at) : "—"}
+                        </div>
+                      </div>
+                      <div className="text-right shrink-0">
+                        <div className="font-bold text-sm">
+                          {formatAZN(Number(item.price) * item.quantity)}
+                        </div>
+                        <span
+                          className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${status?.c ?? "bg-secondary"}`}
+                        >
+                          {status?.l ?? item.status}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
           <div className="bg-card border border-border rounded-2xl p-6">
             <div className="font-bold text-lg mb-4 flex items-center justify-between gap-3">
               <span className="flex items-center gap-2">
@@ -1085,7 +1269,9 @@ export function SellerPanel() {
         <div className="space-y-3">
           <DateRangeFilter value={ordersDateRange} onChange={setOrdersDateRange} />
           {(() => {
-            const visibleOrders = orderItems.filter((i) => inRange(i.order_created_at ?? null, ordersDateRange));
+            const visibleOrders = orderItems.filter((i) =>
+              inRange(i.order_created_at ?? null, ordersDateRange),
+            );
             if (visibleOrders.length === 0) {
               return (
                 <div className="bg-secondary/40 rounded-2xl p-10 text-center text-muted-foreground">
@@ -1140,10 +1326,18 @@ export function SellerPanel() {
                     <select
                       value={i.status}
                       onChange={(e) => updateOrderStatus(i, e.target.value)}
-                      disabled={!!i.accepted_at || !!i.delivered_at || !["pending", "preparing", "packed", "shipped"].includes(i.status)}
+                      disabled={
+                        !!i.accepted_at ||
+                        !!i.delivered_at ||
+                        !["pending", "preparing", "packed", "shipped"].includes(i.status)
+                      }
                       className={`text-xs px-3 py-2 rounded-lg font-semibold border-0 ${st.c} cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed`}
                     >
-                      {ORDER_STATUSES.filter((s) => ["pending", "preparing", "packed", "shipped"].includes(s.v) || s.v === i.status).map((s) => (
+                      {ORDER_STATUSES.filter(
+                        (s) =>
+                          ["pending", "preparing", "packed", "shipped"].includes(s.v) ||
+                          s.v === i.status,
+                      ).map((s) => (
                         <option key={s.v} value={s.v}>
                           {s.l}
                         </option>
@@ -1177,7 +1371,11 @@ export function SellerPanel() {
                       </button>
                     </div>
                   </div>
-                  <SellerExternalDelivery orderItemId={i.id} itemStatus={i.status} onChanged={load} />
+                  <SellerExternalDelivery
+                    orderItemId={i.id}
+                    itemStatus={i.status}
+                    onChanged={load}
+                  />
                   {i.pickup_point ? (
                     <div className="bg-primary/5 border border-primary/20 rounded-lg p-3 text-xs">
                       <div className="font-bold text-primary mb-1">
@@ -1211,6 +1409,12 @@ export function SellerPanel() {
       {tab === "analytics" && <SellerAnalytics sellerId={user.id} />}
 
       {tab === "bulk" && <BulkProductUpload sellerId={user.id} onDone={load} />}
+
+      {tab === "inventory" && <SellerInventory sellerId={user.id} onChanged={load} />}
+
+      {tab === "customers" && (
+        <SellerCustomers sellerId={user.id} onOpenMessages={() => setTab("messages")} />
+      )}
 
       {tab === "advertising" && <SellerAdvertising />}
 
@@ -1294,7 +1498,9 @@ export function SellerPanel() {
                 <div className="text-xs text-muted-foreground">İzləyici</div>
                 <div className="font-black text-lg flex items-center gap-1">
                   {myFollowers}
-                  {myFollowers >= 100 && <BadgeCheck className="h-4 w-4 text-blue-500 fill-blue-500" />}
+                  {myFollowers >= 100 && (
+                    <BadgeCheck className="h-4 w-4 text-blue-500 fill-blue-500" />
+                  )}
                 </div>
               </div>
             </div>
@@ -1319,8 +1525,16 @@ export function SellerPanel() {
                 <div className="text-xs text-muted-foreground">Reytinq</div>
                 <div className="font-black text-lg">
                   {products.length > 0
-                    ? (products.reduce((s, p) => s + Number(p.rating) * (p.reviews_count || 0), 0) /
-                        Math.max(1, products.reduce((s, p) => s + (p.reviews_count || 0), 0))).toFixed(1)
+                    ? (
+                        products.reduce(
+                          (s, p) => s + Number(p.rating) * (p.reviews_count || 0),
+                          0,
+                        ) /
+                        Math.max(
+                          1,
+                          products.reduce((s, p) => s + (p.reviews_count || 0), 0),
+                        )
+                      ).toFixed(1)
                     : "0.0"}
                 </div>
               </div>
@@ -1407,7 +1621,9 @@ export function SellerPanel() {
             <div className="pt-4 mt-2 border-t border-border">
               <h4 className="font-bold text-base mb-1">💳 Ödəniş hesabı (payout)</h4>
               <p className="text-xs text-muted-foreground mb-3">
-                Sifariş tamamlandıqdan 3 gün sonra satış məbləği (komissiya çıxılmaqla) avtomatik bu hesaba köçürülür. IBAN tövsiyə olunur — limit yoxdur və qanuni sənədləşmə üçün uyğundur.
+                Sifariş tamamlandıqdan 3 gün sonra satış məbləği (komissiya çıxılmaqla) avtomatik bu
+                hesaba köçürülür. IBAN tövsiyə olunur — limit yoxdur və qanuni sənədləşmə üçün
+                uyğundur.
               </p>
               <div className="grid sm:grid-cols-2 gap-3">
                 <div>
@@ -1425,7 +1641,9 @@ export function SellerPanel() {
                   <label className="text-sm font-semibold">Hesab sahibi</label>
                   <input
                     value={profile.account_holder ?? ""}
-                    onChange={(e) => setProfile({ ...profile, account_holder: e.target.value.toUpperCase() })}
+                    onChange={(e) =>
+                      setProfile({ ...profile, account_holder: e.target.value.toUpperCase() })
+                    }
                     maxLength={100}
                     placeholder="ADI SOYADI / ŞİRKƏT ADI"
                     className="mt-1 w-full h-11 px-3 rounded-lg border border-input bg-background uppercase"
@@ -1435,12 +1653,19 @@ export function SellerPanel() {
                   <label className="text-sm font-semibold">IBAN</label>
                   <input
                     value={profile.iban ?? ""}
-                    onChange={(e) => setProfile({ ...profile, iban: e.target.value.toUpperCase().replace(/[^A-Z0-9 ]/g, "") })}
+                    onChange={(e) =>
+                      setProfile({
+                        ...profile,
+                        iban: e.target.value.toUpperCase().replace(/[^A-Z0-9 ]/g, ""),
+                      })
+                    }
                     maxLength={34}
                     placeholder="AZ21 NABZ 0000 0000 1370 1000 1944"
                     className="mt-1 w-full h-11 px-3 rounded-lg border border-input bg-background tracking-wider"
                   />
-                  <p className="text-xs text-muted-foreground mt-1">28 simvol, AZ ilə başlayır. Bütün banklarda işləyir.</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    28 simvol, AZ ilə başlayır. Bütün banklarda işləyir.
+                  </p>
                 </div>
                 <div>
                   <label className="text-sm font-semibold">Bank adı</label>
@@ -1465,7 +1690,10 @@ export function SellerPanel() {
                     placeholder="4169 7388 0000 0000"
                     className="mt-1 w-full h-11 px-3 rounded-lg border border-input bg-background tracking-wider"
                   />
-                  <p className="text-xs text-muted-foreground mt-1">m10, LeoBank, Birbank və s. Kiçik məbləğlər üçün uyğundur (gündəlik limit ola bilər).</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    m10, LeoBank, Birbank və s. Kiçik məbləğlər üçün uyğundur (gündəlik limit ola
+                    bilər).
+                  </p>
                 </div>
               </div>
             </div>
@@ -1502,7 +1730,8 @@ export function SellerPanel() {
               {/* Images */}
               <div>
                 <label className="text-sm font-semibold mb-2 block">
-                  Şəkillər (1-dən 10-a qədər, ilk şəkil əsas olacaq) — {(editing.images ?? []).length}/10
+                  Şəkillər (1-dən 10-a qədər, ilk şəkil əsas olacaq) —{" "}
+                  {(editing.images ?? []).length}/10
                 </label>
                 <div className="grid grid-cols-4 gap-2 mb-2">
                   {(editing.images ?? []).map((url, idx) => (
@@ -1561,7 +1790,9 @@ export function SellerPanel() {
                   <div className="relative rounded-lg overflow-hidden bg-black">
                     <video src={editing.video_url} controls className="w-full max-h-64" />
                     <button
-                      onClick={() => setEditing({ ...editing, video_url: null, video_duration: null })}
+                      onClick={() =>
+                        setEditing({ ...editing, video_url: null, video_duration: null })
+                      }
                       className="absolute top-2 right-2 bg-destructive text-destructive-foreground rounded-full w-8 h-8 flex items-center justify-center"
                     >
                       <X className="h-4 w-4" />
@@ -1588,10 +1819,10 @@ export function SellerPanel() {
                   </label>
                 )}
                 <p className="text-xs text-muted-foreground mt-1">
-                  Qısa video məhsulun satışını artırır. 60 saniyədən uzun videolar avtomatik rədd edilir.
+                  Qısa video məhsulun satışını artırır. 60 saniyədən uzun videolar avtomatik rədd
+                  edilir.
                 </p>
               </div>
-
 
               <div>
                 <label className="text-sm font-semibold">Başlıq *</label>
@@ -1624,7 +1855,10 @@ export function SellerPanel() {
                     step="0.01"
                     value={editing.price ? String(editing.price) : ""}
                     onChange={(e) =>
-                      setEditing({ ...editing, price: e.target.value === "" ? 0 : parseFloat(e.target.value) || 0 })
+                      setEditing({
+                        ...editing,
+                        price: e.target.value === "" ? 0 : parseFloat(e.target.value) || 0,
+                      })
                     }
                     placeholder="0"
                     className="mt-1 w-full h-11 px-3 rounded-lg border border-input bg-background"
@@ -1657,7 +1891,10 @@ export function SellerPanel() {
                     inputMode="numeric"
                     value={editing.stock ? String(editing.stock) : ""}
                     onChange={(e) =>
-                      setEditing({ ...editing, stock: e.target.value === "" ? 0 : parseInt(e.target.value) || 0 })
+                      setEditing({
+                        ...editing,
+                        stock: e.target.value === "" ? 0 : parseInt(e.target.value) || 0,
+                      })
                     }
                     placeholder="0"
                     className="mt-1 w-full h-11 px-3 rounded-lg border border-input bg-background"
@@ -1686,6 +1923,37 @@ export function SellerPanel() {
                   />
                 </div>
                 <div>
+                  <label className="text-sm font-semibold">Barkod</label>
+                  <input
+                    value={editing.barcode ?? ""}
+                    onChange={(e) =>
+                      setEditing({ ...editing, barcode: e.target.value.replace(/\s/g, "") })
+                    }
+                    maxLength={80}
+                    placeholder="8691234567890"
+                    className="mt-1 w-full h-11 px-3 rounded-lg border border-input bg-background"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-sm font-semibold">Minimum stok xəbərdarlığı</label>
+                  <input
+                    type="number"
+                    inputMode="numeric"
+                    min={0}
+                    value={editing.min_stock ?? 5}
+                    onChange={(e) =>
+                      setEditing({
+                        ...editing,
+                        min_stock: Math.max(0, parseInt(e.target.value, 10) || 0),
+                      })
+                    }
+                    className="mt-1 w-full h-11 px-3 rounded-lg border border-input bg-background"
+                  />
+                </div>
+                <div>
                   <label className="text-sm font-semibold">Çəki (kq)</label>
                   <input
                     type="number"
@@ -1702,6 +1970,121 @@ export function SellerPanel() {
                     className="mt-1 w-full h-11 px-3 rounded-lg border border-input bg-background"
                   />
                 </div>
+              </div>
+
+              <div className="border border-border rounded-xl p-4 space-y-3">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <h4 className="font-bold text-sm">Məhsul variantları</h4>
+                    <p className="text-xs text-muted-foreground">
+                      Rəng, ölçü və ya başqa seçimlər üçün ayrıca SKU, stok və qiymət yaradın.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setEditing({
+                        ...editing,
+                        variants: [
+                          ...(editing.variants ?? []),
+                          {
+                            name: "Rəng",
+                            value: "",
+                            sku: "",
+                            stock: 0,
+                            price: Number(editing.price ?? 0),
+                          },
+                        ],
+                      })
+                    }
+                    className="px-3 py-2 rounded-lg bg-secondary text-xs font-bold"
+                  >
+                    <Plus className="h-3.5 w-3.5 inline mr-1" /> Variant əlavə et
+                  </button>
+                </div>
+                {(editing.variants ?? []).map((variant, index) => (
+                  <div
+                    key={index}
+                    className="grid grid-cols-2 md:grid-cols-6 gap-2 p-3 rounded-lg bg-secondary/40"
+                  >
+                    <input
+                      value={variant.name}
+                      onChange={(e) => {
+                        const next = [...(editing.variants ?? [])];
+                        next[index] = { ...variant, name: e.target.value };
+                        setEditing({ ...editing, variants: next });
+                      }}
+                      placeholder="Tip: Rəng"
+                      className="h-9 px-2 rounded-lg border border-input bg-background text-xs"
+                    />
+                    <input
+                      value={variant.value}
+                      onChange={(e) => {
+                        const next = [...(editing.variants ?? [])];
+                        next[index] = { ...variant, value: e.target.value };
+                        setEditing({ ...editing, variants: next });
+                      }}
+                      placeholder="Dəyər: Qara"
+                      className="h-9 px-2 rounded-lg border border-input bg-background text-xs"
+                    />
+                    <input
+                      value={variant.sku ?? ""}
+                      onChange={(e) => {
+                        const next = [...(editing.variants ?? [])];
+                        next[index] = { ...variant, sku: e.target.value };
+                        setEditing({ ...editing, variants: next });
+                      }}
+                      placeholder="SKU"
+                      className="h-9 px-2 rounded-lg border border-input bg-background text-xs"
+                    />
+                    <input
+                      type="number"
+                      min={0}
+                      value={variant.stock ?? 0}
+                      onChange={(e) => {
+                        const next = [...(editing.variants ?? [])];
+                        next[index] = {
+                          ...variant,
+                          stock: Math.max(0, parseInt(e.target.value, 10) || 0),
+                        };
+                        setEditing({ ...editing, variants: next });
+                      }}
+                      placeholder="Stok"
+                      className="h-9 px-2 rounded-lg border border-input bg-background text-xs"
+                    />
+                    <input
+                      type="number"
+                      min={0}
+                      step="0.01"
+                      value={variant.price ?? ""}
+                      onChange={(e) => {
+                        const next = [...(editing.variants ?? [])];
+                        next[index] = {
+                          ...variant,
+                          price: Math.max(0, Number(e.target.value) || 0),
+                        };
+                        setEditing({ ...editing, variants: next });
+                      }}
+                      placeholder="Qiymət"
+                      className="h-9 px-2 rounded-lg border border-input bg-background text-xs"
+                    />
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setEditing({
+                          ...editing,
+                          variants: (editing.variants ?? []).filter(
+                            (_, variantIndex) => variantIndex !== index,
+                          ),
+                        })
+                      }
+                      className="h-9 rounded-lg text-destructive hover:bg-destructive/10"
+                      title="Variantı sil"
+                    >
+                      <Trash2 className="h-4 w-4 mx-auto" />
+                    </button>
+                  </div>
+                ))}
               </div>
 
               <div>
@@ -1726,7 +2109,11 @@ export function SellerPanel() {
                       min={0}
                       value={editing.delivery_days_min ? String(editing.delivery_days_min) : ""}
                       onChange={(e) =>
-                        setEditing({ ...editing, delivery_days_min: e.target.value === "" ? 1 : parseInt(e.target.value) || 0 })
+                        setEditing({
+                          ...editing,
+                          delivery_days_min:
+                            e.target.value === "" ? 1 : parseInt(e.target.value) || 0,
+                        })
                       }
                       placeholder="1"
                       className="mt-1 w-full h-10 px-3 rounded-lg border border-input bg-background"
@@ -1740,7 +2127,11 @@ export function SellerPanel() {
                       min={0}
                       value={editing.delivery_days_max ? String(editing.delivery_days_max) : ""}
                       onChange={(e) =>
-                        setEditing({ ...editing, delivery_days_max: e.target.value === "" ? 3 : parseInt(e.target.value) || 0 })
+                        setEditing({
+                          ...editing,
+                          delivery_days_max:
+                            e.target.value === "" ? 3 : parseInt(e.target.value) || 0,
+                        })
                       }
                       placeholder="3"
                       className="mt-1 w-full h-10 px-3 rounded-lg border border-input bg-background"
@@ -1795,13 +2186,15 @@ export function SellerPanel() {
                     onChange={(e) => setEditing({ ...editing, is_giveaway: e.target.checked })}
                     className="w-4 h-4 accent-warning"
                   />
-                  <span className="text-sm font-bold">🎁 Uduşlu məhsul (ön səhifədə xüsusi bölmədə görünsün)</span>
+                  <span className="text-sm font-bold">
+                    🎁 Uduşlu məhsul (ön səhifədə xüsusi bölmədə görünsün)
+                  </span>
                 </label>
               </div>
 
-
               <div className="rounded-lg border border-warning/40 bg-warning/5 p-3 text-sm">
-                <strong>Admin yoxlaması:</strong> məhsul yadda saxlandıqdan sonra yoxlamaya göndəriləcək və yalnız təsdiqdən sonra kataloqda görünəcək.
+                <strong>Admin yoxlaması:</strong> məhsul yadda saxlandıqdan sonra yoxlamaya
+                göndəriləcək və yalnız təsdiqdən sonra kataloqda görünəcək.
               </div>
 
               <div className="flex gap-2 pt-2">

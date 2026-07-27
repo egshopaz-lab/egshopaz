@@ -33,7 +33,6 @@ import { Route as MapRouteImport } from './routes/map'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as LlmsDottxtRouteImport } from './routes/llms[.]txt'
 import { Route as FollowedShopsRouteImport } from './routes/followed-shops'
-import { Route as FeedbackRouteImport } from './routes/feedback'
 import { Route as FavoritesRouteImport } from './routes/favorites'
 import { Route as DisputesRouteImport } from './routes/disputes'
 import { Route as DiscoverRouteImport } from './routes/discover'
@@ -174,11 +173,6 @@ const FollowedShopsRoute = FollowedShopsRouteImport.update({
   path: '/followed-shops',
   getParentRoute: () => rootRouteImport,
 } as any)
-const FeedbackRoute = FeedbackRouteImport.update({
-  id: '/feedback',
-  path: '/feedback',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const FavoritesRoute = FavoritesRouteImport.update({
   id: '/favorites',
   path: '/favorites',
@@ -290,7 +284,6 @@ export interface FileRoutesByFullPath {
   '/discover': typeof DiscoverRoute
   '/disputes': typeof DisputesRoute
   '/favorites': typeof FavoritesRoute
-  '/feedback': typeof FeedbackRoute
   '/followed-shops': typeof FollowedShopsRoute
   '/llms.txt': typeof LlmsDottxtRoute
   '/login': typeof LoginRoute
@@ -336,7 +329,6 @@ export interface FileRoutesByTo {
   '/discover': typeof DiscoverRoute
   '/disputes': typeof DisputesRoute
   '/favorites': typeof FavoritesRoute
-  '/feedback': typeof FeedbackRoute
   '/followed-shops': typeof FollowedShopsRoute
   '/llms.txt': typeof LlmsDottxtRoute
   '/login': typeof LoginRoute
@@ -383,7 +375,6 @@ export interface FileRoutesById {
   '/discover': typeof DiscoverRoute
   '/disputes': typeof DisputesRoute
   '/favorites': typeof FavoritesRoute
-  '/feedback': typeof FeedbackRoute
   '/followed-shops': typeof FollowedShopsRoute
   '/llms.txt': typeof LlmsDottxtRoute
   '/login': typeof LoginRoute
@@ -431,7 +422,6 @@ export interface FileRouteTypes {
     | '/discover'
     | '/disputes'
     | '/favorites'
-    | '/feedback'
     | '/followed-shops'
     | '/llms.txt'
     | '/login'
@@ -477,7 +467,6 @@ export interface FileRouteTypes {
     | '/discover'
     | '/disputes'
     | '/favorites'
-    | '/feedback'
     | '/followed-shops'
     | '/llms.txt'
     | '/login'
@@ -523,7 +512,6 @@ export interface FileRouteTypes {
     | '/discover'
     | '/disputes'
     | '/favorites'
-    | '/feedback'
     | '/followed-shops'
     | '/llms.txt'
     | '/login'
@@ -570,7 +558,6 @@ export interface RootRouteChildren {
   DiscoverRoute: typeof DiscoverRoute
   DisputesRoute: typeof DisputesRoute
   FavoritesRoute: typeof FavoritesRoute
-  FeedbackRoute: typeof FeedbackRoute
   FollowedShopsRoute: typeof FollowedShopsRoute
   LlmsDottxtRoute: typeof LlmsDottxtRoute
   LoginRoute: typeof LoginRoute
@@ -772,13 +759,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FollowedShopsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/feedback': {
-      id: '/feedback'
-      path: '/feedback'
-      fullPath: '/feedback'
-      preLoaderRoute: typeof FeedbackRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/favorites': {
       id: '/favorites'
       path: '/favorites'
@@ -930,7 +910,6 @@ const rootRouteChildren: RootRouteChildren = {
   DiscoverRoute: DiscoverRoute,
   DisputesRoute: DisputesRoute,
   FavoritesRoute: FavoritesRoute,
-  FeedbackRoute: FeedbackRoute,
   FollowedShopsRoute: FollowedShopsRoute,
   LlmsDottxtRoute: LlmsDottxtRoute,
   LoginRoute: LoginRoute,
@@ -964,3 +943,12 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { createStart } from '@tanstack/react-start'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+  }
+}

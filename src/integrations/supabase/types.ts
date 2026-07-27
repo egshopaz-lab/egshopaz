@@ -1160,6 +1160,7 @@ export type Database = {
       }
       products: {
         Row: {
+          barcode: string | null
           brand: string | null
           category_id: string | null
           color: string | null
@@ -1176,6 +1177,7 @@ export type Database = {
           images: string[]
           is_active: boolean
           is_giveaway: boolean
+          min_stock: number
           old_price: number | null
           price: number
           rating: number
@@ -1184,13 +1186,16 @@ export type Database = {
           size: string | null
           sku: string | null
           stock: number
+          stock_updated_at: string
           title: string
           updated_at: string
+          variants: Json
           video_duration: number | null
           video_url: string | null
           weight: number | null
         }
         Insert: {
+          barcode?: string | null
           brand?: string | null
           category_id?: string | null
           color?: string | null
@@ -1207,6 +1212,7 @@ export type Database = {
           images?: string[]
           is_active?: boolean
           is_giveaway?: boolean
+          min_stock?: number
           old_price?: number | null
           price: number
           rating?: number
@@ -1215,13 +1221,16 @@ export type Database = {
           size?: string | null
           sku?: string | null
           stock?: number
+          stock_updated_at?: string
           title: string
           updated_at?: string
+          variants?: Json
           video_duration?: number | null
           video_url?: string | null
           weight?: number | null
         }
         Update: {
+          barcode?: string | null
           brand?: string | null
           category_id?: string | null
           color?: string | null
@@ -1238,6 +1247,7 @@ export type Database = {
           images?: string[]
           is_active?: boolean
           is_giveaway?: boolean
+          min_stock?: number
           old_price?: number | null
           price?: number
           rating?: number
@@ -1246,8 +1256,10 @@ export type Database = {
           size?: string | null
           sku?: string | null
           stock?: number
+          stock_updated_at?: string
           title?: string
           updated_at?: string
+          variants?: Json
           video_duration?: number | null
           video_url?: string | null
           weight?: number | null
@@ -1258,6 +1270,60 @@ export type Database = {
             columns: ["category_id"]
             isOneToOne: false
             referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      product_stock_movements: {
+        Row: {
+          change: number
+          created_at: string
+          id: string
+          new_stock: number
+          note: string | null
+          order_item_id: string | null
+          previous_stock: number
+          product_id: string
+          reason: string
+          seller_id: string
+        }
+        Insert: {
+          change: number
+          created_at?: string
+          id?: string
+          new_stock: number
+          note?: string | null
+          order_item_id?: string | null
+          previous_stock: number
+          product_id: string
+          reason?: string
+          seller_id: string
+        }
+        Update: {
+          change?: number
+          created_at?: string
+          id?: string
+          new_stock?: number
+          note?: string | null
+          order_item_id?: string | null
+          previous_stock?: number
+          product_id?: string
+          reason?: string
+          seller_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_stock_movements_order_item_id_fkey"
+            columns: ["order_item_id"]
+            isOneToOne: false
+            referencedRelation: "order_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_stock_movements_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
             referencedColumns: ["id"]
           },
         ]
@@ -1851,6 +1917,30 @@ export type Database = {
           id?: string
           seller_id?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      shop_message_blocks: {
+        Row: {
+          blocked_id: string
+          blocker_id: string
+          created_at: string
+          id: string
+          reason: string | null
+        }
+        Insert: {
+          blocked_id: string
+          blocker_id: string
+          created_at?: string
+          id?: string
+          reason?: string | null
+        }
+        Update: {
+          blocked_id?: string
+          blocker_id?: string
+          created_at?: string
+          id?: string
+          reason?: string | null
         }
         Relationships: []
       }
