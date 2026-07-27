@@ -60,6 +60,16 @@ import { DateRangeFilter, emptyRange, inRange, type DateRange } from "@/componen
 import { SellerExternalDelivery } from "@/components/SellerExternalDelivery";
 import { SellerInventory } from "@/components/SellerInventory";
 import { SellerCustomers } from "@/components/SellerCustomers";
+import { SellerDashboardProfessional } from "@/components/SellerDashboardProfessional";
+import {
+  SellerNotificationCenter,
+  type SellerNotificationItem,
+} from "@/components/SellerNotificationCenter";
+import {
+  SellerOrdersWorkspace,
+  type SellerOrderFilter,
+  type SellerOrderItemRecord,
+} from "@/components/SellerOrdersWorkspace";
 import {
   CartesianGrid,
   Line,
@@ -230,11 +240,32 @@ export function SellerPanel() {
     | "followers"
     | "inventory"
     | "customers"
+    | "notifications"
   >(
     typeof window !== "undefined" &&
       new URLSearchParams(window.location.search).has("trends_payment")
       ? "trends"
-      : "dashboard",
+      : typeof window !== "undefined" &&
+          new URLSearchParams(window.location.search).get("section") &&
+          [
+            "dashboard",
+            "products",
+            "orders",
+            "messages",
+            "advertising",
+            "balance",
+            "analytics",
+            "bulk",
+            "shop",
+            "support",
+            "returns",
+            "followers",
+            "inventory",
+            "customers",
+            "notifications",
+          ].includes(new URLSearchParams(window.location.search).get("section")!)
+        ? (new URLSearchParams(window.location.search).get("section") as any)
+        : "dashboard",
   );
 
   const [unreadMsgs, setUnreadMsgs] = useState(0);
@@ -252,12 +283,44 @@ export function SellerPanel() {
   const [uploading, setUploading] = useState(false);
   const [savingShop, setSavingShop] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [panelLoading, setPanelLoading] = useState(true);
+  const [panelError, setPanelError] = useState<string | null>(null);
   const [myFollowers, setMyFollowers] = useState(0);
   const fileRef = useRef<HTMLInputElement>(null);
+  const loadedOnceRef = useRef(false);
 
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const url = new URL(window.location.href);
+    if (tab === "dashboard") url.searchParams.delete("section");
+    else url.searchParams.set("section", tab);
+    window.history.replaceState({ section: tab }, "", url);
+  }, [tab]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const onPopState = () => {
+      const section = new URLSearchParams(window.location.search).get("section");
+      if (section) setTab(section as typeof tab);
+      else setTab("dashboard");
+    };
+    window.addEventListener("popstate", onPopState);
+    return () => window.removeEventListener("popstate", onPopState);
+  }, []);
+
+  const openSection = (section: typeof tab) => {
+    if (typeof window !== "undefined") {
+      const url = new URL(window.location.href);
+      if (section === "dashboard") url.searchParams.delete("section");
+      else url.searchParams.set("section", section);
+      window.history.pushState({ section }, "", url);
+    }
+    setTab(section);
+  };
 
   useEffect(() => {
     if (!authLoading && !user) navigate({ to: "/login" });
@@ -266,6 +329,8 @@ export function SellerPanel() {
 
   const load = async () => {
     if (!user) return;
+    if (!loadedOnceRef.current) setPanelLoading(true);
+    setPanelError(null);
     const loadAllOrderItems = async () => {
       const pageSize = 1000;
       const rows: unknown[] = [];
@@ -316,6 +381,8 @@ export function SellerPanel() {
     const firstError = productsError ?? categoriesError ?? itemsError ?? profileError;
     if (firstError) {
       toast.error(`Məlumat yüklənmədi: ${firstError.message}`);
+      setPanelError(firstError.message);
+      setPanelLoading(false);
       return;
     }
     const rawItems = (ois ?? []) as unknown as OrderItem[];
@@ -328,6 +395,8 @@ export function SellerPanel() {
       : { data: [], error: null };
     if (ordersError) {
       toast.error(`Sifariş məlumatı yüklənmədi: ${ordersError.message}`);
+      setPanelError(ordersError.message);
+      setPanelLoading(false);
       return;
     }
     const orderMap = new Map((orderRows ?? []).map((o) => [o.id, o]));
@@ -346,6 +415,8 @@ export function SellerPanel() {
       : { data: [], error: null };
     if (pickupError) {
       toast.error(`PVZ məlumatı yüklənmədi: ${pickupError.message}`);
+      setPanelError(pickupError.message);
+      setPanelLoading(false);
       return;
     }
     const pickupMap = new Map((pickupRows ?? []).map((p) => [p.id, p]));
@@ -393,6 +464,8 @@ export function SellerPanel() {
       },
     );
     setMyFollowers(followersCount ?? 0);
+    loadedOnceRef.current = true;
+    setPanelLoading(false);
   };
   useEffect(() => {
     if (user && isSeller) load();
@@ -405,7 +478,18 @@ export function SellerPanel() {
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "order_items", filter: `seller_id=eq.${user.id}` },
-        load,
+        (payload) => {
+          if (payload.eventType === "UPDATE") {
+            const changed = payload.new as Partial<OrderItem> & { id?: string };
+            if (changed.id) {
+              setOrderItems((current) =>
+                current.map((item) => (item.id === changed.id ? { ...item, ...changed } : item)),
+              );
+              return;
+            }
+          }
+          void load();
+        },
       )
       .subscribe();
     return () => {
@@ -421,7 +505,7 @@ export function SellerPanel() {
         .select("id,title,body,type,pickup_code,is_read,created_at")
         .eq("user_id", user.id)
         .order("created_at", { ascending: false })
-        .limit(20)
+        .limit(100)
         .then(({ data }) => setSellerNotifs((data ?? []) as SellerNotif[]));
     };
     loadNotifs();
@@ -472,6 +556,41 @@ export function SellerPanel() {
   }, [user, isSeller]);
 
   if (!mounted || authLoading || !user || !isSeller) return null;
+
+  if (panelLoading) {
+    return (
+      <div className="container mx-auto grid gap-4 px-3 py-4 lg:grid-cols-[272px_1fr] lg:gap-6 lg:px-4 lg:py-6">
+        <div className="h-80 animate-pulse rounded-2xl bg-muted/40" />
+        <div className="space-y-4">
+          <div className="h-28 animate-pulse rounded-2xl bg-muted/40" />
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            {[0, 1, 2, 3].map((item) => (
+              <div key={item} className="h-32 animate-pulse rounded-2xl bg-muted/40" />
+            ))}
+          </div>
+          <div className="h-80 animate-pulse rounded-2xl bg-muted/40" />
+        </div>
+      </div>
+    );
+  }
+
+  if (panelError) {
+    return (
+      <div className="container mx-auto px-4 py-12">
+        <div className="mx-auto max-w-xl rounded-2xl border border-destructive/30 bg-destructive/5 p-8 text-center">
+          <AlertTriangle className="mx-auto h-10 w-10 text-destructive" />
+          <h1 className="mt-3 text-xl font-black">Satıcı paneli yüklənmədi</h1>
+          <p className="mt-2 text-sm text-muted-foreground">{panelError}</p>
+          <button
+            onClick={() => void load()}
+            className="mt-5 rounded-xl bg-primary px-5 py-2.5 text-sm font-bold text-primary-foreground"
+          >
+            Yenidən yoxla
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   const paidItems = orderItems.filter(
     (item) =>
@@ -579,11 +698,11 @@ export function SellerPanel() {
     setOrdersDateRange(
       from ? { from: toDateInput(from), to: toDateInput(to) } : emptyRange,
     );
-    setTab("orders");
+    openSection("orders");
   };
   const openProductDetails = (filter: ProductViewFilter) => {
     setProductViewFilter(filter);
-    setTab("products");
+    openSection("products");
   };
   const orderMatchesFilter = (item: OrderItem, filter: OrderViewFilter) => {
     if (filter === "all") return true;
@@ -975,36 +1094,15 @@ export function SellerPanel() {
     {
       key: "dashboard",
       label: "Dashboard",
+      group: "İcmal",
       icon: LayoutDashboard,
       active: tab === "dashboard",
-      onClick: () => setTab("dashboard"),
-    },
-    {
-      key: "products",
-      label: "Məhsullar",
-      icon: Package,
-      badge: products.length,
-      active: tab === "products",
-      onClick: () => openProductDetails("all"),
-    },
-    {
-      key: "bulk",
-      label: "Toplu yükləmə",
-      icon: FileSpreadsheet,
-      active: tab === "bulk",
-      onClick: () => setTab("bulk"),
-    },
-    {
-      key: "inventory",
-      label: "Stok idarəsi",
-      icon: Boxes,
-      badge: lowStock + outOfStock,
-      active: tab === "inventory",
-      onClick: () => setTab("inventory"),
+      onClick: () => openSection("dashboard"),
     },
     {
       key: "orders",
       label: "Sifarişlər",
+      group: "Satışlar",
       icon: ShoppingBag,
       badge: pendingOrders,
       active: tab === "orders",
@@ -1013,85 +1111,161 @@ export function SellerPanel() {
     {
       key: "returns",
       label: "Qaytarmalar",
+      group: "Satışlar",
       icon: Undo2,
       active: tab === "returns",
-      onClick: () => setTab("returns"),
+      onClick: () => openSection("returns"),
+    },
+    {
+      key: "products",
+      label: "Məhsullar",
+      group: "Kataloq",
+      icon: Package,
+      badge: products.length,
+      active: tab === "products",
+      onClick: () => openProductDetails("all"),
+    },
+    {
+      key: "bulk",
+      label: "Toplu yükləmə",
+      group: "Kataloq",
+      icon: FileSpreadsheet,
+      active: tab === "bulk",
+      onClick: () => openSection("bulk"),
+    },
+    {
+      key: "inventory",
+      label: "Stok idarəsi",
+      group: "Kataloq",
+      icon: Boxes,
+      badge: lowStock + outOfStock,
+      active: tab === "inventory",
+      onClick: () => openSection("inventory"),
     },
     {
       key: "customers",
       label: "Müştərilər",
+      group: "Müştərilər",
       icon: UserRound,
       active: tab === "customers",
-      onClick: () => setTab("customers"),
+      onClick: () => openSection("customers"),
     },
     {
       key: "notifications",
       label: "Bildirişlər",
+      group: "Müştərilər",
       icon: Bell,
       badge: unreadSellerNotifs,
-      active: tab === "dashboard",
-      onClick: () => setTab("dashboard"),
-    },
-    {
-      key: "analytics",
-      label: "Analitika",
-      icon: BarChart3,
-      active: tab === "analytics",
-      onClick: () => setTab("analytics"),
+      active: tab === "notifications",
+      onClick: () => openSection("notifications"),
     },
     {
       key: "messages",
       label: "Mesajlar",
+      group: "Müştərilər",
       icon: MessageCircle,
       badge: unreadMsgs,
       active: tab === "messages",
-      onClick: () => setTab("messages"),
+      onClick: () => openSection("messages"),
     },
     {
       key: "advertising",
       label: "Reklam & Paketlər",
+      group: "Marketinq",
       icon: Megaphone,
       active: tab === "advertising",
-      onClick: () => setTab("advertising"),
+      onClick: () => openSection("advertising"),
     },
     {
       to: "/trends",
       label: "EG Trends",
+      group: "Marketinq",
       icon: Rocket,
     },
     {
       key: "followers",
       label: "İzləyicilər",
+      group: "Marketinq",
       icon: Users,
       active: tab === "followers",
-      onClick: () => setTab("followers"),
+      onClick: () => openSection("followers"),
     },
     {
       key: "balance",
-      label: "Balansım",
+      label: "Maliyyə",
+      group: "Maliyyə və hesabat",
       icon: Wallet,
       active: tab === "balance",
-      onClick: () => setTab("balance"),
+      onClick: () => openSection("balance"),
+    },
+    {
+      key: "analytics",
+      label: "Analitika",
+      group: "Maliyyə və hesabat",
+      icon: BarChart3,
+      active: tab === "analytics",
+      onClick: () => openSection("analytics"),
     },
     {
       key: "shop",
       label: "Mağaza ayarları",
+      group: "Ayarlar",
       icon: Settings,
       active: tab === "shop",
-      onClick: () => setTab("shop"),
+      onClick: () => openSection("shop"),
     },
     {
       key: "support",
       label: "AI Dəstək",
+      group: "Ayarlar",
       icon: LifeBuoy,
       active: tab === "support",
-      onClick: () => setTab("support"),
+      onClick: () => openSection("support"),
     },
   ];
 
   return (
     <PanelLayout title="Satıcı paneli" subtitle={profile?.shop_name ?? "Mağazam"} items={navItems}>
       {tab === "dashboard" && (
+        <SellerDashboardProfessional
+          sellerId={user.id}
+          todaySales={todaySales}
+          monthSales={monthSales}
+          totalRevenue={totalRevenue}
+          pendingOrders={pendingOrders}
+          preparingOrders={preparingOrders}
+          shippedOrders={shippedOrders}
+          completedOrders={completedOrders}
+          cancelledOrders={cancelledOrders}
+          returnedOrders={returnedOrders}
+          activeProducts={products.filter((product) => product.is_active).length}
+          lowStock={lowStock}
+          outOfStock={outOfStock}
+          unreadMessages={unreadMsgs}
+          unreadNotifications={unreadSellerNotifs}
+          salesChart={salesChart}
+          recentOrders={recentOrders}
+          notifications={sellerNotifs}
+          statusLabel={(status) => {
+            const found = ORDER_STATUSES.find((entry) => entry.v === status);
+            return {
+              label: found?.l ?? status,
+              className: found?.c ?? "bg-secondary text-muted-foreground",
+            };
+          }}
+          onOpenOrders={(filter, range) => {
+            const from = range === "today" ? todayStart : range === "month" ? monthStart : undefined;
+            openOrderDetails(filter as OrderViewFilter, from);
+          }}
+          onOpenProducts={(filter) => openProductDetails(filter as ProductViewFilter)}
+          onOpenSection={(section) => openSection(section as typeof tab)}
+          onAddProduct={() => {
+            openSection("products");
+            setEditing({ title: "", price: 0, stock: 0, images: [], is_active: true });
+          }}
+        />
+      )}
+      {false && tab === "dashboard" && (
         <div className="space-y-6">
           <div className="grid sm:grid-cols-2 xl:grid-cols-4 gap-4">
             {[
@@ -1329,7 +1503,7 @@ export function SellerPanel() {
                     await supabase
                       .from("notifications")
                       .update({ is_read: true })
-                      .eq("user_id", user.id)
+                      .eq("user_id", user!.id)
                       .eq("is_read", false);
                   }}
                   className="text-xs text-primary hover:underline inline-flex items-center gap-1"
@@ -1450,7 +1624,55 @@ export function SellerPanel() {
               )}
             </div>
           ) : (
-            <div className="bg-card border border-border rounded-2xl overflow-x-auto">
+            <>
+            <div className="space-y-3 md:hidden">
+              {filteredProducts.map((product) => (
+                <div key={product.id} className="rounded-2xl border border-border bg-card p-4">
+                  <div className="flex gap-3">
+                    <div className="h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-secondary">
+                      {product.image_url && (
+                        <img src={product.image_url} alt="" className="h-full w-full object-cover" />
+                      )}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <Link
+                        to="/product/$id"
+                        params={{ id: product.id }}
+                        className="line-clamp-2 font-black"
+                      >
+                        {product.title}
+                      </Link>
+                      <div className="mt-1 text-lg font-black text-primary">{formatAZN(product.price)}</div>
+                      <div className="mt-1 flex flex-wrap gap-2 text-xs">
+                        <span className={product.stock <= (product.min_stock ?? 5) ? "font-bold text-destructive" : "text-muted-foreground"}>
+                          Stok: {product.stock}
+                        </span>
+                        <span className={`rounded-full px-2 py-0.5 font-bold ${
+                          product.is_active ? "bg-success/10 text-success" : "bg-warning/10 text-warning"
+                        }`}>
+                          {product.is_active ? "Aktiv" : "Yoxlamada"}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="mt-4 grid grid-cols-4 gap-2 border-t border-border pt-3">
+                    <button onClick={() => setEditing(product)} className="flex h-10 items-center justify-center rounded-lg bg-secondary" title="Redaktə">
+                      <Edit className="h-4 w-4" />
+                    </button>
+                    <button onClick={() => promote(product)} className="flex h-10 items-center justify-center rounded-lg bg-warning/10 text-warning" title="İrəli çək">
+                      <Rocket className="h-4 w-4" />
+                    </button>
+                    <button onClick={() => openQR(product)} className="flex h-10 items-center justify-center rounded-lg bg-primary/10 text-primary" title="QR kod">
+                      <QrCode className="h-4 w-4" />
+                    </button>
+                    <button onClick={() => remove(product.id)} className="flex h-10 items-center justify-center rounded-lg bg-destructive/10 text-destructive" title="Sil">
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="hidden bg-card border border-border rounded-2xl overflow-x-auto md:block">
               <table className="w-full text-sm min-w-[640px]">
                 <thead className="bg-secondary/50 text-left">
                   <tr>
@@ -1540,11 +1762,24 @@ export function SellerPanel() {
                 </tbody>
               </table>
             </div>
+            </>
           )}
         </div>
       )}
 
       {tab === "orders" && (
+        <SellerOrdersWorkspace
+          items={orderItems as SellerOrderItemRecord[]}
+          filter={orderViewFilter as SellerOrderFilter}
+          dateRange={ordersDateRange}
+          onFilterChange={(filter) => setOrderViewFilter(filter as OrderViewFilter)}
+          onDateRangeChange={setOrdersDateRange}
+          onStatusChange={(item, status) => void updateOrderStatus(item as OrderItem, status)}
+          onPrintLabel={(item) => printShippingLabel(item as OrderItem)}
+          onChanged={load}
+        />
+      )}
+      {false && tab === "orders" && (
         <div className="space-y-3">
           <div className="flex flex-wrap gap-2">
             {[
@@ -1731,6 +1966,22 @@ export function SellerPanel() {
 
       {tab === "messages" && <SellerMessages sellerId={user.id} />}
 
+      {tab === "notifications" && (
+        <SellerNotificationCenter
+          sellerId={user.id}
+          notifications={sellerNotifs as SellerNotificationItem[]}
+          onChanged={() => {
+            supabase
+              .from("notifications")
+              .select("id,title,body,type,pickup_code,is_read,created_at")
+              .eq("user_id", user.id)
+              .order("created_at", { ascending: false })
+              .limit(100)
+              .then(({ data }) => setSellerNotifs((data ?? []) as SellerNotif[]));
+          }}
+        />
+      )}
+
       {tab === "analytics" && <SellerAnalytics sellerId={user.id} />}
 
       {tab === "bulk" && <BulkProductUpload sellerId={user.id} onDone={load} />}
@@ -1738,7 +1989,7 @@ export function SellerPanel() {
       {tab === "inventory" && <SellerInventory sellerId={user.id} onChanged={load} />}
 
       {tab === "customers" && (
-        <SellerCustomers sellerId={user.id} onOpenMessages={() => setTab("messages")} />
+        <SellerCustomers sellerId={user.id} onOpenMessages={() => openSection("messages")} />
       )}
 
       {tab === "advertising" && <SellerAdvertising />}
