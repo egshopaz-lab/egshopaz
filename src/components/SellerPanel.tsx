@@ -40,6 +40,7 @@ import {
   UserRound,
   PackageX,
   AlertTriangle,
+  Blocks,
 } from "lucide-react";
 import { SellerBalance } from "@/components/SellerBalance";
 import { toast } from "sonner";
@@ -61,6 +62,7 @@ import { SellerExternalDelivery } from "@/components/SellerExternalDelivery";
 import { SellerInventory } from "@/components/SellerInventory";
 import { SellerCustomers } from "@/components/SellerCustomers";
 import { SellerDashboardProfessional } from "@/components/SellerDashboardProfessional";
+import { BusinessModuleSelector } from "@/components/BusinessModuleSelector";
 import {
   SellerNotificationCenter,
   type SellerNotificationItem,
@@ -241,6 +243,7 @@ export function SellerPanel() {
     | "inventory"
     | "customers"
     | "notifications"
+    | "business_modules"
   >(
     typeof window !== "undefined" &&
       new URLSearchParams(window.location.search).has("trends_payment")
@@ -263,6 +266,7 @@ export function SellerPanel() {
             "inventory",
             "customers",
             "notifications",
+            "business_modules",
           ].includes(new URLSearchParams(window.location.search).get("section")!)
         ? (new URLSearchParams(window.location.search).get("section") as any)
         : "dashboard",
@@ -286,6 +290,9 @@ export function SellerPanel() {
   const [panelLoading, setPanelLoading] = useState(true);
   const [panelError, setPanelError] = useState<string | null>(null);
   const [myFollowers, setMyFollowers] = useState(0);
+  const [selectedModuleCodes, setSelectedModuleCodes] = useState<string[]>([]);
+  const [businessModulesLoading, setBusinessModulesLoading] = useState(true);
+  const [businessModulesError, setBusinessModulesError] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const loadedOnceRef = useRef(false);
 
@@ -473,6 +480,40 @@ export function SellerPanel() {
 
   useEffect(() => {
     if (!user || !isSeller) return;
+    let cancelled = false;
+    setBusinessModulesLoading(true);
+    setBusinessModulesError(null);
+
+    (supabase as any)
+      .from("seller_business_modules")
+      .select("module_code")
+      .eq("seller_id", user.id)
+      .then(
+        ({
+          data,
+          error,
+        }: {
+          data: Array<{ module_code: string }> | null;
+          error: { message: string } | null;
+        }) => {
+          if (cancelled) return;
+          if (error) {
+            setBusinessModulesError(error.message);
+            setBusinessModulesLoading(false);
+            return;
+          }
+          setSelectedModuleCodes((data ?? []).map((row) => row.module_code));
+          setBusinessModulesLoading(false);
+        },
+      );
+
+    return () => {
+      cancelled = true;
+    };
+  }, [user, isSeller]);
+
+  useEffect(() => {
+    if (!user || !isSeller) return;
     const ch = supabase
       .channel(`seller-orders-${user.id}`)
       .on(
@@ -589,6 +630,36 @@ export function SellerPanel() {
           </button>
         </div>
       </div>
+    );
+  }
+
+  if (businessModulesLoading) {
+    return (
+      <div className="flex min-h-[70vh] items-center justify-center">
+        <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary/20 border-t-primary" />
+      </div>
+    );
+  }
+
+  if (businessModulesError) {
+    return (
+      <div className="container mx-auto px-4 py-12">
+        <div className="mx-auto max-w-xl rounded-2xl border border-destructive/30 bg-destructive/5 p-8 text-center">
+          <AlertTriangle className="mx-auto h-10 w-10 text-destructive" />
+          <h1 className="mt-3 text-xl font-black">Biznes modulları yüklənmədi</h1>
+          <p className="mt-2 text-sm text-muted-foreground">{businessModulesError}</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (selectedModuleCodes.length === 0) {
+    return (
+      <BusinessModuleSelector
+        required
+        selectedCodes={selectedModuleCodes}
+        onSaved={setSelectedModuleCodes}
+      />
     );
   }
 
@@ -1221,6 +1292,14 @@ export function SellerPanel() {
       icon: LifeBuoy,
       active: tab === "support",
       onClick: () => openSection("support"),
+    },
+    {
+      key: "business_modules",
+      label: "Biznes modulları",
+      group: "Ayarlar",
+      icon: Blocks,
+      active: tab === "business_modules",
+      onClick: () => openSection("business_modules"),
     },
   ];
 
@@ -2283,6 +2362,13 @@ export function SellerPanel() {
             </button>
           </div>
         </div>
+      )}
+
+      {tab === "business_modules" && (
+        <BusinessModuleSelector
+          selectedCodes={selectedModuleCodes}
+          onSaved={setSelectedModuleCodes}
+        />
       )}
 
       {editing && (

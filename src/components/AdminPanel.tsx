@@ -7,7 +7,7 @@ import {
   Users, Package, ShoppingBag, DollarSign, Shield, LayoutDashboard,
   Truck, Warehouse, Store, Megaphone, BarChart3, Lock, Scale,
   FileText, Settings, LifeBuoy, AlertTriangle, TrendingUp, Plus, Trash2,
-  CheckCircle2, XCircle, Power, Ban, Edit3, Bell, Tag, Crown, Gem, Star, Award, Bot, Sparkles, Undo2, Wallet, History, ListChecks,
+  CheckCircle2, XCircle, Power, Ban, Edit3, Bell, Tag, Crown, Gem, Star, Award, Bot, Sparkles, Undo2, Wallet, History, ListChecks, Blocks,
 } from "lucide-react";
 import { AdminPayouts } from "@/components/AdminPayouts";
 import { AdminTreasury } from "@/components/AdminTreasury";
@@ -23,13 +23,14 @@ import { AdminOperationsCenter } from "@/components/AdminOperationsCenter";
 import { AdminShopManagement } from "@/components/AdminShopManagement";
 import { AdminMessageReports } from "@/components/AdminMessageReports";
 import { AdminFinanceCenter } from "@/components/AdminFinanceCenter";
+import { AdminBusinessModules } from "@/components/AdminBusinessModules";
 import { toast } from "sonner";
 import { PanelLayout, type PanelNavItem } from "@/components/PanelLayout";
 import { AZ_CITY_NAMES, findCity } from "@/lib/azCities";
 
 type TabKey =
   | "dashboard" | "operations" | "customers" | "sellers" | "couriers" | "deliveries" | "pvz_staff"
-  | "categories" | "products" | "shops" | "warehouses" | "pickup_points"
+  | "categories" | "products" | "shops" | "business_modules" | "warehouses" | "pickup_points"
   | "orders" | "returns" | "finance" | "treasury" | "payouts" | "marketing" | "banners" | "packages" | "trends" | "promo" | "analytics"
   | "security" | "audit" | "disputes" | "message_reports" | "content" | "settings" | "support" | "ai_bot";
 
@@ -404,7 +405,7 @@ export function AdminPanel() {
   const can = (permission: string) => adminPermissions.includes("*") || adminPermissions.includes(permission);
   const navPermission: Partial<Record<TabKey, string>> = {
     customers: "accounts.manage", sellers: "accounts.manage", pvz_staff: "accounts.manage",
-    products: "products.manage", categories: "products.manage", shops: "products.manage",
+    products: "products.manage", categories: "products.manage", shops: "products.manage", business_modules: "products.manage",
     finance: "payments.manage", treasury: "payments.manage", payouts: "payments.manage",
     marketing: "advertising.manage", banners: "advertising.manage", packages: "advertising.manage",
     trends: "advertising.manage", promo: "advertising.manage", content: "advertising.manage",
@@ -446,6 +447,7 @@ export function AdminPanel() {
     { key: "settings", label: "Sistem ayarları", icon: Settings, active: tab === "settings", onClick: () => setTab("settings") },
     { key: "support", label: "Dəstək", icon: LifeBuoy, badge: tickets.filter((t) => t.status === "open").length, active: tab === "support", onClick: () => setTab("support") },
     { key: "ai_bot", label: "AI Bot", icon: Bot, active: tab === "ai_bot", onClick: () => setTab("ai_bot") },
+    { key: "business_modules", label: "Biznes modulları", icon: Blocks, active: tab === "business_modules", onClick: () => setTab("business_modules") },
   ];
   const navItems = allNavItems.filter((item) => {
     const required = navPermission[item.key as TabKey];
@@ -492,6 +494,7 @@ export function AdminPanel() {
       {tab === "settings" && <SettingsSection settings={settings} updateSettings={updateSettings} />}
       {tab === "support" && <SupportSection tickets={tickets} replyTicket={replyTicket} />}
       {tab === "ai_bot" && <AIBotSection />}
+      {tab === "business_modules" && <AdminBusinessModules />}
     </PanelLayout>
   );
 }
