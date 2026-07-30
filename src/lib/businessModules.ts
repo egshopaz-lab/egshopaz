@@ -32,6 +32,9 @@ export interface BusinessModule {
   icon_key: string;
   sort_order: number;
   is_active: boolean;
+  activation_fee?: number;
+  monthly_fee?: number;
+  commission_percent?: number | null;
   config?: Record<string, unknown>;
 }
 
