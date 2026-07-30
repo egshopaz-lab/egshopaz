@@ -88,6 +88,10 @@ create table if not exists public.reservations (
   check (ends_at > starts_at)
 );
 
+-- Keep reruns safe if an earlier partial migration created the table first.
+alter table public.reservations
+  add column if not exists hold_expires_at timestamptz;
+
 create table if not exists public.reservation_status_history (
   id uuid primary key default gen_random_uuid(),
   reservation_id uuid not null references public.reservations(id) on delete cascade,
@@ -139,6 +143,7 @@ alter table public.reservations enable row level security;
 alter table public.reservation_status_history enable row level security;
 alter table public.reservation_notification_queue enable row level security;
 
+drop policy if exists "Public reads active reservation resources" on public.reservation_resources;
 create policy "Public reads active reservation resources"
 on public.reservation_resources for select
 using (
@@ -146,6 +151,7 @@ using (
   or seller_id = (select auth.uid())
   or public.has_role((select auth.uid()), 'admin'::public.app_role)
 );
+drop policy if exists "Sellers create own reservation resources" on public.reservation_resources;
 create policy "Sellers create own reservation resources"
 on public.reservation_resources for insert to authenticated
 with check (
@@ -156,6 +162,7 @@ with check (
     where sbm.seller_id = (select auth.uid()) and sbm.module_code = reservation_resources.module_code
   )
 );
+drop policy if exists "Sellers update own reservation resources" on public.reservation_resources;
 create policy "Sellers update own reservation resources"
 on public.reservation_resources for update to authenticated
 using (
@@ -166,6 +173,7 @@ with check (
   seller_id = (select auth.uid())
   or public.has_role((select auth.uid()), 'admin'::public.app_role)
 );
+drop policy if exists "Sellers delete own reservation resources" on public.reservation_resources;
 create policy "Sellers delete own reservation resources"
 on public.reservation_resources for delete to authenticated
 using (
@@ -173,6 +181,7 @@ using (
   or public.has_role((select auth.uid()), 'admin'::public.app_role)
 );
 
+drop policy if exists "Public reads active reservation schedules" on public.reservation_schedules;
 create policy "Public reads active reservation schedules"
 on public.reservation_schedules for select
 using (
@@ -186,6 +195,7 @@ using (
       )
   )
 );
+drop policy if exists "Sellers manage own reservation schedules" on public.reservation_schedules;
 create policy "Sellers manage own reservation schedules"
 on public.reservation_schedules for all to authenticated
 using (
@@ -209,6 +219,7 @@ with check (
   )
 );
 
+drop policy if exists "Sellers manage own reservation blocks" on public.reservation_blocks;
 create policy "Sellers manage own reservation blocks"
 on public.reservation_blocks for all to authenticated
 using (
@@ -232,6 +243,7 @@ with check (
   )
 );
 
+drop policy if exists "Reservation participants read" on public.reservations;
 create policy "Reservation participants read"
 on public.reservations for select to authenticated
 using (
@@ -240,6 +252,7 @@ using (
   or public.has_role((select auth.uid()), 'admin'::public.app_role)
 );
 
+drop policy if exists "Reservation participants read history" on public.reservation_status_history;
 create policy "Reservation participants read history"
 on public.reservation_status_history for select to authenticated
 using (
@@ -254,6 +267,7 @@ using (
   )
 );
 
+drop policy if exists "Users read own reservation notification queue" on public.reservation_notification_queue;
 create policy "Users read own reservation notification queue"
 on public.reservation_notification_queue for select to authenticated
 using (
