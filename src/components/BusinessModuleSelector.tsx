@@ -10,6 +10,7 @@ import {
   type BusinessModule,
 } from "@/lib/businessModules";
 import { cn } from "@/lib/utils";
+import { formatAZN } from "@/lib/format";
 
 interface BusinessModuleSelectorProps {
   selectedCodes?: string[];
@@ -42,7 +43,7 @@ export function BusinessModuleSelector({
       const moduleResult = await (supabase as any)
         .from("business_modules")
         .select(
-          "code,name_az,name_en,name_ru,description_az,description_en,description_ru,icon_key,sort_order,is_active,config",
+          "code,name_az,name_en,name_ru,description_az,description_en,description_ru,icon_key,sort_order,is_active,activation_fee,monthly_fee,commission_percent,config",
         )
         .eq("is_active", true)
         .order("sort_order", { ascending: true });
@@ -178,6 +179,26 @@ export function BusinessModuleSelector({
                   <span className="mt-1.5 block text-sm leading-5 text-muted-foreground">
                     {getBusinessModuleDescription(module, i18n.language)}
                   </span>
+                  <span className="mt-3 flex flex-wrap gap-1.5 text-[11px] font-bold">
+                    {Number(module.activation_fee ?? 0) > 0 && (
+                      <span className="rounded-full bg-amber-100 px-2 py-1 text-amber-800">
+                        Aktivləşdirmə: {formatAZN(Number(module.activation_fee))}
+                      </span>
+                    )}
+                    {Number(module.monthly_fee ?? 0) > 0 && (
+                      <span className="rounded-full bg-primary/10 px-2 py-1 text-primary">
+                        Aylıq: {formatAZN(Number(module.monthly_fee))}
+                      </span>
+                    )}
+                    {module.commission_percent !== null && module.commission_percent !== undefined && (
+                      <span className="rounded-full bg-muted px-2 py-1">
+                        Komissiya: {Number(module.commission_percent)}%
+                      </span>
+                    )}
+                    {Number(module.activation_fee ?? 0) === 0 && Number(module.monthly_fee ?? 0) === 0 && (
+                      <span className="rounded-full bg-emerald-100 px-2 py-1 text-emerald-700">Pulsuz modul</span>
+                    )}
+                  </span>
                   <span
                     className={cn(
                       "absolute right-4 top-4 flex h-7 w-7 items-center justify-center rounded-full border",
@@ -196,6 +217,10 @@ export function BusinessModuleSelector({
           <div className="sticky bottom-4 z-10 mt-7 flex flex-col items-center justify-between gap-3 rounded-2xl border bg-background/95 p-4 shadow-xl backdrop-blur sm:flex-row">
             <div>
               <p className="font-bold">{selected.size} modul seçilib</p>
+              <p className="text-xs font-semibold text-primary">
+                Aktivləşdirmə: {formatAZN(modules.filter((module) => selected.has(module.code)).reduce((sum, module) => sum + Number(module.activation_fee ?? 0), 0))}
+                {" · "}Aylıq: {formatAZN(modules.filter((module) => selected.has(module.code)).reduce((sum, module) => sum + Number(module.monthly_fee ?? 0), 0))}
+              </p>
               <p className="text-xs text-muted-foreground">
                 Seçimi sonradan “Biznes modulları” bölməsindən dəyişə bilərsiniz.
               </p>

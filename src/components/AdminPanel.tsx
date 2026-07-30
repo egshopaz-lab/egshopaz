@@ -7,7 +7,7 @@ import {
   Users, Package, ShoppingBag, DollarSign, Shield, LayoutDashboard,
   Truck, Warehouse, Store, Megaphone, BarChart3, Lock, Scale,
   FileText, Settings, LifeBuoy, AlertTriangle, TrendingUp, Plus, Trash2,
-  CheckCircle2, XCircle, Power, Ban, Edit3, Bell, Tag, Crown, Gem, Star, Award, Bot, Sparkles, Undo2, Wallet, History, ListChecks, Blocks, CalendarDays,
+  CheckCircle2, XCircle, Power, Ban, Edit3, Bell, Tag, Crown, Gem, Star, Award, Bot, Sparkles, Undo2, Wallet, History, ListChecks, Blocks, CalendarDays, Coins,
 } from "lucide-react";
 import { AdminPayouts } from "@/components/AdminPayouts";
 import { AdminTreasury } from "@/components/AdminTreasury";
@@ -25,6 +25,7 @@ import { AdminMessageReports } from "@/components/AdminMessageReports";
 import { AdminFinanceCenter } from "@/components/AdminFinanceCenter";
 import { AdminBusinessModules } from "@/components/AdminBusinessModules";
 import { AdminReservations } from "@/components/AdminReservations";
+import { AdminCommercialSettings } from "@/components/AdminCommercialSettings";
 import { toast } from "sonner";
 import { PanelLayout, type PanelNavItem } from "@/components/PanelLayout";
 import { AZ_CITY_NAMES, findCity } from "@/lib/azCities";
@@ -33,7 +34,7 @@ type TabKey =
   | "dashboard" | "operations" | "customers" | "sellers" | "couriers" | "deliveries" | "pvz_staff"
   | "categories" | "products" | "shops" | "business_modules" | "warehouses" | "pickup_points"
   | "orders" | "reservations" | "returns" | "finance" | "treasury" | "payouts" | "marketing" | "banners" | "packages" | "trends" | "promo" | "analytics"
-  | "security" | "audit" | "disputes" | "message_reports" | "content" | "settings" | "support" | "ai_bot";
+  | "security" | "audit" | "disputes" | "message_reports" | "content" | "settings" | "commercial_settings" | "support" | "ai_bot";
 
 interface Stat { users: number; products: number; orders: number; revenue: number; sellers: number }
 interface ProfileRow { id: string; full_name: string | null; shop_name: string | null; created_at: string; phone: string | null }
@@ -415,9 +416,10 @@ export function AdminPanel() {
     couriers: "delivery.manage", deliveries: "delivery.manage", warehouses: "delivery.manage",
     pickup_points: "delivery.manage", orders: "delivery.manage", returns: "delivery.manage",
     disputes: "disputes.manage", analytics: "reports.view", audit: "reports.view",
-    security: "admins.manage", settings: "admins.manage",
+    security: "admins.manage", settings: "admins.manage", commercial_settings: "admins.manage",
   };
   const allNavItems: PanelNavItem[] = [
+    { key: "commercial_settings", label: "Tariflər və qaydalar", icon: Coins, active: tab === "commercial_settings", onClick: () => setTab("commercial_settings") },
     { key: "dashboard", label: "Ana səhifə", icon: LayoutDashboard, active: tab === "dashboard", onClick: () => setTab("dashboard") },
     { key: "operations", label: "İş mərkəzi", icon: ListChecks, active: tab === "operations", onClick: () => setTab("operations") },
     { key: "customers", label: "Müştərilər", icon: Users, active: tab === "customers", onClick: () => setTab("customers") },
@@ -466,6 +468,7 @@ export function AdminPanel() {
         <h1 className="text-2xl md:text-3xl font-extrabold">{tabTitle}</h1>
       </div>
 
+      {tab === "commercial_settings" && <AdminCommercialSettings />}
       {tab === "dashboard" && <div className="space-y-6"><AdminDashboardStats /><DashboardSection stats={stats} orders={orders} couriers={couriers} disputes={disputes} /></div>}
       {tab === "operations" && <AdminOperationsCenter />}
       {tab === "customers" && <AdminAccountManagement initialRole="buyer" />}
