@@ -9,6 +9,8 @@ import { Store, MapPin, Mail, Star, Package, Heart, Calendar, Award, MessageCirc
 import { toast } from "sonner";
 import { formatDate } from "@/lib/format";
 import { absoluteUrl } from "@/lib/site";
+import { RESERVATION_MODULE_LABELS, type ReservationModuleCode } from "@/lib/reservations";
+import { formatAZN } from "@/lib/format";
 
 export const Route = createFileRoute("/shop/$id")({
   loader: async ({ params }) => {
@@ -67,6 +69,11 @@ interface Profile {
   phone: string | null; created_at: string; seller_tier: string | null;
   seller_total_orders: number | null;
 }
+interface BookingResource {
+  id: string; module_code: ReservationModuleCode; name: string; description: string | null;
+  duration_minutes: number; capacity: number; price: number; online_payment_enabled: boolean;
+  onsite_payment_enabled: boolean;
+}
 
 const tierConfig: Record<string, { label: string; color: string }> = {
   platinum: { label: "Platinum", color: "from-slate-300 to-slate-500" },
@@ -82,11 +89,12 @@ function ShopPage() {
   const navigate = useNavigate();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [products, setProducts] = useState<ProductCardData[]>([]);
+  const [bookingResources, setBookingResources] = useState<BookingResource[]>([]);
   const [stats, setStats] = useState({ count: 0, avg: 0, reviews: 0, years: 0 });
   const [loading, setLoading] = useState(true);
   const [following, setFollowing] = useState(false);
   const [followers, setFollowers] = useState(0);
-  const [tab, setTab] = useState<"products" | "reviews" | "about">("products");
+  const [tab, setTab] = useState<"products" | "booking" | "reviews" | "about">("products");
   const [messageOpen, setMessageOpen] = useState(false);
   const [messageBody, setMessageBody] = useState("");
   const [messageSending, setMessageSending] = useState(false);
@@ -97,10 +105,12 @@ function ShopPage() {
       (supabase as any).from("active_seller_storefronts").select("id,shop_name,full_name,shop_description,shop_city,shop_email,shop_logo_url,shop_banner_url,created_at,seller_tier,seller_total_orders").eq("id", id).maybeSingle(),
       supabase.from("products").select("id,title,price,old_price,image_url,video_url,rating,reviews_count,brand").eq("seller_id", id).eq("is_active", true).order("created_at", { ascending: false }),
       supabase.from("shop_followers").select("id", { count: "exact", head: true }).eq("seller_id", id),
-    ]).then(([{ data: prof }, { data: prods }, { count }]) => {
+      (supabase as any).from("reservation_resources").select("id,module_code,name,description,duration_minutes,capacity,price,online_payment_enabled,onsite_payment_enabled").eq("seller_id", id).eq("is_active", true).order("created_at"),
+    ]).then(([{ data: prof }, { data: prods }, { count }, { data: resourceRows }]) => {
       setProfile(prof as Profile | null);
       const list = (prods ?? []) as ProductCardData[];
       setProducts(list);
+      setBookingResources((resourceRows ?? []) as BookingResource[]);
       const totalReviews = list.reduce((s, p) => s + (p.reviews_count || 0), 0);
       const weightedSum = list.reduce((s, p) => s + (Number(p.rating) || 0) * (p.reviews_count || 0), 0);
       const years = prof?.created_at ? Math.floor((Date.now() - new Date(prof.created_at).getTime()) / (365.25 * 24 * 60 * 60 * 1000)) : 0;
@@ -314,6 +324,7 @@ function ShopPage() {
         <div className="flex gap-1 p-1 bg-secondary/60 rounded-2xl w-full md:w-fit">
           {([
             { k: "products", label: `Məhsullar (${stats.count})` },
+            ...(bookingResources.length ? [{ k: "booking" as const, label: `Rezervasiya (${bookingResources.length})` }] : []),
             { k: "reviews", label: `Rəylər (${stats.reviews})` },
             { k: "about", label: "Haqqında" },
           ] as const).map((it) => (
@@ -338,6 +349,23 @@ function ShopPage() {
               {products.map((p) => <ProductCard key={p.id} p={p} />)}
             </div>
           )
+        )}
+
+        {tab === "booking" && (
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            {bookingResources.map((resource) => (
+              <div key={resource.id} className="rounded-2xl border bg-card p-5">
+                <div className="text-xs font-bold uppercase tracking-wide text-primary">{RESERVATION_MODULE_LABELS[resource.module_code]}</div>
+                <h3 className="mt-2 text-lg font-extrabold">{resource.name}</h3>
+                <p className="mt-1 text-sm text-muted-foreground">{resource.duration_minutes} dəqiqə · tutum {resource.capacity}</p>
+                {resource.description && <p className="mt-3 line-clamp-3 text-sm leading-6">{resource.description}</p>}
+                <div className="mt-5 flex items-end justify-between gap-3">
+                  <div><div className="text-xs text-muted-foreground">Qiymət</div><div className="text-xl font-extrabold text-primary">{formatAZN(resource.price)}</div></div>
+                  <Link to="/book/$resourceId" params={{ resourceId: resource.id }} className="rounded-xl bg-primary px-4 py-3 text-sm font-bold text-primary-foreground">Vaxt seç</Link>
+                </div>
+              </div>
+            ))}
+          </div>
         )}
 
         {tab === "reviews" && <ShopReviews sellerId={id} />}

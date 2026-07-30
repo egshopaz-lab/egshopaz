@@ -63,6 +63,8 @@ import { SellerInventory } from "@/components/SellerInventory";
 import { SellerCustomers } from "@/components/SellerCustomers";
 import { SellerDashboardProfessional } from "@/components/SellerDashboardProfessional";
 import { BusinessModuleSelector } from "@/components/BusinessModuleSelector";
+import { SellerReservations } from "@/components/SellerReservations";
+import { isReservationModule } from "@/lib/reservations";
 import {
   SellerNotificationCenter,
   type SellerNotificationItem,
@@ -244,6 +246,7 @@ export function SellerPanel() {
     | "customers"
     | "notifications"
     | "business_modules"
+    | "reservations"
   >(
     typeof window !== "undefined" &&
       new URLSearchParams(window.location.search).has("trends_payment")
@@ -267,6 +270,7 @@ export function SellerPanel() {
             "customers",
             "notifications",
             "business_modules",
+            "reservations",
           ].includes(new URLSearchParams(window.location.search).get("section")!)
         ? (new URLSearchParams(window.location.search).get("section") as any)
         : "dashboard",
@@ -1179,6 +1183,14 @@ export function SellerPanel() {
       active: tab === "orders",
       onClick: () => openOrderDetails("all"),
     },
+    ...(selectedModuleCodes.some(isReservationModule) ? [{
+      key: "reservations",
+      label: "Rezervasiyalar",
+      group: "Satışlar",
+      icon: Calendar,
+      active: tab === "reservations",
+      onClick: () => openSection("reservations"),
+    }] : []),
     {
       key: "returns",
       label: "Qaytarmalar",
@@ -2369,6 +2381,10 @@ export function SellerPanel() {
           selectedCodes={selectedModuleCodes}
           onSaved={setSelectedModuleCodes}
         />
+      )}
+
+      {tab === "reservations" && (
+        <SellerReservations sellerId={user.id} selectedModuleCodes={selectedModuleCodes} />
       )}
 
       {editing && (

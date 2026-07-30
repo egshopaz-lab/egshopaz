@@ -7,7 +7,7 @@ import {
   Users, Package, ShoppingBag, DollarSign, Shield, LayoutDashboard,
   Truck, Warehouse, Store, Megaphone, BarChart3, Lock, Scale,
   FileText, Settings, LifeBuoy, AlertTriangle, TrendingUp, Plus, Trash2,
-  CheckCircle2, XCircle, Power, Ban, Edit3, Bell, Tag, Crown, Gem, Star, Award, Bot, Sparkles, Undo2, Wallet, History, ListChecks, Blocks,
+  CheckCircle2, XCircle, Power, Ban, Edit3, Bell, Tag, Crown, Gem, Star, Award, Bot, Sparkles, Undo2, Wallet, History, ListChecks, Blocks, CalendarDays,
 } from "lucide-react";
 import { AdminPayouts } from "@/components/AdminPayouts";
 import { AdminTreasury } from "@/components/AdminTreasury";
@@ -24,6 +24,7 @@ import { AdminShopManagement } from "@/components/AdminShopManagement";
 import { AdminMessageReports } from "@/components/AdminMessageReports";
 import { AdminFinanceCenter } from "@/components/AdminFinanceCenter";
 import { AdminBusinessModules } from "@/components/AdminBusinessModules";
+import { AdminReservations } from "@/components/AdminReservations";
 import { toast } from "sonner";
 import { PanelLayout, type PanelNavItem } from "@/components/PanelLayout";
 import { AZ_CITY_NAMES, findCity } from "@/lib/azCities";
@@ -31,7 +32,7 @@ import { AZ_CITY_NAMES, findCity } from "@/lib/azCities";
 type TabKey =
   | "dashboard" | "operations" | "customers" | "sellers" | "couriers" | "deliveries" | "pvz_staff"
   | "categories" | "products" | "shops" | "business_modules" | "warehouses" | "pickup_points"
-  | "orders" | "returns" | "finance" | "treasury" | "payouts" | "marketing" | "banners" | "packages" | "trends" | "promo" | "analytics"
+  | "orders" | "reservations" | "returns" | "finance" | "treasury" | "payouts" | "marketing" | "banners" | "packages" | "trends" | "promo" | "analytics"
   | "security" | "audit" | "disputes" | "message_reports" | "content" | "settings" | "support" | "ai_bot";
 
 interface Stat { users: number; products: number; orders: number; revenue: number; sellers: number }
@@ -406,6 +407,7 @@ export function AdminPanel() {
   const navPermission: Partial<Record<TabKey, string>> = {
     customers: "accounts.manage", sellers: "accounts.manage", pvz_staff: "accounts.manage",
     products: "products.manage", categories: "products.manage", shops: "products.manage", business_modules: "products.manage",
+    reservations: "orders.manage",
     finance: "payments.manage", treasury: "payments.manage", payouts: "payments.manage",
     marketing: "advertising.manage", banners: "advertising.manage", packages: "advertising.manage",
     trends: "advertising.manage", promo: "advertising.manage", content: "advertising.manage",
@@ -429,6 +431,7 @@ export function AdminPanel() {
     { key: "warehouses", label: "Anbarlar", icon: Warehouse, active: tab === "warehouses", onClick: () => setTab("warehouses") },
     { key: "pickup_points", label: "PVZ nöqtələri", icon: Warehouse, active: tab === "pickup_points", onClick: () => setTab("pickup_points") },
     { key: "orders", label: "Sifarişlər", icon: ShoppingBag, badge: orders.filter((o) => o.status === "pending").length, active: tab === "orders", onClick: () => setTab("orders") },
+    { key: "reservations", label: "Rezervasiyalar", icon: CalendarDays, active: tab === "reservations", onClick: () => setTab("reservations") },
     { key: "returns", label: "Qaytarmalar", icon: Undo2, active: tab === "returns", onClick: () => setTab("returns") },
     { key: "finance", label: "Maliyyə", icon: DollarSign, active: tab === "finance", onClick: () => setTab("finance") },
     { key: "treasury", label: "Xəzinə (Kassa)", icon: Wallet, active: tab === "treasury", onClick: () => setTab("treasury") },
@@ -476,6 +479,7 @@ export function AdminPanel() {
       {tab === "warehouses" && <WarehousesSection warehouses={warehouses} addWarehouse={addWarehouse} />}
       {tab === "pickup_points" && <PickupSection pickups={pickups} addPickup={addPickup} togglePickup={togglePickup} editPickup={editPickup} deletePickup={deletePickup} />}
       {tab === "orders" && <OrdersSection orders={orders} updateOrderStatus={updateOrderStatus} />}
+      {tab === "reservations" && <AdminReservations />}
       {tab === "returns" && <AdminReturnsSection />}
       {tab === "finance" && <AdminFinanceCenter commissionPercent={settings?.commission_percent ?? 10} />}
       {tab === "treasury" && <AdminTreasury />}

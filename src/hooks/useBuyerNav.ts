@@ -7,6 +7,7 @@ import {
   User as UserIcon, Package, MapPin, CreditCard, Star,
   Gift, Bell, MessageCircle, Coins, AlertTriangle,
   Heart, ShoppingCart, Undo2,
+  CalendarDays,
 } from "lucide-react";
 import type { PanelNavItem } from "@/components/PanelLayout";
 
@@ -52,6 +53,7 @@ export function useBuyerNav(): { items: PanelNavItem[]; bonusBalance: number } {
   const items: PanelNavItem[] = [
     { to: "/profile", label: t("sidebar.profile"), icon: UserIcon },
     { to: "/orders", label: t("sidebar.orders"), icon: Package, badge: orderCount },
+    { to: "/reservations", label: "Rezervasiyalarım", icon: CalendarDays },
     { to: "/returns", label: "Qaytarmalarım", icon: Undo2 },
     { to: "/favorites", label: t("sidebar.favorites"), icon: Heart },
     { to: "/cart", label: t("sidebar.cart"), icon: ShoppingCart },

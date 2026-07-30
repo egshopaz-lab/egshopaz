@@ -5,7 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { PanelLayout } from "@/components/PanelLayout";
 import { useBuyerNav } from "@/hooks/useBuyerNav";
-import { Bell, Trash2, Check, Package } from "lucide-react";
+import { Bell, Trash2, Check, Package, Smartphone } from "lucide-react";
 import { formatAZN, formatDateTime } from "@/lib/format";
 import { toast } from "sonner";
 
@@ -100,6 +100,16 @@ function NotificationsPage() {
     toast.success("Hamısı oxundu");
   };
 
+  const enableBrowserNotifications = async () => {
+    if (typeof Notification === "undefined") {
+      toast.error("Bu brauzer bildirişləri dəstəkləmir");
+      return;
+    }
+    const permission = await Notification.requestPermission();
+    if (permission === "granted") toast.success("Brauzer bildirişləri aktiv edildi");
+    else toast.error("Bildiriş icazəsi verilmədi");
+  };
+
   if (!user) return null;
 
   return (
@@ -109,11 +119,18 @@ function NotificationsPage() {
           <h1 className="text-2xl font-extrabold flex items-center gap-2">
             <Bell className="h-6 w-6 text-primary" /> {t("notifications.title")}
           </h1>
-          {notifs.some((n) => !n.is_read) && (
-            <button onClick={markAll} className="text-sm text-primary hover:underline inline-flex items-center gap-1">
-              <Check className="h-4 w-4" /> {t("notifications.markAll")}
-            </button>
-          )}
+          <div className="flex flex-wrap gap-2">
+            {typeof Notification !== "undefined" && Notification.permission !== "granted" && (
+              <button onClick={enableBrowserNotifications} className="text-sm text-primary hover:underline inline-flex items-center gap-1">
+                <Smartphone className="h-4 w-4" /> Push bildirişi aktiv et
+              </button>
+            )}
+            {notifs.some((n) => !n.is_read) && (
+              <button onClick={markAll} className="text-sm text-primary hover:underline inline-flex items-center gap-1">
+                <Check className="h-4 w-4" /> {t("notifications.markAll")}
+              </button>
+            )}
+          </div>
         </div>
 
         <h2 className="font-bold mb-3 flex items-center gap-2">
@@ -128,7 +145,7 @@ function NotificationsPage() {
             {notifs.map((n) => (
               <Link
                 key={n.id}
-                to={(n.link as "/orders" | "/my-reviews" | undefined) ?? "/notifications"}
+                to={(n.link as "/orders" | "/my-reviews" | "/reservations" | undefined) ?? "/notifications"}
                 className={`block bg-card border rounded-xl p-3 hover:border-primary transition ${!n.is_read ? "border-primary/40 bg-primary/5" : "border-border"}`}
               >
                 <div className="flex items-start gap-2">

@@ -10,7 +10,7 @@ import {
 import {
   Home, LayoutGrid, Heart, ShoppingCart, MessageCircle, Package,
   Bell, Tag, Gift, Store, User, HelpCircle, Shield, PackageOpen, Flame, Map as MapIcon,
-  GitCompare, Users, Sparkles, Mail, MapPin, ShieldCheck, type LucideIcon,
+  GitCompare, Users, Sparkles, Mail, MapPin, ShieldCheck, CalendarDays, type LucideIcon,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { catName } from "@/lib/catName";
@@ -67,6 +67,7 @@ export function MainSidebar() {
   ] : [
     { to: "/profile", label: t("sidebar.profile"), icon: User },
     { to: "/orders", label: t("sidebar.orders"), icon: Package },
+    { to: "/reservations", label: "Rezervasiyalarım", icon: CalendarDays },
     { to: "/favorites", label: t("sidebar.favorites"), icon: Heart },
     { to: "/followed-shops", label: t("sidebar.followedShops"), icon: Heart },
     { to: "/cart", label: t("sidebar.cart"), icon: ShoppingCart },

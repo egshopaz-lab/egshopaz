@@ -61,6 +61,17 @@ export function NotificationsBell() {
         (payload) => {
           playNotifSound();
           const n = payload.new as Notif;
+          if (typeof Notification !== "undefined" && Notification.permission === "granted") {
+            const desktopNotification = new Notification(n.title, {
+              body: n.body,
+              icon: "/favicon.svg",
+              tag: n.id,
+            });
+            desktopNotification.onclick = () => {
+              window.focus();
+              window.location.assign(n.link || "/notifications");
+            };
+          }
           if (active) setItems((prev) => [n, ...prev].slice(0, 20));
         })
       .on("postgres_changes",
@@ -108,7 +119,7 @@ export function NotificationsBell() {
           ) : items.map((n) => (
             <Link
               key={n.id}
-              to={(n.link as "/orders" | "/my-reviews" | undefined) ?? "/notifications"}
+              to={(n.link as "/orders" | "/my-reviews" | "/reservations" | undefined) ?? "/notifications"}
               onClick={() => !n.is_read && markOne(n.id)}
               className={`block p-3 border-b last:border-0 hover:bg-secondary/50 transition ${!n.is_read ? "bg-primary/5" : ""}`}
             >

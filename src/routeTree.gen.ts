@@ -17,6 +17,7 @@ import { Route as ShopsRouteImport } from './routes/shops'
 import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
 import { Route as ReturnsRouteImport } from './routes/returns'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as ReservationsRouteImport } from './routes/reservations'
 import { Route as RegisterRouteImport } from './routes/register'
 import { Route as ReferralRouteImport } from './routes/referral'
 import { Route as PromotionsRouteImport } from './routes/promotions'
@@ -52,6 +53,7 @@ import { Route as ProductIdRouteImport } from './routes/product.$id'
 import { Route as PaymentSuccessRouteImport } from './routes/payment.success'
 import { Route as PaymentErrorRouteImport } from './routes/payment.error'
 import { Route as CheckoutPayOrderIdRouteImport } from './routes/checkout-pay.$orderId'
+import { Route as BookResourceIdRouteImport } from './routes/book.$resourceId'
 
 const TrendsRoute = TrendsRouteImport.update({
   id: '/trends',
@@ -91,6 +93,11 @@ const ReturnsRoute = ReturnsRouteImport.update({
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
   path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ReservationsRoute = ReservationsRouteImport.update({
+  id: '/reservations',
+  path: '/reservations',
   getParentRoute: () => rootRouteImport,
 } as any)
 const RegisterRoute = RegisterRouteImport.update({
@@ -268,6 +275,11 @@ const CheckoutPayOrderIdRoute = CheckoutPayOrderIdRouteImport.update({
   path: '/checkout-pay/$orderId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BookResourceIdRoute = BookResourceIdRouteImport.update({
+  id: '/book/$resourceId',
+  path: '/book/$resourceId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -300,6 +312,7 @@ export interface FileRoutesByFullPath {
   '/promotions': typeof PromotionsRoute
   '/referral': typeof ReferralRoute
   '/register': typeof RegisterRoute
+  '/reservations': typeof ReservationsRoute
   '/reset-password': typeof ResetPasswordRoute
   '/returns': typeof ReturnsRoute
   '/robots.txt': typeof RobotsDottxtRoute
@@ -308,6 +321,7 @@ export interface FileRoutesByFullPath {
   '/support': typeof SupportRoute
   '/terms': typeof TermsRoute
   '/trends': typeof TrendsRoute
+  '/book/$resourceId': typeof BookResourceIdRoute
   '/checkout-pay/$orderId': typeof CheckoutPayOrderIdRoute
   '/payment/error': typeof PaymentErrorRoute
   '/payment/success': typeof PaymentSuccessRoute
@@ -345,6 +359,7 @@ export interface FileRoutesByTo {
   '/promotions': typeof PromotionsRoute
   '/referral': typeof ReferralRoute
   '/register': typeof RegisterRoute
+  '/reservations': typeof ReservationsRoute
   '/reset-password': typeof ResetPasswordRoute
   '/returns': typeof ReturnsRoute
   '/robots.txt': typeof RobotsDottxtRoute
@@ -353,6 +368,7 @@ export interface FileRoutesByTo {
   '/support': typeof SupportRoute
   '/terms': typeof TermsRoute
   '/trends': typeof TrendsRoute
+  '/book/$resourceId': typeof BookResourceIdRoute
   '/checkout-pay/$orderId': typeof CheckoutPayOrderIdRoute
   '/payment/error': typeof PaymentErrorRoute
   '/payment/success': typeof PaymentSuccessRoute
@@ -391,6 +407,7 @@ export interface FileRoutesById {
   '/promotions': typeof PromotionsRoute
   '/referral': typeof ReferralRoute
   '/register': typeof RegisterRoute
+  '/reservations': typeof ReservationsRoute
   '/reset-password': typeof ResetPasswordRoute
   '/returns': typeof ReturnsRoute
   '/robots.txt': typeof RobotsDottxtRoute
@@ -399,6 +416,7 @@ export interface FileRoutesById {
   '/support': typeof SupportRoute
   '/terms': typeof TermsRoute
   '/trends': typeof TrendsRoute
+  '/book/$resourceId': typeof BookResourceIdRoute
   '/checkout-pay/$orderId': typeof CheckoutPayOrderIdRoute
   '/payment/error': typeof PaymentErrorRoute
   '/payment/success': typeof PaymentSuccessRoute
@@ -438,6 +456,7 @@ export interface FileRouteTypes {
     | '/promotions'
     | '/referral'
     | '/register'
+    | '/reservations'
     | '/reset-password'
     | '/returns'
     | '/robots.txt'
@@ -446,6 +465,7 @@ export interface FileRouteTypes {
     | '/support'
     | '/terms'
     | '/trends'
+    | '/book/$resourceId'
     | '/checkout-pay/$orderId'
     | '/payment/error'
     | '/payment/success'
@@ -483,6 +503,7 @@ export interface FileRouteTypes {
     | '/promotions'
     | '/referral'
     | '/register'
+    | '/reservations'
     | '/reset-password'
     | '/returns'
     | '/robots.txt'
@@ -491,6 +512,7 @@ export interface FileRouteTypes {
     | '/support'
     | '/terms'
     | '/trends'
+    | '/book/$resourceId'
     | '/checkout-pay/$orderId'
     | '/payment/error'
     | '/payment/success'
@@ -528,6 +550,7 @@ export interface FileRouteTypes {
     | '/promotions'
     | '/referral'
     | '/register'
+    | '/reservations'
     | '/reset-password'
     | '/returns'
     | '/robots.txt'
@@ -536,6 +559,7 @@ export interface FileRouteTypes {
     | '/support'
     | '/terms'
     | '/trends'
+    | '/book/$resourceId'
     | '/checkout-pay/$orderId'
     | '/payment/error'
     | '/payment/success'
@@ -574,6 +598,7 @@ export interface RootRouteChildren {
   PromotionsRoute: typeof PromotionsRoute
   ReferralRoute: typeof ReferralRoute
   RegisterRoute: typeof RegisterRoute
+  ReservationsRoute: typeof ReservationsRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   ReturnsRoute: typeof ReturnsRoute
   RobotsDottxtRoute: typeof RobotsDottxtRoute
@@ -582,6 +607,7 @@ export interface RootRouteChildren {
   SupportRoute: typeof SupportRoute
   TermsRoute: typeof TermsRoute
   TrendsRoute: typeof TrendsRoute
+  BookResourceIdRoute: typeof BookResourceIdRoute
   CheckoutPayOrderIdRoute: typeof CheckoutPayOrderIdRoute
   PaymentErrorRoute: typeof PaymentErrorRoute
   PaymentSuccessRoute: typeof PaymentSuccessRoute
@@ -645,6 +671,13 @@ declare module '@tanstack/react-router' {
       path: '/reset-password'
       fullPath: '/reset-password'
       preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reservations': {
+      id: '/reservations'
+      path: '/reservations'
+      fullPath: '/reservations'
+      preLoaderRoute: typeof ReservationsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/register': {
@@ -892,6 +925,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CheckoutPayOrderIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/book/$resourceId': {
+      id: '/book/$resourceId'
+      path: '/book/$resourceId'
+      fullPath: '/book/$resourceId'
+      preLoaderRoute: typeof BookResourceIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -926,6 +966,7 @@ const rootRouteChildren: RootRouteChildren = {
   PromotionsRoute: PromotionsRoute,
   ReferralRoute: ReferralRoute,
   RegisterRoute: RegisterRoute,
+  ReservationsRoute: ReservationsRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   ReturnsRoute: ReturnsRoute,
   RobotsDottxtRoute: RobotsDottxtRoute,
@@ -934,6 +975,7 @@ const rootRouteChildren: RootRouteChildren = {
   SupportRoute: SupportRoute,
   TermsRoute: TermsRoute,
   TrendsRoute: TrendsRoute,
+  BookResourceIdRoute: BookResourceIdRoute,
   CheckoutPayOrderIdRoute: CheckoutPayOrderIdRoute,
   PaymentErrorRoute: PaymentErrorRoute,
   PaymentSuccessRoute: PaymentSuccessRoute,
@@ -943,12 +985,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { createStart } from '@tanstack/react-start'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-  }
-}
