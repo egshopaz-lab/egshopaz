@@ -31,18 +31,44 @@ function FollowedShopsPage() {
   const [loading, setLoading] = useState(true);
 
   const load = async () => {
-    if (!user) { setRows([]); setLoading(false); return; }
+    if (!user) {
+      setRows([]);
+      setLoading(false);
+      return;
+    }
     setLoading(true);
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("shop_followers")
-      .select("seller_id,profiles:seller_id(id,shop_name,full_name,shop_logo_url,shop_banner_url,shop_city,shop_description)")
+      .select("seller_id")
       .eq("user_id", user.id)
       .order("created_at", { ascending: false });
-    setRows((data ?? []) as unknown as Row[]);
+    if (error) {
+      toast.error(error.message);
+      setRows([]);
+      setLoading(false);
+      return;
+    }
+    const sellerIds = (data ?? []).map((row) => row.seller_id);
+    const { data: profiles, error: profileError } = sellerIds.length
+      ? await supabase
+          .from("profiles_public")
+          .select("id,shop_name,full_name,shop_logo_url,shop_banner_url,shop_city,shop_description")
+          .in("id", sellerIds)
+      : { data: [], error: null };
+    if (profileError) toast.error(profileError.message);
+    const profileMap = new Map((profiles ?? []).map((profile) => [profile.id, profile]));
+    setRows(
+      (data ?? []).map((row) => ({
+        seller_id: row.seller_id,
+        profiles: profileMap.get(row.seller_id) ?? null,
+      })) as Row[],
+    );
     setLoading(false);
   };
 
-  useEffect(() => { void load(); }, [user]);
+  useEffect(() => {
+    void load();
+  }, [user]);
 
   const unfollow = async (sellerId: string) => {
     if (!user) return;
@@ -57,7 +83,12 @@ function FollowedShopsPage() {
         <Heart className="h-10 w-10 mx-auto text-muted-foreground mb-3" />
         <h1 className="text-2xl font-bold mb-2">{t("shops.followedTitle")}</h1>
         <p className="text-muted-foreground mb-4">{t("shops.loginToFollow")}</p>
-        <Link to="/auth" className="bg-primary text-primary-foreground px-5 py-2.5 rounded-xl font-bold">{t("header.login")}</Link>
+        <Link
+          to="/auth"
+          className="bg-primary text-primary-foreground px-5 py-2.5 rounded-xl font-bold"
+        >
+          {t("header.login")}
+        </Link>
       </div>
     );
   }
@@ -70,7 +101,9 @@ function FollowedShopsPage() {
         </div>
         <div>
           <h1 className="text-2xl md:text-3xl font-black">{t("shops.followedTitle")}</h1>
-          <p className="text-sm text-muted-foreground">{t("shops.followedCount", { count: rows.length })}</p>
+          <p className="text-sm text-muted-foreground">
+            {t("shops.followedCount", { count: rows.length })}
+          </p>
         </div>
       </div>
 
@@ -80,7 +113,9 @@ function FollowedShopsPage() {
         <div className="text-center py-16 bg-secondary/40 rounded-2xl">
           <Store className="h-10 w-10 mx-auto text-muted-foreground mb-3" />
           <p className="text-muted-foreground mb-2">{t("shops.emptyFollowed")}</p>
-          <Link to="/" className="text-primary font-bold hover:underline">{t("shops.discover")}</Link>
+          <Link to="/" className="text-primary font-bold hover:underline">
+            {t("shops.discover")}
+          </Link>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -89,26 +124,54 @@ function FollowedShopsPage() {
             if (!p) return null;
             const name = p.shop_name || p.full_name || t("shops.shopFallback");
             return (
-              <div key={r.seller_id} className="bg-card border border-border rounded-2xl overflow-hidden hover:shadow-elegant transition">
+              <div
+                key={r.seller_id}
+                className="bg-card border border-border rounded-2xl overflow-hidden hover:shadow-elegant transition"
+              >
                 <Link to="/shop/$id" params={{ id: r.seller_id }} className="block">
                   <div className="aspect-[16/7] bg-gradient-brand">
-                    {p.shop_banner_url && <img src={p.shop_banner_url} alt={name} loading="lazy" className="w-full h-full object-cover" />}
+                    {p.shop_banner_url && (
+                      <img
+                        src={p.shop_banner_url}
+                        alt={name}
+                        loading="lazy"
+                        className="w-full h-full object-cover"
+                      />
+                    )}
                   </div>
                   <div className="px-4 pt-4 flex items-start gap-3 -mt-8">
                     <div className="w-14 h-14 rounded-2xl bg-card border-2 border-card shadow overflow-hidden shrink-0 flex items-center justify-center">
-                      {p.shop_logo_url
-                        ? <img src={p.shop_logo_url} alt={name} className="w-full h-full object-cover" />
-                        : <Store className="h-6 w-6 text-muted-foreground" />}
+                      {p.shop_logo_url ? (
+                        <img
+                          src={p.shop_logo_url}
+                          alt={name}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <Store className="h-6 w-6 text-muted-foreground" />
+                      )}
                     </div>
                     <div className="min-w-0 flex-1 pt-7">
                       <div className="font-bold line-clamp-1">{name}</div>
-                      {p.shop_city && <div className="text-xs text-muted-foreground flex items-center gap-1"><MapPin className="h-3 w-3" />{p.shop_city}</div>}
+                      {p.shop_city && (
+                        <div className="text-xs text-muted-foreground flex items-center gap-1">
+                          <MapPin className="h-3 w-3" />
+                          {p.shop_city}
+                        </div>
+                      )}
                     </div>
                   </div>
-                  {p.shop_description && <p className="px-4 pt-2 text-xs text-muted-foreground line-clamp-2">{p.shop_description}</p>}
+                  {p.shop_description && (
+                    <p className="px-4 pt-2 text-xs text-muted-foreground line-clamp-2">
+                      {p.shop_description}
+                    </p>
+                  )}
                 </Link>
                 <div className="p-4 pt-3">
-                  <button onClick={() => unfollow(r.seller_id)} className="w-full text-xs font-bold py-2 rounded-lg bg-secondary text-foreground hover:bg-destructive/10 hover:text-destructive transition">
+                  <button
+                    onClick={() => unfollow(r.seller_id)}
+                    className="w-full text-xs font-bold py-2 rounded-lg bg-secondary text-foreground hover:bg-destructive/10 hover:text-destructive transition"
+                  >
                     {t("shops.unfollowed")}
                   </button>
                 </div>

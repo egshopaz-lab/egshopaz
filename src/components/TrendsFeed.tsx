@@ -37,16 +37,36 @@ export function TrendsFeed({ compact = false }: { compact?: boolean }) {
   const sentinelRef = useRef<HTMLDivElement | null>(null);
 
   const load = useCallback(async () => {
-    const { data } = await db
+    const { data, error } = await db
       .from("eg_trends_posts")
       .select(
-        "id,seller_id,title,body,media_url,media_type,product_id,link_url,published_at,created_at,profiles!eg_trends_posts_seller_id_fkey(shop_name,shop_logo_url),products(id,title,price,old_price,image_url)",
+        "id,seller_id,title,body,media_url,media_type,product_id,link_url,published_at,created_at,products(id,title,price,old_price,image_url)",
       )
       .eq("status", "visible")
       .order("sort_order", { ascending: false })
       .order("published_at", { ascending: false })
       .limit(compact ? 6 : 60);
-    setPosts((data ?? []) as TrendPost[]);
+    if (error) {
+      setPosts([]);
+      setLoading(false);
+      return;
+    }
+    const rawPosts = (data ?? []) as TrendPost[];
+    const sellerIds = Array.from(new Set(rawPosts.map((post) => post.seller_id).filter(Boolean)));
+    const { data: storefronts } = sellerIds.length
+      ? await db.from("profiles_public").select("id,shop_name,shop_logo_url").in("id", sellerIds)
+      : { data: [] };
+    const storefrontMap = new Map<string, NonNullable<TrendPost["profiles"]>>(
+      (storefronts ?? []).map(
+        (profile: { id: string; shop_name: string | null; shop_logo_url: string | null }) => [
+          profile.id,
+          profile,
+        ],
+      ),
+    );
+    setPosts(
+      rawPosts.map((post) => ({ ...post, profiles: storefrontMap.get(post.seller_id) ?? null })),
+    );
     setLoading(false);
   }, [compact]);
 
@@ -87,10 +107,7 @@ export function TrendsFeed({ compact = false }: { compact?: boolean }) {
     return () => observer.disconnect();
   }, [compact, posts.length]);
 
-  const visiblePosts = useMemo(
-    () => posts.slice(0, visibleCount),
-    [posts, visibleCount],
-  );
+  const visiblePosts = useMemo(() => posts.slice(0, visibleCount), [posts, visibleCount]);
 
   return (
     <section className={compact ? "space-y-4" : "container mx-auto px-4 py-6 space-y-5"}>
@@ -100,13 +117,9 @@ export function TrendsFeed({ compact = false }: { compact?: boolean }) {
             <span className="h-10 w-10 rounded-md bg-primary text-primary-foreground inline-flex items-center justify-center">
               <Sparkles className="h-5 w-5" />
             </span>
-            <h2 className={compact ? "text-2xl font-black" : "text-3xl font-black"}>
-              EG Trends
-            </h2>
+            <h2 className={compact ? "text-2xl font-black" : "text-3xl font-black"}>EG Trends</h2>
           </div>
-          <p className="text-sm text-muted-foreground mt-2">
-            {t("trendsFeed.description")}
-          </p>
+          <p className="text-sm text-muted-foreground mt-2">{t("trendsFeed.description")}</p>
         </div>
         {compact && (
           <Link
@@ -130,9 +143,7 @@ export function TrendsFeed({ compact = false }: { compact?: boolean }) {
             <Sparkles className="h-5 w-5" />
           </span>
           <p className="mt-3 font-semibold text-foreground">{t("trendsFeed.empty")}</p>
-          <p className="mt-1 text-xs text-muted-foreground">
-            {t("trendsFeed.emptyDesc")}
-          </p>
+          <p className="mt-1 text-xs text-muted-foreground">{t("trendsFeed.emptyDesc")}</p>
         </div>
       ) : (
         <>
