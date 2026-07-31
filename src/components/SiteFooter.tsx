@@ -48,7 +48,7 @@ export function SiteFooter() {
 
       <div className="border-t border-white/10">
         <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-5 text-xs text-slate-500 sm:flex-row sm:items-center sm:justify-between">
-          <p>Â© {new Date().getFullYear()} EG Shop â€” {t("footer.rights")}</p>
+          <p>© {new Date().getFullYear()} EG Shop — {t("footer.rights")}</p>
           <div className="flex items-center gap-2" aria-label={t("footer.paymentMethods")}>
             <CreditCard className="h-4 w-4" />
             <span className="rounded border border-white/10 px-2 py-1 text-slate-300">VISA</span>
