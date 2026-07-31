@@ -241,7 +241,49 @@ export function PortalAuthForm({
         toast.error("Bu hesab müştəri deyil. Satıcı və ya PVZ PUNKT seçimini istifadə edin.");
         return;
       }
-      if (role === "pvz" && !�έ�G����ƭy� {
+      if (role === "pvz" && !roles.includes("pvz")) {
+        await supabase.auth.signOut();
+        setBusy(false);
+        toast.error("Bu hesab PVZ PUNKT işçisi kimi qeydiyyatdan keçməyib.");
+        return;
+      }
+      if (role === "admin" && !roles.includes("admin")) {
+        await supabase.auth.signOut();
+        setBusy(false);
+        toast.error("Bu hesab admin deyil.");
+        return;
+      }
+
+      setBusy(false);
+      toast.success("Xoş gəldiniz!");
+      const dest = role === "seller"
+        ? (roles.includes("seller") ? "/dashboard" : "/become-seller")
+        : role === "pvz" ? "/dashboard"
+        : role === "admin" ? "/dashboard"
+        : "/";
+      navigate({ to: dest });
+      return;
+    }
+
+    // signup validations
+    if (!agree) { toast.error("Müqavilə şərtlərini qəbul etməlisiniz"); return; }
+    if (name.trim().length < 2) { toast.error("Ad daxil edin"); return; }
+    const normalizedPhone = normalizeE164Phone(phone);
+    if (!isValidE164Phone(normalizedPhone)) {
+      toast.error("Telefon nömrəsini ölkə kodu ilə düzgün daxil edin");
+      return;
+    }
+
+    const normalizedVoen = voen.replace(/\D/g, "");
+    if (role === "seller") {
+      if (shopName.trim().length < 2) { toast.error("Mağaza adı daxil edin"); return; }
+      if (!/^\d{10}$/.test(normalizedVoen)) {
+        toast.error("VÖEN 10 rəqəmdən ibarət olmalıdır");
+        return;
+      }
+    }
+    if (role === "pvz") {
+      if (!pickupPointId) {
         // creating a new PVZ PUNKT — require all fields
         if (newPvzName.trim().length < 2) { toast.error("PVZ PUNKT adını daxil edin"); return; }
         if (newPvzCity.trim().length < 2) { toast.error("Şəhəri daxil edin"); return; }
