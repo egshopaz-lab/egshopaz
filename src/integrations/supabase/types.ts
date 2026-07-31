@@ -711,7 +711,1435 @@ export type Database = {
           created_at?: string
           id?: string
           is_active?: boolean
-          k…10519 tokens truncated…   maintenance_mode?: boolean
+          keywords?: string | null
+          question?: string
+          sort_order?: number
+        }
+        Relationships: []
+      }
+      favorites: {
+        Row: {
+          created_at: string
+          id: string
+          product_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          product_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          product_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      notifications: {
+        Row: {
+          body: string
+          created_at: string
+          id: string
+          is_read: boolean
+          link: string | null
+          order_id: string | null
+          order_item_id: string | null
+          pickup_code: string | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          link?: string | null
+          order_id?: string | null
+          order_item_id?: string | null
+          pickup_code?: string | null
+          title: string
+          type?: string
+          user_id: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          link?: string | null
+          order_id?: string | null
+          order_item_id?: string | null
+          pickup_code?: string | null
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      order_items: {
+        Row: {
+          accepted_at: string | null
+          courier_id: string | null
+          customer_email: string | null
+          customer_name: string | null
+          customer_phone: string | null
+          delivered_at: string | null
+          id: string
+          image_url: string | null
+          order_id: string
+          payout_at: string | null
+          payout_status: string
+          pickup_code: string | null
+          pickup_point_id: string | null
+          price: number
+          product_id: string
+          quantity: number
+          seller_id: string
+          status: string
+          title: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          courier_id?: string | null
+          customer_email?: string | null
+          customer_name?: string | null
+          customer_phone?: string | null
+          delivered_at?: string | null
+          id?: string
+          image_url?: string | null
+          order_id: string
+          payout_at?: string | null
+          payout_status?: string
+          pickup_code?: string | null
+          pickup_point_id?: string | null
+          price: number
+          product_id: string
+          quantity: number
+          seller_id: string
+          status?: string
+          title: string
+        }
+        Update: {
+          accepted_at?: string | null
+          courier_id?: string | null
+          customer_email?: string | null
+          customer_name?: string | null
+          customer_phone?: string | null
+          delivered_at?: string | null
+          id?: string
+          image_url?: string | null
+          order_id?: string
+          payout_at?: string | null
+          payout_status?: string
+          pickup_code?: string | null
+          pickup_point_id?: string | null
+          price?: number
+          product_id?: string
+          quantity?: number
+          seller_id?: string
+          status?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_items_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_items_pickup_point_id_fkey"
+            columns: ["pickup_point_id"]
+            isOneToOne: false
+            referencedRelation: "pickup_points"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_items_pickup_point_id_fkey"
+            columns: ["pickup_point_id"]
+            isOneToOne: false
+            referencedRelation: "pickup_points_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      orders: {
+        Row: {
+          bonus_earned: number
+          bonus_used: number
+          buyer_id: string
+          collected_by_pvz_id: string | null
+          created_at: string
+          discount: number
+          id: string
+          paid_at: string | null
+          payment_method: string
+          payment_note: string | null
+          payment_status: string
+          pickup_point_id: string | null
+          promo_code: string | null
+          recipient_email: string | null
+          recipient_name: string | null
+          recipient_phone: string | null
+          shipping_address: string | null
+          status: Database["public"]["Enums"]["order_status"]
+          total: number
+        }
+        Insert: {
+          bonus_earned?: number
+          bonus_used?: number
+          buyer_id: string
+          collected_by_pvz_id?: string | null
+          created_at?: string
+          discount?: number
+          id?: string
+          paid_at?: string | null
+          payment_method?: string
+          payment_note?: string | null
+          payment_status?: string
+          pickup_point_id?: string | null
+          promo_code?: string | null
+          recipient_email?: string | null
+          recipient_name?: string | null
+          recipient_phone?: string | null
+          shipping_address?: string | null
+          status?: Database["public"]["Enums"]["order_status"]
+          total: number
+        }
+        Update: {
+          bonus_earned?: number
+          bonus_used?: number
+          buyer_id?: string
+          collected_by_pvz_id?: string | null
+          created_at?: string
+          discount?: number
+          id?: string
+          paid_at?: string | null
+          payment_method?: string
+          payment_note?: string | null
+          payment_status?: string
+          pickup_point_id?: string | null
+          promo_code?: string | null
+          recipient_email?: string | null
+          recipient_name?: string | null
+          recipient_phone?: string | null
+          shipping_address?: string | null
+          status?: Database["public"]["Enums"]["order_status"]
+          total?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orders_collected_by_pvz_id_fkey"
+            columns: ["collected_by_pvz_id"]
+            isOneToOne: false
+            referencedRelation: "pickup_points"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_collected_by_pvz_id_fkey"
+            columns: ["collected_by_pvz_id"]
+            isOneToOne: false
+            referencedRelation: "pickup_points_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_pickup_point_id_fkey"
+            columns: ["pickup_point_id"]
+            isOneToOne: false
+            referencedRelation: "pickup_points"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_pickup_point_id_fkey"
+            columns: ["pickup_point_id"]
+            isOneToOne: false
+            referencedRelation: "pickup_points_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payment_transactions: {
+        Row: {
+          amount: number
+          created_at: string
+          description: string | null
+          id: string
+          method: string
+          seller_id: string
+          status: string
+          subscription_id: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          method?: string
+          seller_id: string
+          status?: string
+          subscription_id?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          method?: string
+          seller_id?: string
+          status?: string
+          subscription_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_transactions_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "seller_subscriptions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payout_requests: {
+        Row: {
+          account_holder: string | null
+          admin_note: string | null
+          amount: number
+          bank_name: string | null
+          card_number: string | null
+          created_at: string
+          iban: string | null
+          id: string
+          method: string
+          paid_at: string | null
+          seller_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          account_holder?: string | null
+          admin_note?: string | null
+          amount: number
+          bank_name?: string | null
+          card_number?: string | null
+          created_at?: string
+          iban?: string | null
+          id?: string
+          method?: string
+          paid_at?: string | null
+          seller_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          account_holder?: string | null
+          admin_note?: string | null
+          amount?: number
+          bank_name?: string | null
+          card_number?: string | null
+          created_at?: string
+          iban?: string | null
+          id?: string
+          method?: string
+          paid_at?: string | null
+          seller_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      payouts: {
+        Row: {
+          amount: number
+          commission: number
+          created_at: string
+          id: string
+          net_amount: number
+          order_item_id: string
+          seller_id: string
+          status: string
+        }
+        Insert: {
+          amount: number
+          commission?: number
+          created_at?: string
+          id?: string
+          net_amount: number
+          order_item_id: string
+          seller_id: string
+          status?: string
+        }
+        Update: {
+          amount?: number
+          commission?: number
+          created_at?: string
+          id?: string
+          net_amount?: number
+          order_item_id?: string
+          seller_id?: string
+          status?: string
+        }
+        Relationships: []
+      }
+      pickup_points: {
+        Row: {
+          address: string
+          city: string
+          created_at: string
+          id: string
+          is_active: boolean
+          lat: number | null
+          lng: number | null
+          name: string
+          phone: string | null
+          point_number: number | null
+          working_hours: string
+        }
+        Insert: {
+          address: string
+          city: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          lat?: number | null
+          lng?: number | null
+          name: string
+          phone?: string | null
+          point_number?: number | null
+          working_hours?: string
+        }
+        Update: {
+          address?: string
+          city?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          lat?: number | null
+          lng?: number | null
+          name?: string
+          phone?: string | null
+          point_number?: number | null
+          working_hours?: string
+        }
+        Relationships: []
+      }
+      price_alerts: {
+        Row: {
+          created_at: string
+          id: string
+          product_id: string
+          target_price: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          product_id: string
+          target_price: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          product_id?: string
+          target_price?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
+      products: {
+        Row: {
+          attributes: Json
+          barcode: string | null
+          brand: string | null
+          category_id: string | null
+          color: string | null
+          condition: string | null
+          created_at: string
+          delivery_city: string | null
+          delivery_days_max: number | null
+          delivery_days_min: number | null
+          description: string | null
+          fast_delivery: boolean
+          free_shipping: boolean
+          id: string
+          image_url: string | null
+          images: string[]
+          is_active: boolean
+          is_giveaway: boolean
+          min_stock: number
+          old_price: number | null
+          price: number
+          rating: number
+          reviews_count: number
+          seller_id: string
+          size: string | null
+          sku: string | null
+          stock: number
+          stock_updated_at: string
+          title: string
+          updated_at: string
+          variants: Json
+          video_duration: number | null
+          video_url: string | null
+          weight: number | null
+        }
+        Insert: {
+          attributes?: Json
+          barcode?: string | null
+          brand?: string | null
+          category_id?: string | null
+          color?: string | null
+          condition?: string | null
+          created_at?: string
+          delivery_city?: string | null
+          delivery_days_max?: number | null
+          delivery_days_min?: number | null
+          description?: string | null
+          fast_delivery?: boolean
+          free_shipping?: boolean
+          id?: string
+          image_url?: string | null
+          images?: string[]
+          is_active?: boolean
+          is_giveaway?: boolean
+          min_stock?: number
+          old_price?: number | null
+          price: number
+          rating?: number
+          reviews_count?: number
+          seller_id: string
+          size?: string | null
+          sku?: string | null
+          stock?: number
+          stock_updated_at?: string
+          title: string
+          updated_at?: string
+          variants?: Json
+          video_duration?: number | null
+          video_url?: string | null
+          weight?: number | null
+        }
+        Update: {
+          attributes?: Json
+          barcode?: string | null
+          brand?: string | null
+          category_id?: string | null
+          color?: string | null
+          condition?: string | null
+          created_at?: string
+          delivery_city?: string | null
+          delivery_days_max?: number | null
+          delivery_days_min?: number | null
+          description?: string | null
+          fast_delivery?: boolean
+          free_shipping?: boolean
+          id?: string
+          image_url?: string | null
+          images?: string[]
+          is_active?: boolean
+          is_giveaway?: boolean
+          min_stock?: number
+          old_price?: number | null
+          price?: number
+          rating?: number
+          reviews_count?: number
+          seller_id?: string
+          size?: string | null
+          sku?: string | null
+          stock?: number
+          stock_updated_at?: string
+          title?: string
+          updated_at?: string
+          variants?: Json
+          video_duration?: number | null
+          video_url?: string | null
+          weight?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "products_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      product_stock_movements: {
+        Row: {
+          change: number
+          created_at: string
+          id: string
+          new_stock: number
+          note: string | null
+          order_item_id: string | null
+          previous_stock: number
+          product_id: string
+          reason: string
+          seller_id: string
+        }
+        Insert: {
+          change: number
+          created_at?: string
+          id?: string
+          new_stock: number
+          note?: string | null
+          order_item_id?: string | null
+          previous_stock: number
+          product_id: string
+          reason?: string
+          seller_id: string
+        }
+        Update: {
+          change?: number
+          created_at?: string
+          id?: string
+          new_stock?: number
+          note?: string | null
+          order_item_id?: string | null
+          previous_stock?: number
+          product_id?: string
+          reason?: string
+          seller_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_stock_movements_order_item_id_fkey"
+            columns: ["order_item_id"]
+            isOneToOne: false
+            referencedRelation: "order_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_stock_movements_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          account_holder: string | null
+          avatar_url: string | null
+          bank_name: string | null
+          bonus_balance: number
+          card_number: string | null
+          created_at: string
+          full_name: string | null
+          iban: string | null
+          id: string
+          payout_method: string
+          phone: string | null
+          referral_code: string | null
+          referred_by: string | null
+          seller_tier: string
+          seller_total_orders: number
+          seller_total_sales: number
+          shop_address: string | null
+          shop_banner_url: string | null
+          shop_city: string | null
+          shop_description: string | null
+          shop_email: string | null
+          shop_lat: number | null
+          shop_lng: number | null
+          shop_logo_url: string | null
+          shop_name: string | null
+          updated_at: string
+          voen: string | null
+        }
+        Insert: {
+          account_holder?: string | null
+          avatar_url?: string | null
+          bank_name?: string | null
+          bonus_balance?: number
+          card_number?: string | null
+          created_at?: string
+          full_name?: string | null
+          iban?: string | null
+          id: string
+          payout_method?: string
+          phone?: string | null
+          referral_code?: string | null
+          referred_by?: string | null
+          seller_tier?: string
+          seller_total_orders?: number
+          seller_total_sales?: number
+          shop_address?: string | null
+          shop_banner_url?: string | null
+          shop_city?: string | null
+          shop_description?: string | null
+          shop_email?: string | null
+          shop_lat?: number | null
+          shop_lng?: number | null
+          shop_logo_url?: string | null
+          shop_name?: string | null
+          updated_at?: string
+          voen?: string | null
+        }
+        Update: {
+          account_holder?: string | null
+          avatar_url?: string | null
+          bank_name?: string | null
+          bonus_balance?: number
+          card_number?: string | null
+          created_at?: string
+          full_name?: string | null
+          iban?: string | null
+          id?: string
+          payout_method?: string
+          phone?: string | null
+          referral_code?: string | null
+          referred_by?: string | null
+          seller_tier?: string
+          seller_total_orders?: number
+          seller_total_sales?: number
+          shop_address?: string | null
+          shop_banner_url?: string | null
+          shop_city?: string | null
+          shop_description?: string | null
+          shop_email?: string | null
+          shop_lat?: number | null
+          shop_lng?: number | null
+          shop_logo_url?: string | null
+          shop_name?: string | null
+          updated_at?: string
+          voen?: string | null
+        }
+        Relationships: []
+      }
+      promo_codes: {
+        Row: {
+          code: string
+          created_at: string
+          discount_amount: number | null
+          discount_percent: number | null
+          expires_at: string | null
+          id: string
+          is_active: boolean
+          min_order: number
+          usage_limit: number | null
+          used_count: number
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          discount_amount?: number | null
+          discount_percent?: number | null
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          min_order?: number
+          usage_limit?: number | null
+          used_count?: number
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          discount_amount?: number | null
+          discount_percent?: number | null
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          min_order?: number
+          usage_limit?: number | null
+          used_count?: number
+        }
+        Relationships: []
+      }
+      pvz_messages: {
+        Row: {
+          body: string
+          buyer_id: string
+          created_at: string
+          id: string
+          order_id: string
+          order_item_id: string | null
+          pickup_point_id: string
+          read_at: string | null
+          sender_id: string | null
+          sender_role: string
+        }
+        Insert: {
+          body: string
+          buyer_id: string
+          created_at?: string
+          id?: string
+          order_id: string
+          order_item_id?: string | null
+          pickup_point_id: string
+          read_at?: string | null
+          sender_id?: string | null
+          sender_role: string
+        }
+        Update: {
+          body?: string
+          buyer_id?: string
+          created_at?: string
+          id?: string
+          order_id?: string
+          order_item_id?: string | null
+          pickup_point_id?: string
+          read_at?: string | null
+          sender_id?: string | null
+          sender_role?: string
+        }
+        Relationships: []
+      }
+      pvz_notifications: {
+        Row: {
+          body: string
+          created_at: string
+          id: string
+          is_read: boolean
+          order_id: string | null
+          order_item_id: string | null
+          pickup_code: string | null
+          pickup_point_id: string
+          title: string
+          type: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          order_id?: string | null
+          order_item_id?: string | null
+          pickup_code?: string | null
+          pickup_point_id: string
+          title: string
+          type?: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          order_id?: string | null
+          order_item_id?: string | null
+          pickup_code?: string | null
+          pickup_point_id?: string
+          title?: string
+          type?: string
+        }
+        Relationships: []
+      }
+      pvz_staff: {
+        Row: {
+          created_at: string
+          full_name: string
+          id: string
+          is_active: boolean
+          phone: string
+          pickup_point_id: string | null
+          position: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          full_name: string
+          id?: string
+          is_active?: boolean
+          phone: string
+          pickup_point_id?: string | null
+          position?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          full_name?: string
+          id?: string
+          is_active?: boolean
+          phone?: string
+          pickup_point_id?: string | null
+          position?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pvz_staff_pickup_point_id_fkey"
+            columns: ["pickup_point_id"]
+            isOneToOne: false
+            referencedRelation: "pickup_points"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pvz_staff_pickup_point_id_fkey"
+            columns: ["pickup_point_id"]
+            isOneToOne: false
+            referencedRelation: "pickup_points_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      referrals: {
+        Row: {
+          bonus_awarded: number
+          created_at: string
+          id: string
+          referred_id: string
+          referrer_id: string
+        }
+        Insert: {
+          bonus_awarded?: number
+          created_at?: string
+          id?: string
+          referred_id: string
+          referrer_id: string
+        }
+        Update: {
+          bonus_awarded?: number
+          created_at?: string
+          id?: string
+          referred_id?: string
+          referrer_id?: string
+        }
+        Relationships: []
+      }
+      returns: {
+        Row: {
+          buyer_explanation: string | null
+          buyer_id: string
+          cost_paid_by: string
+          created_at: string
+          description: string | null
+          id: string
+          images: string[]
+          order_id: string
+          order_item_id: string
+          pickup_code: string | null
+          pickup_point_id: string | null
+          pvz_received_at: string | null
+          pvz_received_by: string | null
+          reason: string
+          refund_amount: number | null
+          rejection_reason: string | null
+          resolved_at: string | null
+          seller_approved_at: string | null
+          seller_id: string
+          seller_received_at: string | null
+          shipped_by: string | null
+          shipped_to_seller_at: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          buyer_explanation?: string | null
+          buyer_id: string
+          cost_paid_by?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          images?: string[]
+          order_id: string
+          order_item_id: string
+          pickup_code?: string | null
+          pickup_point_id?: string | null
+          pvz_received_at?: string | null
+          pvz_received_by?: string | null
+          reason: string
+          refund_amount?: number | null
+          rejection_reason?: string | null
+          resolved_at?: string | null
+          seller_approved_at?: string | null
+          seller_id: string
+          seller_received_at?: string | null
+          shipped_by?: string | null
+          shipped_to_seller_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          buyer_explanation?: string | null
+          buyer_id?: string
+          cost_paid_by?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          images?: string[]
+          order_id?: string
+          order_item_id?: string
+          pickup_code?: string | null
+          pickup_point_id?: string | null
+          pvz_received_at?: string | null
+          pvz_received_by?: string | null
+          reason?: string
+          refund_amount?: number | null
+          rejection_reason?: string | null
+          resolved_at?: string | null
+          seller_approved_at?: string | null
+          seller_id?: string
+          seller_received_at?: string | null
+          shipped_by?: string | null
+          shipped_to_seller_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      reviews: {
+        Row: {
+          comment: string | null
+          created_at: string
+          id: string
+          images: string[]
+          product_id: string
+          rating: number
+          user_id: string
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string
+          id?: string
+          images?: string[]
+          product_id: string
+          rating: number
+          user_id: string
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string
+          id?: string
+          images?: string[]
+          product_id?: string
+          rating?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
+      seller_applications: {
+        Row: {
+          activated_at: string | null
+          created_at: string
+          currency: string
+          id: string
+          paid_at: string | null
+          payment_status: string
+          phone: string | null
+          registration_fee: number
+          shop_city: string | null
+          shop_name: string
+          status: string
+          updated_at: string
+          user_id: string
+          voen: string | null
+        }
+        Insert: {
+          activated_at?: string | null
+          created_at?: string
+          currency?: string
+          id?: string
+          paid_at?: string | null
+          payment_status?: string
+          phone?: string | null
+          registration_fee?: number
+          shop_city?: string | null
+          shop_name: string
+          status?: string
+          updated_at?: string
+          user_id: string
+          voen?: string | null
+        }
+        Update: {
+          activated_at?: string | null
+          created_at?: string
+          currency?: string
+          id?: string
+          paid_at?: string | null
+          payment_status?: string
+          phone?: string | null
+          registration_fee?: number
+          shop_city?: string | null
+          shop_name?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+          voen?: string | null
+        }
+        Relationships: []
+      }
+      seller_balances: {
+        Row: {
+          available: number
+          pending: number
+          seller_id: string
+          total_earned: number
+          updated_at: string
+        }
+        Insert: {
+          available?: number
+          pending?: number
+          seller_id: string
+          total_earned?: number
+          updated_at?: string
+        }
+        Update: {
+          available?: number
+          pending?: number
+          seller_id?: string
+          total_earned?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      seller_payment_attempts: {
+        Row: {
+          amount: number
+          application_id: string
+          created_at: string
+          currency: string
+          id: string
+          merchant_order_id: string
+          message: string | null
+          paid_at: string | null
+          provider_transaction_id: string | null
+          returned_at: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount?: number
+          application_id: string
+          created_at?: string
+          currency?: string
+          id?: string
+          merchant_order_id: string
+          message?: string | null
+          paid_at?: string | null
+          provider_transaction_id?: string | null
+          returned_at?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          application_id?: string
+          created_at?: string
+          currency?: string
+          id?: string
+          merchant_order_id?: string
+          message?: string | null
+          paid_at?: string | null
+          provider_transaction_id?: string | null
+          returned_at?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "seller_payment_attempts_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: false
+            referencedRelation: "seller_applications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      seller_subscriptions: {
+        Row: {
+          amount: number
+          created_at: string
+          ends_at: string
+          id: string
+          is_active: boolean
+          package_id: string
+          payment_method: string
+          payment_status: string
+          seller_id: string
+          starts_at: string
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          ends_at: string
+          id?: string
+          is_active?: boolean
+          package_id: string
+          payment_method?: string
+          payment_status?: string
+          seller_id: string
+          starts_at?: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          ends_at?: string
+          id?: string
+          is_active?: boolean
+          package_id?: string
+          payment_method?: string
+          payment_status?: string
+          seller_id?: string
+          starts_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "seller_subscriptions_package_id_fkey"
+            columns: ["package_id"]
+            isOneToOne: false
+            referencedRelation: "ad_packages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      shop_followers: {
+        Row: {
+          created_at: string
+          id: string
+          seller_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          seller_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          seller_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      shop_message_blocks: {
+        Row: {
+          blocked_id: string
+          blocker_id: string
+          created_at: string
+          id: string
+          reason: string | null
+        }
+        Insert: {
+          blocked_id: string
+          blocker_id: string
+          created_at?: string
+          id?: string
+          reason?: string | null
+        }
+        Update: {
+          blocked_id?: string
+          blocker_id?: string
+          created_at?: string
+          id?: string
+          reason?: string | null
+        }
+        Relationships: []
+      }
+      shop_messages: {
+        Row: {
+          body: string
+          buyer_id: string
+          created_at: string
+          id: string
+          order_id: string | null
+          product_id: string | null
+          read_at: string | null
+          seller_id: string
+          sender_role: string
+        }
+        Insert: {
+          body: string
+          buyer_id: string
+          created_at?: string
+          id?: string
+          order_id?: string | null
+          product_id?: string | null
+          read_at?: string | null
+          seller_id: string
+          sender_role: string
+        }
+        Update: {
+          body?: string
+          buyer_id?: string
+          created_at?: string
+          id?: string
+          order_id?: string | null
+          product_id?: string | null
+          read_at?: string | null
+          seller_id?: string
+          sender_role?: string
+        }
+        Relationships: []
+      }
+      sponsored_products: {
+        Row: {
+          clicks: number
+          created_at: string
+          ends_at: string
+          id: string
+          impressions: number
+          is_active: boolean
+          position: string
+          product_id: string
+          seller_id: string
+          subscription_id: string | null
+        }
+        Insert: {
+          clicks?: number
+          created_at?: string
+          ends_at: string
+          id?: string
+          impressions?: number
+          is_active?: boolean
+          position?: string
+          product_id: string
+          seller_id: string
+          subscription_id?: string | null
+        }
+        Update: {
+          clicks?: number
+          created_at?: string
+          ends_at?: string
+          id?: string
+          impressions?: number
+          is_active?: boolean
+          position?: string
+          product_id?: string
+          seller_id?: string
+          subscription_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sponsored_products_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "seller_subscriptions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sponsored_shops: {
+        Row: {
+          clicks: number
+          created_at: string
+          ends_at: string
+          id: string
+          impressions: number
+          is_active: boolean
+          seller_id: string
+          subscription_id: string | null
+        }
+        Insert: {
+          clicks?: number
+          created_at?: string
+          ends_at: string
+          id?: string
+          impressions?: number
+          is_active?: boolean
+          seller_id: string
+          subscription_id?: string | null
+        }
+        Update: {
+          clicks?: number
+          created_at?: string
+          ends_at?: string
+          id?: string
+          impressions?: number
+          is_active?: boolean
+          seller_id?: string
+          subscription_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sponsored_shops_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "seller_subscriptions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      support_tickets: {
+        Row: {
+          admin_reply: string | null
+          category: string
+          created_at: string
+          id: string
+          message: string
+          order_id: string | null
+          status: string
+          subject: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          admin_reply?: string | null
+          category?: string
+          created_at?: string
+          id?: string
+          message: string
+          order_id?: string | null
+          status?: string
+          subject: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          admin_reply?: string | null
+          category?: string
+          created_at?: string
+          id?: string
+          message?: string
+          order_id?: string | null
+          status?: string
+          subject?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      system_settings: {
+        Row: {
+          bonus_earn_percent: number
+          bonus_to_azn: number
+          cod_enabled: boolean
+          commission_percent: number
+          delivery_base_fee: number
+          id: string
+          maintenance_mode: boolean
+          min_payout: number
+          payments_mode: string
+          promo_terms_text: string
+          seller_signup_fee: number
+          single_banner_days: number
+          single_banner_price: number
+          single_product_promo_days: number
+          single_product_promo_price: number
+          single_shop_promo_days: number
+          single_shop_promo_price: number
+          storage_fee_per_day: number
+          updated_at: string
+        }
+        Insert: {
+          bonus_earn_percent?: number
+          bonus_to_azn?: number
+          cod_enabled?: boolean
+          commission_percent?: number
+          delivery_base_fee?: number
+          id?: string
+          maintenance_mode?: boolean
           min_payout?: number
           payments_mode?: string
           promo_terms_text?: string
@@ -1337,4 +2765,3 @@ export const Constants = {
     },
   },
 } as const
-
