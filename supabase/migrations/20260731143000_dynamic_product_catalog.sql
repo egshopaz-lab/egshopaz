@@ -320,6 +320,7 @@ language sql stable security definer set search_path=public as $$
   where d.is_active order by x.sort_order,d.name_az;
 $$;
 grant execute on function public.catalog_schema_for_category(uuid) to anon,authenticated;
+alter function public.catalog_schema_for_category(uuid) security invoker;
 
 create or replace function public.sync_product_catalog_projection()
 returns trigger language plpgsql security definer set search_path=public as $$
@@ -372,6 +373,9 @@ drop trigger if exists trg_sync_product_catalog_projection on public.products;
 create trigger trg_sync_product_catalog_projection
 after insert or update of attributes,variants,category_id,price,min_stock on public.products
 for each row execute function public.sync_product_catalog_projection();
+
+-- This helper is trigger-only and must not be exposed as a Data API RPC.
+revoke execute on function public.sync_product_catalog_projection() from public,anon,authenticated;
 
 -- Project existing products immediately without making one malformed legacy row
 -- abort the whole migration. Updating a column to itself intentionally fires the
