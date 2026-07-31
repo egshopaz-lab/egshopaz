@@ -210,31 +210,31 @@ interface SellerNotif {
 }
 
 const productSchema = z.object({
-  title: z.string().trim().min(8, "BaĹźlÄ±q minimum 8 simvol olmalÄ±dÄ±r").max(200),
-  price: z.number().min(0.01, "QiymÉ™t 0-dan bĂ¶yĂĽk olmalÄ±dÄ±r").max(1000000),
+  title: z.string().trim().min(8, "Başlıq minimum 8 simvol olmalıdır").max(200),
+  price: z.number().min(0.01, "Qiymət 0-dan böyük olmalıdır").max(1000000),
   old_price: z.number().min(0).max(1000000).nullable(),
   stock: z.number().int().min(0).max(100000),
-  brand: z.string().trim().min(2, "Marka daxil edilmÉ™lidir").max(100),
+  brand: z.string().trim().min(2, "Marka daxil edilməlidir").max(100),
   sku: z.string().trim().max(50),
   barcode: z.string().trim().max(80),
   min_stock: z.number().int().min(0).max(100000),
-  description: z.string().trim().min(40, "TÉ™svir minimum 40 simvol olmalÄ±dÄ±r").max(2000),
-  category_id: z.string().uuid("Kateqoriya seĂ§ilmÉ™lidir"),
+  description: z.string().trim().min(40, "Təsvir minimum 40 simvol olmalıdır").max(2000),
+  category_id: z.string().uuid("Kateqoriya seçilməlidir"),
   weight: z.number().min(0).max(10000).nullable(),
 });
 
 const ORDER_STATUSES = [
-  { v: "pending", l: "Yeni sifariĹź", c: "bg-warning/10 text-warning" },
-  { v: "preparing", l: "HazÄ±rlanÄ±r", c: "bg-warning/10 text-warning" },
-  { v: "packed", l: "PaketlÉ™ndi", c: "bg-purple-500/10 text-purple-600" },
-  { v: "shipped", l: "GĂ¶ndÉ™rildi", c: "bg-primary/10 text-primary" },
-  { v: "handed_to_courier", l: "KuryerÉ™ tÉ™hvil", c: "bg-primary/10 text-primary" },
-  { v: "in_transit", l: "Ă‡atdÄ±rÄ±lÄ±r", c: "bg-primary/10 text-primary" },
-  { v: "delivered", l: "MĂĽĹźtÉ™riyÉ™ tÉ™hvil", c: "bg-success/10 text-success" },
-  { v: "completed", l: "TamamlandÄ±", c: "bg-success/10 text-success" },
-  { v: "disputed", l: "MĂĽbahisÉ™dÉ™", c: "bg-destructive/10 text-destructive" },
-  { v: "returned", l: "Geri qaytarÄ±ldÄ±", c: "bg-warning/10 text-warning" },
-  { v: "cancelled", l: "LÉ™Äźv edildi", c: "bg-destructive/10 text-destructive" },
+  { v: "pending", l: "Yeni sifariş", c: "bg-warning/10 text-warning" },
+  { v: "preparing", l: "Hazırlanır", c: "bg-warning/10 text-warning" },
+  { v: "packed", l: "Paketləndi", c: "bg-purple-500/10 text-purple-600" },
+  { v: "shipped", l: "Göndərildi", c: "bg-primary/10 text-primary" },
+  { v: "handed_to_courier", l: "Kuryerə təhvil", c: "bg-primary/10 text-primary" },
+  { v: "in_transit", l: "Çatdırılır", c: "bg-primary/10 text-primary" },
+  { v: "delivered", l: "Müştəriyə təhvil", c: "bg-success/10 text-success" },
+  { v: "completed", l: "Tamamlandı", c: "bg-success/10 text-success" },
+  { v: "disputed", l: "Mübahisədə", c: "bg-destructive/10 text-destructive" },
+  { v: "returned", l: "Geri qaytarıldı", c: "bg-warning/10 text-warning" },
+  { v: "cancelled", l: "Ləğv edildi", c: "bg-destructive/10 text-destructive" },
 ];
 
 export function SellerPanel() {
@@ -403,7 +403,7 @@ export function SellerPanel() {
     ]);
     const firstError = productsError ?? categoriesError ?? itemsError ?? profileError;
     if (firstError) {
-      toast.error(`MÉ™lumat yĂĽklÉ™nmÉ™di: ${firstError.message}`);
+      toast.error(`Məlumat yüklənmədi: ${firstError.message}`);
       setPanelError(firstError.message);
       setPanelLoading(false);
       return;
@@ -417,7 +417,7 @@ export function SellerPanel() {
           .in("id", orderIds)
       : { data: [], error: null };
     if (ordersError) {
-      toast.error(`SifariĹź mÉ™lumatÄ± yĂĽklÉ™nmÉ™di: ${ordersError.message}`);
+      toast.error(`Sifariş məlumatı yüklənmədi: ${ordersError.message}`);
       setPanelError(ordersError.message);
       setPanelLoading(false);
       return;
@@ -437,7 +437,7 @@ export function SellerPanel() {
           .in("id", pickupIds)
       : { data: [], error: null };
     if (pickupError) {
-      toast.error(`PVZ mÉ™lumatÄ± yĂĽklÉ™nmÉ™di: ${pickupError.message}`);
+      toast.error(`PVZ məlumatı yüklənmədi: ${pickupError.message}`);
       setPanelError(pickupError.message);
       setPanelLoading(false);
       return;
@@ -572,7 +572,2040 @@ export function SellerPanel() {
         "postgres_changes",
         { event: "*", schema: "public", table: "notifications", filter: `user_id=eq.${user.id}` },
         loadNotifs,
-  …22731 tokens truncated…    <input
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(ch);
+    };
+  }, [user, isSeller]);
+
+  // Unread messages counter (with realtime)
+  useEffect(() => {
+    if (!user || !isSeller) return;
+    prepareNotificationSound();
+    const refreshUnread = () => {
+      supabase
+        .from("shop_messages")
+        .select("*", { count: "exact", head: true })
+        .eq("seller_id", user.id)
+        .eq("sender_role", "buyer")
+        .is("read_at", null)
+        .then(({ count }) => setUnreadMsgs(count ?? 0));
+    };
+    refreshUnread();
+    const ch = supabase
+      .channel(`seller-unread-${user.id}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "shop_messages", filter: `seller_id=eq.${user.id}` },
+        (payload) => {
+          const message = payload.new as { sender_role?: string };
+          if (payload.eventType === "INSERT" && message.sender_role === "buyer") {
+            playNotificationSound();
+          }
+          refreshUnread();
+        },
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(ch);
+    };
+  }, [user, isSeller]);
+
+  if (!mounted || authLoading || !user || !isSeller) return null;
+
+  if (panelLoading) {
+    return (
+      <div className="container mx-auto grid gap-4 px-3 py-4 lg:grid-cols-[272px_1fr] lg:gap-6 lg:px-4 lg:py-6">
+        <div className="h-80 animate-pulse rounded-2xl bg-muted/40" />
+        <div className="space-y-4">
+          <div className="h-28 animate-pulse rounded-2xl bg-muted/40" />
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            {[0, 1, 2, 3].map((item) => (
+              <div key={item} className="h-32 animate-pulse rounded-2xl bg-muted/40" />
+            ))}
+          </div>
+          <div className="h-80 animate-pulse rounded-2xl bg-muted/40" />
+        </div>
+      </div>
+    );
+  }
+
+  if (panelError) {
+    return (
+      <div className="container mx-auto px-4 py-12">
+        <div className="mx-auto max-w-xl rounded-2xl border border-destructive/30 bg-destructive/5 p-8 text-center">
+          <AlertTriangle className="mx-auto h-10 w-10 text-destructive" />
+          <h1 className="mt-3 text-xl font-black">Satıcı paneli yüklənmədi</h1>
+          <p className="mt-2 text-sm text-muted-foreground">{panelError}</p>
+          <button
+            onClick={() => void load()}
+            className="mt-5 rounded-xl bg-primary px-5 py-2.5 text-sm font-bold text-primary-foreground"
+          >
+            Yenidən yoxla
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (businessModulesLoading) {
+    return (
+      <div className="flex min-h-[70vh] items-center justify-center">
+        <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary/20 border-t-primary" />
+      </div>
+    );
+  }
+
+  if (businessModulesError) {
+    return (
+      <div className="container mx-auto px-4 py-12">
+        <div className="mx-auto max-w-xl rounded-2xl border border-destructive/30 bg-destructive/5 p-8 text-center">
+          <AlertTriangle className="mx-auto h-10 w-10 text-destructive" />
+          <h1 className="mt-3 text-xl font-black">Biznes modulları yüklənmədi</h1>
+          <p className="mt-2 text-sm text-muted-foreground">{businessModulesError}</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (selectedModuleCodes.length === 0) {
+    return (
+      <BusinessModuleSelector
+        required
+        selectedCodes={selectedModuleCodes}
+        onSaved={setSelectedModuleCodes}
+      />
+    );
+  }
+
+  const paidItems = orderItems.filter(
+    (item) =>
+      item.order_payment_status === "paid" ||
+      ["paid", "delivered", "completed"].includes(item.status),
+  );
+  const totalRevenue = paidItems.reduce((sum, item) => sum + Number(item.price) * item.quantity, 0);
+  const totalOrders = new Set(paidItems.map((item) => item.order_id)).size;
+  const orderGroups = [...orderItems.reduce((groups, item) => {
+    const current = groups.get(item.order_id) ?? [];
+    current.push(item);
+    groups.set(item.order_id, current);
+    return groups;
+  }, new Map<string, OrderItem[]>()).entries()].map(([orderId, items]) => {
+    const activeItems = items.filter((item) => !["cancelled", "returned"].includes(item.status));
+    const statusRank = [
+      "pending",
+      "paid",
+      "preparing",
+      "packed",
+      "shipped",
+      "handed_to_courier",
+      "in_transit",
+      "delivered",
+      "completed",
+    ];
+    const status =
+      activeItems.length > 0
+        ? [...activeItems].sort(
+            (a, b) => statusRank.indexOf(a.status) - statusRank.indexOf(b.status),
+          )[0].status
+        : items.some((item) => item.status === "returned")
+          ? "returned"
+          : "cancelled";
+    return {
+      orderId,
+      items,
+      status,
+      createdAt: items.find((item) => item.order_created_at)?.order_created_at ?? null,
+      customerName: items.find((item) => item.customer_name)?.customer_name ?? null,
+      total: items.reduce((sum, item) => sum + Number(item.price) * item.quantity, 0),
+    };
+  });
+  const countOrders = (statuses: string[]) =>
+    orderGroups.filter((order) => statuses.includes(order.status)).length;
+  const pendingOrders = countOrders(["pending", "paid"]);
+  const preparingOrders = countOrders(["preparing", "packed"]);
+  const shippedOrders = countOrders(["shipped", "handed_to_courier", "in_transit"]);
+  const completedOrders = countOrders(["delivered", "completed"]);
+  const cancelledOrders = countOrders(["cancelled"]);
+  const returnedOrders = countOrders(["returned"]);
+  const lowStock = products.filter(
+    (p) => p.stock > 0 && p.stock <= (p.min_stock ?? 5) && p.is_active,
+  ).length;
+  const outOfStock = products.filter((p) => p.stock === 0 && p.is_active).length;
+  const unreadSellerNotifs = sellerNotifs.filter((n) => !n.is_read).length;
+  const salesFrom = (threshold: Date) => {
+    const list = paidItems.filter(
+      (item) =>
+        item.order_created_at && new Date(item.order_created_at).getTime() >= threshold.getTime(),
+    );
+    return {
+      revenue: list.reduce((sum, item) => sum + Number(item.price) * item.quantity, 0),
+      orders: new Set(list.map((item) => item.order_id)).size,
+    };
+  };
+  const todayStart = new Date();
+  todayStart.setHours(0, 0, 0, 0);
+  const weekStart = new Date(todayStart);
+  const dayFromMonday = (weekStart.getDay() + 6) % 7;
+  weekStart.setDate(weekStart.getDate() - dayFromMonday);
+  const monthStart = new Date(todayStart.getFullYear(), todayStart.getMonth(), 1);
+  const todaySales = salesFrom(todayStart);
+  const weekSales = salesFrom(weekStart);
+  const monthSales = salesFrom(monthStart);
+  const salesChart = Array.from({ length: 14 }, (_, index) => {
+    const day = new Date(todayStart);
+    day.setDate(day.getDate() - (13 - index));
+    const nextDay = new Date(day);
+    nextDay.setDate(nextDay.getDate() + 1);
+    const items = paidItems.filter((item) => {
+      if (!item.order_created_at) return false;
+      const createdAt = new Date(item.order_created_at).getTime();
+      return createdAt >= day.getTime() && createdAt < nextDay.getTime();
+    });
+    return {
+      date: day.toLocaleDateString("az-AZ", { day: "2-digit", month: "2-digit" }),
+      revenue: Number(
+        items
+          .reduce((sum, item) => sum + Number(item.price) * item.quantity, 0)
+          .toFixed(2),
+      ),
+      orders: new Set(items.map((item) => item.order_id)).size,
+    };
+  });
+  const recentOrders = [...orderGroups]
+    .sort((a, b) => (b.createdAt ?? "").localeCompare(a.createdAt ?? ""))
+    .slice(0, 5);
+  const toDateInput = (date: Date) => {
+    const pad = (value: number) => value.toString().padStart(2, "0");
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+  };
+  const openOrderDetails = (filter: OrderViewFilter, from?: Date, to: Date = todayStart) => {
+    setOrderViewFilter(filter);
+    setOrdersDateRange(
+      from ? { from: toDateInput(from), to: toDateInput(to) } : emptyRange,
+    );
+    openSection("orders");
+  };
+  const openProductDetails = (filter: ProductViewFilter) => {
+    setProductViewFilter(filter);
+    openSection("products");
+  };
+  const orderMatchesFilter = (item: OrderItem, filter: OrderViewFilter) => {
+    if (filter === "all") return true;
+    if (filter === "paid") {
+      return (
+        item.order_payment_status === "paid" ||
+        ["paid", "delivered", "completed"].includes(item.status)
+      );
+    }
+    const statusGroups: Record<Exclude<OrderViewFilter, "all" | "paid">, string[]> = {
+      pending: ["pending", "paid"],
+      preparing: ["preparing", "packed"],
+      shipped: ["shipped", "handed_to_courier", "in_transit"],
+      completed: ["delivered", "completed"],
+      cancelled: ["cancelled"],
+      returned: ["returned"],
+    };
+    return statusGroups[filter].includes(item.status);
+  };
+  const filteredProducts = products.filter((product) => {
+    if (productViewFilter === "active") return product.is_active;
+    if (productViewFilter === "low_stock") {
+      return (
+        product.is_active &&
+        product.stock > 0 &&
+        product.stock <= (product.min_stock ?? 5)
+      );
+    }
+    if (productViewFilter === "out_of_stock") {
+      return product.is_active && product.stock === 0;
+    }
+    return true;
+  });
+
+  const uploadImages = async (files: FileList | null) => {
+    if (!files || !user || !editing) return;
+    setUploading(true);
+    const newImages: string[] = [...(editing.images ?? [])];
+    for (const file of Array.from(files)) {
+      if (newImages.length >= 10) {
+        toast.error("Maksimum 10 şəkil yükləyə bilərsiniz");
+        break;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error(`${file.name} 5MB-dan böyükdür`);
+        continue;
+      }
+      if (!file.type.startsWith("image/")) {
+        toast.error(`${file.name} şəkil deyil`);
+        continue;
+      }
+      const ext = file.name.split(".").pop();
+      const path = `${user.id}/${crypto.randomUUID()}.${ext}`;
+      const { error } = await supabase.storage.from("product-images").upload(path, file);
+      if (error) {
+        toast.error(error.message);
+        continue;
+      }
+      const { data } = supabase.storage.from("product-images").getPublicUrl(path);
+      newImages.push(data.publicUrl);
+    }
+    setEditing({
+      ...editing,
+      images: newImages,
+      image_url: editing.image_url || newImages[0] || null,
+    });
+    setUploading(false);
+    if (fileRef.current) fileRef.current.value = "";
+  };
+
+  const removeImage = (url: string) => {
+    if (!editing) return;
+    const imgs = (editing.images ?? []).filter((i) => i !== url);
+    setEditing({
+      ...editing,
+      images: imgs,
+      image_url: editing.image_url === url ? (imgs[0] ?? null) : editing.image_url,
+    });
+  };
+
+  const uploadVideo = async (file: File | null | undefined) => {
+    if (!file || !user || !editing) return;
+    if (file.size > 50 * 1024 * 1024) {
+      toast.error("Video 50MB-dan böyük ola bilməz");
+      return;
+    }
+    if (!file.type.startsWith("video/")) {
+      toast.error("Yalnız video fayl yükləyin");
+      return;
+    }
+    // Check duration client-side
+    const duration = await new Promise<number>((resolve) => {
+      const v = document.createElement("video");
+      v.preload = "metadata";
+      v.onloadedmetadata = () => resolve(Math.round(v.duration));
+      v.onerror = () => resolve(0);
+      v.src = URL.createObjectURL(file);
+    });
+    if (duration > 60) {
+      toast.error(`Video ${duration} saniyədir. Maksimum 60 saniyə olmalıdır.`);
+      return;
+    }
+    setUploading(true);
+    const ext = file.name.split(".").pop();
+    const path = `${user.id}/videos/${crypto.randomUUID()}.${ext}`;
+    const { error } = await supabase.storage.from("product-images").upload(path, file);
+    if (error) {
+      toast.error(error.message);
+      setUploading(false);
+      return;
+    }
+    const { data } = supabase.storage.from("product-images").getPublicUrl(path);
+    setEditing({ ...editing, video_url: data.publicUrl, video_duration: duration });
+    setUploading(false);
+    toast.success("Video yükləndi");
+  };
+
+  const save = async () => {
+    if (!user || !editing) return;
+    const payload = {
+      title: (editing.title ?? "").trim(),
+      price: Number(editing.price ?? 0),
+      old_price: editing.old_price ? Number(editing.old_price) : null,
+      stock: Number(editing.stock ?? 0),
+      brand: (editing.brand ?? "").trim(),
+      sku: (editing.sku ?? "").trim(),
+      barcode: (editing.barcode ?? "").trim(),
+      min_stock: Number(editing.min_stock ?? 5),
+      description: (editing.description ?? "").trim(),
+      category_id: editing.category_id ?? null,
+      weight: editing.weight ? Number(editing.weight) : null,
+    };
+    const v = productSchema.safeParse(payload);
+    if (!v.success) {
+      toast.error(v.error.issues[0].message);
+      return;
+    }
+
+    const images = editing.images ?? [];
+    if (images.length === 0 && !editing.image_url) {
+      toast.error("Ən azı bir məhsul şəkli əlavə edilməlidir");
+      return;
+    }
+    const data = {
+      ...payload,
+      images,
+      image_url: editing.image_url || images[0] || null,
+      brand: payload.brand || null,
+      sku: payload.sku || null,
+      barcode: payload.barcode || null,
+      min_stock: payload.min_stock,
+      description: payload.description || null,
+      seller_id: user.id,
+      // Hər yeni və redaktə edilmiş məhsul admin yoxlamasından sonra yayımlanır.
+      is_active: false,
+      delivery_days_min: editing.delivery_days_min != null ? Number(editing.delivery_days_min) : 1,
+      delivery_days_max: editing.delivery_days_max != null ? Number(editing.delivery_days_max) : 3,
+      delivery_city: editing.delivery_city || "Bakı",
+      free_shipping: !!editing.free_shipping,
+      fast_delivery: !!editing.fast_delivery,
+      condition: editing.condition || "new",
+      is_giveaway: !!editing.is_giveaway,
+      video_url: editing.video_url ?? null,
+      video_duration: editing.video_duration ?? null,
+      attributes: (editing.attributes ?? {}) as never,
+      variants: (editing.variants ?? []) as never,
+    };
+
+    if (editing.id) {
+      const { error } = await supabase.from("products").update(data).eq("id", editing.id);
+      if (error) {
+        console.error("Product update error:", error);
+        toast.error("Yadda saxlanmadı: " + (error.message || "naməlum xəta"));
+        return;
+      }
+      toast.success("Dəyişikliklər yoxlamaya göndərildi");
+    } else {
+      const { error } = await supabase.from("products").insert(data);
+      if (error) {
+        console.error("Product insert error:", error);
+        toast.error("Əlavə olunmadı: " + (error.message || "naməlum xəta"));
+        return;
+      }
+      toast.success("Məhsul yoxlamaya göndərildi");
+    }
+    setEditing(null);
+    load();
+  };
+
+  const remove = async (id: string) => {
+    if (!confirm("Bu məhsul silinsin? Bu əməliyyat geri qaytarıla bilməz.")) return;
+    const { error } = await supabase.from("products").delete().eq("id", id);
+    if (error) {
+      toast.error("Silinmədi: " + error.message);
+      return;
+    }
+    toast.success("Məhsul silindi");
+    load();
+  };
+
+  const promote = async (p: Product) => {
+    if (!user) return;
+    const raw = window.prompt(
+      `"${p.title}" məhsulunu neçə gün irəli çəkmək istəyirsiniz? (1-30)`,
+      "7",
+    );
+    if (!raw) return;
+    const days = Math.min(30, Math.max(1, parseInt(raw, 10) || 0));
+    if (days < 1) {
+      toast.error("Düzgün gün sayı daxil edin");
+      return;
+    }
+    const endsAt = new Date(Date.now() + days * 24 * 60 * 60 * 1000).toISOString();
+    const { error } = await supabase.from("sponsored_products").insert({
+      product_id: p.id,
+      seller_id: user.id,
+      position: "catalog_top",
+      ends_at: endsAt,
+      is_active: true,
+    });
+    if (error) {
+      toast.error("Reklam yaradılmadı: " + error.message);
+      return;
+    }
+    toast.success(`✨ "${p.title}" ${days} gün irəli çəkildi!`);
+  };
+
+  const openQR = async (p: Product) => {
+    const url = `${window.location.origin}/product/${p.id}`;
+    const dataUrl = await QRCode.toDataURL(url, { width: 512, margin: 2 });
+    setQrDataUrl(dataUrl);
+    setQrProduct(p);
+  };
+
+  const downloadQR = () => {
+    if (!qrDataUrl || !qrProduct) return;
+    const a = document.createElement("a");
+    a.href = qrDataUrl;
+    a.download = `qr-${qrProduct.title.replace(/[^a-z0-9]+/gi, "-").toLowerCase()}.png`;
+    a.click();
+  };
+
+  const updateOrderStatus = async (item: OrderItem, status: string) => {
+    if (item.accepted_at || item.delivered_at) {
+      toast.error("PVZ qəbulundan sonra statusu yalnız PVZ dəyişə bilər");
+      return;
+    }
+    const { error } = await supabase.from("order_items").update({ status }).eq("id", item.id);
+    if (error) toast.error(error.message);
+    else {
+      toast.success("Status yeniləndi");
+      load();
+    }
+  };
+
+  const printShippingLabel = async (item: OrderItem) => {
+    const pickupCode = item.pickup_code ?? "—";
+    const qrDataUrl = await QRCode.toDataURL(pickupCode, { width: 320, margin: 1 });
+    const orderCode = item.order_id.slice(0, 8).toUpperCase();
+    const shopName = profile?.shop_name ?? "Mağaza";
+    const escapeHtml = (value: string) =>
+      value
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    const customerName = escapeHtml(item.customer_name?.trim() || "—");
+    const customerPhone = escapeHtml(item.customer_phone?.trim() || "—");
+    const safeShopName = escapeHtml(shopName);
+    const safeTitle = escapeHtml(item.title);
+    const html = `<!doctype html><html><head><meta charset="utf-8"><title>Etiket ${orderCode}</title>
+<style>
+  @page { size: 100mm 150mm; margin: 4mm; }
+  * { box-sizing: border-box; font-family: -apple-system, system-ui, Arial, sans-serif; }
+  body { margin: 0; padding: 6mm; color: #000; }
+  .label { border: 2px solid #000; padding: 6mm; height: 138mm; display: flex; flex-direction: column; }
+  .top { display:flex; justify-content:space-between; border-bottom: 1px dashed #999; padding-bottom: 4mm; margin-bottom: 4mm;}
+  .shop { font-weight: 800; font-size: 14pt; }
+  .code { font-family: monospace; font-weight: 800; font-size: 12pt; }
+  .title { font-size: 13pt; font-weight: 700; margin: 3mm 0; line-height: 1.3; }
+  .customer { border: 2px solid #000; padding: 3mm; margin: 2mm 0 3mm; font-size: 12pt; line-height: 1.45; }
+  .customer .head { font-weight: 900; font-size: 11pt; text-transform: uppercase; margin-bottom: 1mm; }
+  .customer b { font-size: 14pt; }
+  .row { display:flex; justify-content:space-between; font-size: 11pt; margin: 2mm 0; }
+  .qr { text-align:center; margin-top: auto; }
+  .qr img { width: 55mm; height: 55mm; }
+  .pickup { font-family: monospace; font-size: 18pt; font-weight: 800; letter-spacing: 3px; margin-top: 2mm; }
+  .qr-cap { font-size: 9pt; color: #555; margin-top: 1mm; }
+  .price { font-size: 16pt; font-weight: 800; }
+  .footer { border-top: 1px dashed #999; padding-top: 3mm; margin-top: 3mm; font-size: 9pt; color: #555; text-align:center; }
+  @media print { .noprint { display:none; } }
+  .btn { background:#000; color:#fff; border:0; padding:8px 16px; border-radius:6px; cursor:pointer; font-weight:700; }
+</style></head><body>
+<div class="noprint" style="text-align:center;margin-bottom:8px;">
+  <button class="btn" onclick="window.print()">🖨️ Çap et</button>
+</div>
+<div class="label">
+  <div class="top">
+    <div class="shop">📦 ${safeShopName}</div>
+    <div class="code">#${orderCode}</div>
+  </div>
+  <div class="customer">
+    <div class="head">Müştəri məlumatları</div>
+    <div>Ad soyad: <b>${customerName}</b></div>
+    <div>Telefon: <b>${customerPhone}</b></div>
+  </div>
+  <div class="title">${safeTitle}</div>
+  <div class="row"><span>Say:</span><b>${item.quantity} ədəd</b></div>
+  <div class="row"><span>Cəmi:</span><span class="price">${(Number(item.price) * item.quantity).toFixed(2)} ₼</span></div>
+  <div class="qr">
+    <img src="${qrDataUrl}" alt="QR"/>
+    <div class="pickup">${pickupCode}</div>
+    <div class="qr-cap">PVZ qəbul kodu</div>
+  </div>
+  <div class="footer">EG Shop · ${formatDate(new Date())}</div>
+</div>
+<script>setTimeout(()=>window.print(),300);</script>
+</body></html>`;
+    const w = window.open("", "_blank", "width=420,height=640");
+    if (!w) {
+      toast.error("Pop-up bloklanıb. İcazə verin.");
+      return;
+    }
+    w.document.write(html);
+    w.document.close();
+  };
+
+  const saveShop = async () => {
+    if (!user || !profile) return;
+    const ibanClean = (profile.iban ?? "").replace(/\s/g, "").toUpperCase();
+    if (ibanClean && !/^AZ\d{2}[A-Z0-9]{20}$/.test(ibanClean)) {
+      toast.error("IBAN formatı yanlışdır (məs: AZ21NABZ00000000137010001944)");
+      return;
+    }
+    const cardClean = (profile.card_number ?? "").replace(/\s/g, "");
+    if (cardClean && !/^\d{13,19}$/.test(cardClean)) {
+      toast.error("Kart nömrəsi yanlışdır");
+      return;
+    }
+    setSavingShop(true);
+    const c = findCity(profile.shop_city);
+    const { error } = await supabase.from("profiles").upsert(
+      {
+        id: user.id,
+        shop_name: profile.shop_name?.slice(0, 100) ?? null,
+        full_name: profile.full_name?.slice(0, 100) ?? null,
+        phone: profile.phone?.slice(0, 20) ?? null,
+        avatar_url: profile.avatar_url ?? null,
+        shop_description: profile.shop_description?.slice(0, 1000) ?? null,
+        shop_logo_url: profile.shop_logo_url ?? null,
+        shop_banner_url: profile.shop_banner_url ?? null,
+        shop_address: profile.shop_address?.slice(0, 300) ?? null,
+        shop_city: profile.shop_city?.slice(0, 100) ?? null,
+        shop_email: profile.shop_email?.slice(0, 200) ?? null,
+        shop_lat: c?.lat ?? null,
+        shop_lng: c?.lng ?? null,
+        iban: ibanClean || null,
+        bank_name: profile.bank_name?.slice(0, 100) ?? null,
+        card_number: cardClean || null,
+        account_holder: profile.account_holder?.slice(0, 100) ?? null,
+        payout_method: profile.payout_method ?? "iban",
+      },
+      { onConflict: "id" },
+    );
+    if (error) toast.error(error.message);
+    else toast.success("Mağaza məlumatları yadda saxlanıldı");
+    setSavingShop(false);
+  };
+
+  const uploadShopImage = async (file: File, field: "shop_logo_url" | "shop_banner_url") => {
+    if (!user || !profile) return;
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Şəkil 5MB-dan böyükdür");
+      return;
+    }
+    const ext = file.name.split(".").pop();
+    const path = `${user.id}/shop-${field}-${Date.now()}.${ext}`;
+    const { error } = await supabase.storage.from("product-images").upload(path, file);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    const { data } = supabase.storage.from("product-images").getPublicUrl(path);
+    setProfile({ ...profile, [field]: data.publicUrl });
+    toast.success("Yükləndi");
+  };
+
+  const navItems: PanelNavItem[] = [
+    {
+      key: "dashboard",
+      label: "Dashboard",
+      group: "İcmal",
+      icon: LayoutDashboard,
+      active: tab === "dashboard",
+      onClick: () => openSection("dashboard"),
+    },
+    {
+      key: "orders",
+      label: "Sifarişlər",
+      group: "Satışlar",
+      icon: ShoppingBag,
+      badge: pendingOrders,
+      active: tab === "orders",
+      onClick: () => openOrderDetails("all"),
+    },
+    ...(selectedModuleCodes.some(isReservationModule) ? [{
+      key: "reservations",
+      label: "Rezervasiyalar",
+      group: "Satışlar",
+      icon: Calendar,
+      active: tab === "reservations",
+      onClick: () => openSection("reservations"),
+    }] : []),
+    {
+      key: "returns",
+      label: "Qaytarmalar",
+      group: "Satışlar",
+      icon: Undo2,
+      active: tab === "returns",
+      onClick: () => openSection("returns"),
+    },
+    {
+      key: "products",
+      label: "Məhsullar",
+      group: "Kataloq",
+      icon: Package,
+      badge: products.length,
+      active: tab === "products",
+      onClick: () => openProductDetails("all"),
+    },
+    {
+      key: "bulk",
+      label: "Toplu yükləmə",
+      group: "Kataloq",
+      icon: FileSpreadsheet,
+      active: tab === "bulk",
+      onClick: () => openSection("bulk"),
+    },
+    {
+      key: "inventory",
+      label: "Stok idarəsi",
+      group: "Kataloq",
+      icon: Boxes,
+      badge: lowStock + outOfStock,
+      active: tab === "inventory",
+      onClick: () => openSection("inventory"),
+    },
+    {
+      key: "customers",
+      label: "Müştərilər",
+      group: "Müştərilər",
+      icon: UserRound,
+      active: tab === "customers",
+      onClick: () => openSection("customers"),
+    },
+    {
+      key: "notifications",
+      label: "Bildirişlər",
+      group: "Müştərilər",
+      icon: Bell,
+      badge: unreadSellerNotifs,
+      active: tab === "notifications",
+      onClick: () => openSection("notifications"),
+    },
+    {
+      key: "messages",
+      label: "Mesajlar",
+      group: "Müştərilər",
+      icon: MessageCircle,
+      badge: unreadMsgs,
+      active: tab === "messages",
+      onClick: () => openSection("messages"),
+    },
+    {
+      key: "advertising",
+      label: "Reklam & Paketlər",
+      group: "Marketinq",
+      icon: Megaphone,
+      active: tab === "advertising",
+      onClick: () => openSection("advertising"),
+    },
+    {
+      to: "/trends",
+      label: "EG Trends",
+      group: "Marketinq",
+      icon: Rocket,
+    },
+    {
+      key: "followers",
+      label: "İzləyicilər",
+      group: "Marketinq",
+      icon: Users,
+      active: tab === "followers",
+      onClick: () => openSection("followers"),
+    },
+    {
+      key: "balance",
+      label: "Maliyyə",
+      group: "Maliyyə və hesabat",
+      icon: Wallet,
+      active: tab === "balance",
+      onClick: () => openSection("balance"),
+    },
+    {
+      key: "analytics",
+      label: "Analitika",
+      group: "Maliyyə və hesabat",
+      icon: BarChart3,
+      active: tab === "analytics",
+      onClick: () => openSection("analytics"),
+    },
+    {
+      key: "shop",
+      label: "Mağaza ayarları",
+      group: "Ayarlar",
+      icon: Settings,
+      active: tab === "shop",
+      onClick: () => openSection("shop"),
+    },
+    {
+      key: "support",
+      label: "AI Dəstək",
+      group: "Ayarlar",
+      icon: LifeBuoy,
+      active: tab === "support",
+      onClick: () => openSection("support"),
+    },
+    {
+      key: "business_modules",
+      label: "Biznes modulları",
+      group: "Ayarlar",
+      icon: Blocks,
+      active: tab === "business_modules",
+      onClick: () => openSection("business_modules"),
+    },
+  ];
+
+  return (
+    <PanelLayout title="Satıcı paneli" subtitle={profile?.shop_name ?? "Mağazam"} items={navItems}>
+      {tab === "dashboard" && (
+        <SellerDashboardProfessional
+          sellerId={user.id}
+          todaySales={todaySales}
+          monthSales={monthSales}
+          totalRevenue={totalRevenue}
+          pendingOrders={pendingOrders}
+          preparingOrders={preparingOrders}
+          shippedOrders={shippedOrders}
+          completedOrders={completedOrders}
+          cancelledOrders={cancelledOrders}
+          returnedOrders={returnedOrders}
+          activeProducts={products.filter((product) => product.is_active).length}
+          lowStock={lowStock}
+          outOfStock={outOfStock}
+          unreadMessages={unreadMsgs}
+          unreadNotifications={unreadSellerNotifs}
+          salesChart={salesChart}
+          recentOrders={recentOrders}
+          notifications={sellerNotifs}
+          statusLabel={(status) => {
+            const found = ORDER_STATUSES.find((entry) => entry.v === status);
+            return {
+              label: found?.l ?? status,
+              className: found?.c ?? "bg-secondary text-muted-foreground",
+            };
+          }}
+          onOpenOrders={(filter, range) => {
+            const from = range === "today" ? todayStart : range === "month" ? monthStart : undefined;
+            openOrderDetails(filter as OrderViewFilter, from);
+          }}
+          onOpenProducts={(filter) => openProductDetails(filter as ProductViewFilter)}
+          onOpenSection={(section) => openSection(section as typeof tab)}
+          onAddProduct={() => {
+            openSection("products");
+            setEditing({ title: "", price: 0, stock: 0, images: [], is_active: true });
+          }}
+        />
+      )}
+      {false && tab === "dashboard" && (
+        <div className="space-y-6">
+          <div className="grid sm:grid-cols-2 xl:grid-cols-4 gap-4">
+            {[
+              {
+                icon: DollarSign,
+                label: "Bugünkü satışlar",
+                value: formatAZN(todaySales.revenue),
+                note: `${todaySales.orders} ödənilmiş sifariş`,
+                onClick: () => openOrderDetails("paid", todayStart),
+              },
+              {
+                icon: TrendingUp,
+                label: "Həftəlik satışlar",
+                value: formatAZN(weekSales.revenue),
+                note: `${weekSales.orders} ödənilmiş sifariş`,
+                onClick: () => openOrderDetails("paid", weekStart),
+              },
+              {
+                icon: BarChart3,
+                label: "Aylıq satışlar",
+                value: formatAZN(monthSales.revenue),
+                note: `${monthSales.orders} ödənilmiş sifariş`,
+                onClick: () => openOrderDetails("paid", monthStart),
+              },
+              {
+                icon: DollarSign,
+                label: "Ümumi gəlir",
+                value: formatAZN(totalRevenue),
+                note: `${totalOrders} ödənilmiş sifariş`,
+                onClick: () => openOrderDetails("paid"),
+              },
+              {
+                icon: Package,
+                label: "Aktiv məhsullar",
+                value: products.filter((p) => p.is_active).length,
+                note: `${products.length} ümumi məhsul`,
+                onClick: () => openProductDetails("active"),
+              },
+              {
+                icon: ShoppingBag,
+                label: "Gözləyən sifarişlər",
+                value: pendingOrders,
+                note: "Emal tələb edir",
+                onClick: () => openOrderDetails("pending"),
+              },
+              {
+                icon: Boxes,
+                label: "Hazırlanan sifarişlər",
+                value: preparingOrders,
+                note: "Hazırlanır və ya paketlənib",
+                onClick: () => openOrderDetails("preparing"),
+              },
+              {
+                icon: Rocket,
+                label: "Göndərilən sifarişlər",
+                value: shippedOrders,
+                note: "Çatdırılma prosesindədir",
+                onClick: () => openOrderDetails("shipped"),
+              },
+              {
+                icon: BadgeCheck,
+                label: "Tamamlanan sifarişlər",
+                value: completedOrders,
+                note: "Uğurla təhvil verilib",
+                onClick: () => openOrderDetails("completed"),
+              },
+              {
+                icon: X,
+                label: "Ləğv edilən sifarişlər",
+                value: cancelledOrders,
+                note: "Ləğv olunub",
+                onClick: () => openOrderDetails("cancelled"),
+              },
+              {
+                icon: Undo2,
+                label: "Qaytarılan sifarişlər",
+                value: returnedOrders,
+                note: "Geri qaytarılıb",
+                onClick: () => openOrderDetails("returned"),
+              },
+              {
+                icon: AlertTriangle,
+                label: "Bitmək üzrə olan məhsullar",
+                value: lowStock,
+                note: "Minimum stok həddinə çatıb",
+                onClick: () => openProductDetails("low_stock"),
+              },
+              {
+                icon: PackageX,
+                label: "Stoku bitən",
+                value: outOfStock,
+                note: "Satış dayandırılıb",
+                onClick: () => openProductDetails("out_of_stock"),
+              },
+            ].map((s, i) => (
+              <button
+                type="button"
+                key={i}
+                onClick={s.onClick}
+                className="bg-card border border-border rounded-2xl p-5 shadow-card text-left hover:border-primary hover:shadow-md transition focus:outline-none focus:ring-2 focus:ring-primary/40"
+              >
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="text-sm text-muted-foreground">{s.label}</div>
+                    <div className="text-2xl font-extrabold mt-1">{s.value}</div>
+                    <div className="text-xs text-muted-foreground mt-1">{s.note}</div>
+                  </div>
+                  <div className="w-12 h-12 rounded-xl bg-gradient-soft flex items-center justify-center text-primary">
+                    <s.icon className="h-6 w-6" />
+                  </div>
+                </div>
+                <div className="text-xs text-primary font-semibold mt-3">Detallara bax →</div>
+              </button>
+            ))}
+          </div>
+          {lowStock > 0 && (
+            <button
+              onClick={() => setTab("inventory")}
+              className="w-full text-left bg-warning/10 border border-warning/20 text-warning-foreground rounded-2xl p-4 hover:bg-warning/15"
+            >
+              <strong>{lowStock}</strong> məhsul minimum stok həddinə çatıb. Stok idarəsini açın.
+            </button>
+          )}
+          {outOfStock > 0 && (
+            <button
+              onClick={() => setTab("inventory")}
+              className="w-full text-left bg-destructive/10 border border-destructive/20 text-destructive rounded-2xl p-4 hover:bg-destructive/15"
+            >
+              <strong>{outOfStock}</strong> aktiv məhsulun stoku bitib.
+            </button>
+          )}
+          <div className="bg-card border border-border rounded-2xl p-6">
+            <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+              <div>
+                <h3 className="font-bold text-lg">Satış qrafiki</h3>
+                <p className="text-xs text-muted-foreground">
+                  Son 14 gün üzrə ödənilmiş satışlar
+                </p>
+              </div>
+              <button
+                onClick={() => setTab("analytics")}
+                className="text-sm text-primary font-semibold hover:underline"
+              >
+                Ətraflı analitika
+              </button>
+            </div>
+            <div className="h-72 w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={salesChart} margin={{ top: 8, right: 8, left: -12, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                  <XAxis dataKey="date" tick={{ fontSize: 11 }} minTickGap={20} />
+                  <YAxis tick={{ fontSize: 11 }} width={55} />
+                  <Tooltip
+                    formatter={(value, name) => [
+                      name === "revenue" ? formatAZN(Number(value)) : Number(value),
+                      name === "revenue" ? "Gəlir" : "Sifariş",
+                    ]}
+                    contentStyle={{
+                      background: "hsl(var(--card))",
+                      border: "1px solid hsl(var(--border))",
+                      borderRadius: "12px",
+                    }}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="revenue"
+                    name="revenue"
+                    stroke="hsl(var(--primary))"
+                    strokeWidth={3}
+                    dot={{ r: 3 }}
+                    activeDot={{ r: 5 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+          <div className="bg-card border border-border rounded-2xl p-6">
+            <div className="flex items-center justify-between gap-3 mb-4">
+              <h3 className="font-bold text-lg">Son sifarişlər</h3>
+              <button
+                onClick={() => openOrderDetails("all")}
+                className="text-sm text-primary font-semibold hover:underline"
+              >
+                Hamısına bax
+              </button>
+            </div>
+            {recentOrders.length === 0 ? (
+              <div className="text-sm text-muted-foreground text-center py-6">
+                Hələ sifariş yoxdur
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {recentOrders.map((order) => {
+                  const status = ORDER_STATUSES.find((entry) => entry.v === order.status);
+                  const firstItem = order.items[0];
+                  const extraItemCount = order.items.length - 1;
+                  return (
+                    <div
+                      key={order.orderId}
+                      className="flex items-center justify-between gap-3 rounded-xl border border-border p-3"
+                    >
+                      <div className="min-w-0">
+                        <div className="font-semibold text-sm truncate">
+                          {firstItem.title}
+                          {extraItemCount > 0 ? ` və daha ${extraItemCount} məhsul` : ""}
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          #{order.orderId.slice(0, 8).toUpperCase()} ·{" "}
+                          {order.customerName ?? "Müştəri"} ·{" "}
+                          {order.createdAt ? formatDateTime(order.createdAt) : "—"}
+                        </div>
+                      </div>
+                      <div className="text-right shrink-0">
+                        <div className="font-bold text-sm">{formatAZN(order.total)}</div>
+                        <span
+                          className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${status?.c ?? "bg-secondary"}`}
+                        >
+                          {status?.l ?? order.status}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+          <div className="bg-card border border-border rounded-2xl p-6">
+            <div className="font-bold text-lg mb-4 flex items-center justify-between gap-3">
+              <span className="flex items-center gap-2">
+                <Bell className="h-5 w-5 text-primary" /> Bildirişlər
+              </span>
+              {unreadSellerNotifs > 0 && (
+                <button
+                  onClick={async () => {
+                    await supabase
+                      .from("notifications")
+                      .update({ is_read: true })
+                      .eq("user_id", user!.id)
+                      .eq("is_read", false);
+                  }}
+                  className="text-xs text-primary hover:underline inline-flex items-center gap-1"
+                >
+                  <Check className="h-3.5 w-3.5" /> Hamısı oxundu
+                </button>
+              )}
+            </div>
+            {sellerNotifs.length === 0 ? (
+              <div className="text-sm text-muted-foreground text-center py-6">Bildiriş yoxdur</div>
+            ) : (
+              <div className="space-y-2 max-h-80 overflow-y-auto">
+                {sellerNotifs.map((n) => (
+                  <div
+                    key={n.id}
+                    className={`p-3 rounded-xl border ${!n.is_read ? "border-primary/40 bg-primary/5" : "border-border bg-card"}`}
+                  >
+                    <div className="font-semibold text-sm">{n.title}</div>
+                    <div className="text-xs text-muted-foreground mt-0.5">{n.body}</div>
+                    {n.pickup_code && (
+                      <div className="mt-1.5 inline-block font-mono text-xs font-bold bg-primary/10 text-primary px-2 py-1 rounded">
+                        Kod: {n.pickup_code}
+                      </div>
+                    )}
+                    <div className="text-[10px] text-muted-foreground mt-1">
+                      {formatDateTime(n.created_at)}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+          <div className="bg-card border border-border rounded-2xl p-6">
+            <h3 className="font-bold text-lg mb-4">Tez başlamaq</h3>
+            <div className="grid sm:grid-cols-3 gap-3">
+              <button
+                onClick={() => {
+                  setTab("products");
+                  setEditing({ title: "", price: 0, stock: 0, images: [], is_active: true });
+                }}
+                className="flex items-center gap-3 p-4 rounded-xl border border-border hover:border-primary hover:bg-secondary/50 transition text-left"
+              >
+                <Plus className="h-5 w-5 text-primary" />
+                <span className="font-semibold text-sm">Yeni məhsul əlavə et</span>
+              </button>
+              <button
+                onClick={() => openOrderDetails("all")}
+                className="flex items-center gap-3 p-4 rounded-xl border border-border hover:border-primary hover:bg-secondary/50 transition text-left"
+              >
+                <ShoppingBag className="h-5 w-5 text-primary" />
+                <span className="font-semibold text-sm">Sifarişlərə bax</span>
+              </button>
+              <button
+                onClick={() => setTab("shop")}
+                className="flex items-center gap-3 p-4 rounded-xl border border-border hover:border-primary hover:bg-secondary/50 transition text-left"
+              >
+                <Store className="h-5 w-5 text-primary" />
+                <span className="font-semibold text-sm">Mağaza ayarları</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {tab === "products" && (
+        <div className="space-y-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex flex-wrap gap-2">
+              {[
+                { value: "all", label: `Hamısı (${products.length})` },
+                {
+                  value: "active",
+                  label: `Aktiv (${products.filter((product) => product.is_active).length})`,
+                },
+                { value: "low_stock", label: `Bitmək üzrə (${lowStock})` },
+                { value: "out_of_stock", label: `Stoku bitən (${outOfStock})` },
+              ].map((filter) => (
+                <button
+                  type="button"
+                  key={filter.value}
+                  onClick={() => setProductViewFilter(filter.value as ProductViewFilter)}
+                  className={`px-3 py-2 rounded-lg text-xs font-bold border transition ${
+                    productViewFilter === filter.value
+                      ? "bg-primary text-primary-foreground border-primary"
+                      : "bg-card border-border hover:border-primary"
+                  }`}
+                >
+                  {filter.label}
+                </button>
+              ))}
+            </div>
+            <button
+              onClick={() =>
+                setEditing({ title: "", price: 0, stock: 0, images: [], is_active: true })
+              }
+              className="bg-primary text-primary-foreground px-4 py-2 rounded-lg font-bold hover:bg-primary/90 inline-flex items-center gap-2"
+            >
+              <Plus className="h-4 w-4" /> Yeni məhsul
+            </button>
+          </div>
+          {filteredProducts.length === 0 ? (
+            <div className="bg-secondary/40 rounded-2xl p-10 text-center">
+              <Package className="h-12 w-12 mx-auto text-muted-foreground mb-3" />
+              <p className="text-muted-foreground mb-4">
+                {products.length === 0
+                  ? "Hələ məhsul yoxdur. İlk məhsulunuzu əlavə edin."
+                  : "Bu filtrə uyğun məhsul yoxdur."}
+              </p>
+              {products.length === 0 && (
+                <button
+                  onClick={() =>
+                    setEditing({ title: "", price: 0, stock: 0, images: [], is_active: true })
+                  }
+                  className="bg-primary text-primary-foreground px-6 py-2 rounded-lg font-bold"
+                >
+                  Məhsul əlavə et
+                </button>
+              )}
+            </div>
+          ) : (
+            <>
+            <div className="space-y-3 md:hidden">
+              {filteredProducts.map((product) => (
+                <div key={product.id} className="rounded-2xl border border-border bg-card p-4">
+                  <div className="flex gap-3">
+                    <div className="h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-secondary">
+                      {product.image_url && (
+                        <img src={product.image_url} alt="" className="h-full w-full object-cover" />
+                      )}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <Link
+                        to="/product/$id"
+                        params={{ id: product.id }}
+                        className="line-clamp-2 font-black"
+                      >
+                        {product.title}
+                      </Link>
+                      <div className="mt-1 text-lg font-black text-primary">{formatAZN(product.price)}</div>
+                      <div className="mt-1 flex flex-wrap gap-2 text-xs">
+                        <span className={product.stock <= (product.min_stock ?? 5) ? "font-bold text-destructive" : "text-muted-foreground"}>
+                          Stok: {product.stock}
+                        </span>
+                        <span className={`rounded-full px-2 py-0.5 font-bold ${
+                          product.is_active ? "bg-success/10 text-success" : "bg-warning/10 text-warning"
+                        }`}>
+                          {product.is_active ? "Aktiv" : "Yoxlamada"}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="mt-4 grid grid-cols-4 gap-2 border-t border-border pt-3">
+                    <button onClick={() => setEditing(product)} className="flex h-10 items-center justify-center rounded-lg bg-secondary" title="Redaktə">
+                      <Edit className="h-4 w-4" />
+                    </button>
+                    <button onClick={() => promote(product)} className="flex h-10 items-center justify-center rounded-lg bg-warning/10 text-warning" title="İrəli çək">
+                      <Rocket className="h-4 w-4" />
+                    </button>
+                    <button onClick={() => openQR(product)} className="flex h-10 items-center justify-center rounded-lg bg-primary/10 text-primary" title="QR kod">
+                      <QrCode className="h-4 w-4" />
+                    </button>
+                    <button onClick={() => remove(product.id)} className="flex h-10 items-center justify-center rounded-lg bg-destructive/10 text-destructive" title="Sil">
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="hidden bg-card border border-border rounded-2xl overflow-x-auto md:block">
+              <table className="w-full text-sm min-w-[640px]">
+                <thead className="bg-secondary/50 text-left">
+                  <tr>
+                    <th className="p-3">Məhsul</th>
+                    <th className="p-3">Qiymət</th>
+                    <th className="p-3">Stok</th>
+                    <th className="p-3">Status</th>
+                    <th className="p-3"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredProducts.map((p) => (
+                    <tr key={p.id} className="border-t border-border">
+                      <td className="p-3">
+                        <div className="flex items-center gap-3">
+                          <div className="w-12 h-12 rounded-lg bg-secondary overflow-hidden shrink-0">
+                            {p.image_url && (
+                              <img
+                                src={p.image_url}
+                                alt=""
+                                className="w-full h-full object-cover"
+                              />
+                            )}
+                          </div>
+                          <div className="min-w-0">
+                            <Link
+                              to="/product/$id"
+                              params={{ id: p.id }}
+                              className="font-medium line-clamp-1 hover:text-primary"
+                            >
+                              {p.title}
+                            </Link>
+                            {p.sku && (
+                              <div className="text-xs text-muted-foreground">SKU: {p.sku}</div>
+                            )}
+                          </div>
+                        </div>
+                      </td>
+                      <td className="p-3 font-semibold whitespace-nowrap">{formatAZN(p.price)}</td>
+                      <td className="p-3">
+                        <span className={p.stock < 5 ? "text-destructive font-semibold" : ""}>
+                          {p.stock}
+                        </span>
+                      </td>
+                      <td className="p-3">
+                        <span
+                          className={`text-xs px-2 py-1 rounded-full font-semibold ${p.is_active ? "bg-success/10 text-success" : "bg-warning/10 text-warning"}`}
+                        >
+                          {p.is_active ? "Təsdiqlənib" : "Yoxlamadadır"}
+                        </span>
+                      </td>
+                      <td className="p-3">
+                        <div className="flex gap-1 justify-end">
+                          <button
+                            onClick={() => setEditing(p)}
+                            className="p-2 hover:bg-secondary rounded"
+                            title="Redaktə"
+                          >
+                            <Edit className="h-4 w-4" />
+                          </button>
+                          <button
+                            onClick={() => promote(p)}
+                            className="p-2 bg-warning/10 text-warning hover:bg-warning hover:text-warning-foreground rounded"
+                            title="İrəli çək (Reklam)"
+                          >
+                            <Rocket className="h-4 w-4" />
+                          </button>
+                          <button
+                            onClick={() => openQR(p)}
+                            className="p-2 hover:bg-primary/10 hover:text-primary rounded"
+                            title="QR kod"
+                          >
+                            <QrCode className="h-4 w-4" />
+                          </button>
+                          <button
+                            onClick={() => remove(p.id)}
+                            className="p-2 bg-destructive/10 text-destructive hover:bg-destructive hover:text-destructive-foreground rounded inline-flex items-center gap-1"
+                            title="Sil"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                            <span className="text-xs font-semibold hidden sm:inline">Sil</span>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            </>
+          )}
+        </div>
+      )}
+
+      {tab === "orders" && (
+        <SellerOrdersWorkspace
+          items={orderItems as SellerOrderItemRecord[]}
+          filter={orderViewFilter as SellerOrderFilter}
+          dateRange={ordersDateRange}
+          onFilterChange={(filter) => setOrderViewFilter(filter as OrderViewFilter)}
+          onDateRangeChange={setOrdersDateRange}
+          onStatusChange={(item, status) => void updateOrderStatus(item as OrderItem, status)}
+          onPrintLabel={(item) => printShippingLabel(item as OrderItem)}
+          onChanged={load}
+        />
+      )}
+      {false && tab === "orders" && (
+        <div className="space-y-3">
+          <div className="flex flex-wrap gap-2">
+            {[
+              { value: "all", label: "Bütün sifarişlər" },
+              { value: "paid", label: "Ödənilmiş" },
+              { value: "pending", label: `Gözləyən (${pendingOrders})` },
+              { value: "preparing", label: `Hazırlanan (${preparingOrders})` },
+              { value: "shipped", label: `Göndərilən (${shippedOrders})` },
+              { value: "completed", label: `Tamamlanan (${completedOrders})` },
+              { value: "cancelled", label: `Ləğv edilən (${cancelledOrders})` },
+              { value: "returned", label: `Qaytarılan (${returnedOrders})` },
+            ].map((filter) => (
+              <button
+                type="button"
+                key={filter.value}
+                onClick={() => setOrderViewFilter(filter.value as OrderViewFilter)}
+                className={`px-3 py-2 rounded-lg text-xs font-bold border transition ${
+                  orderViewFilter === filter.value
+                    ? "bg-primary text-primary-foreground border-primary"
+                    : "bg-card border-border hover:border-primary"
+                }`}
+              >
+                {filter.label}
+              </button>
+            ))}
+          </div>
+          <DateRangeFilter value={ordersDateRange} onChange={setOrdersDateRange} />
+          {(() => {
+            const visibleOrders = orderItems.filter(
+              (item) =>
+                orderMatchesFilter(item, orderViewFilter) &&
+                inRange(item.order_created_at ?? null, ordersDateRange),
+            );
+            const visibleOrderCount = new Set(visibleOrders.map((item) => item.order_id)).size;
+            const visibleTotal = visibleOrders.reduce(
+              (sum, item) => sum + Number(item.price) * item.quantity,
+              0,
+            );
+            if (visibleOrders.length === 0) {
+              return (
+                <div className="bg-secondary/40 rounded-2xl p-10 text-center text-muted-foreground">
+                  <ShoppingBag className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                  Bu filtrə uyğun sifariş yoxdur
+                </div>
+              );
+            }
+            return (
+              <>
+                <div className="grid sm:grid-cols-2 gap-3">
+                  <div className="bg-card border border-border rounded-xl p-4">
+                    <div className="text-xs text-muted-foreground">Sifariş sayı</div>
+                    <div className="text-2xl font-extrabold">{visibleOrderCount}</div>
+                  </div>
+                  <div className="bg-card border border-border rounded-xl p-4">
+                    <div className="text-xs text-muted-foreground">Filtr üzrə məbləğ</div>
+                    <div className="text-2xl font-extrabold">{formatAZN(visibleTotal)}</div>
+                  </div>
+                </div>
+                {visibleOrders.map((i) => {
+              const st = ORDER_STATUSES.find((s) => s.v === i.status) ?? ORDER_STATUSES[0];
+              const canPack = i.status === "pending" || i.status === "preparing";
+              const canShip =
+                !i.accepted_at &&
+                !i.delivered_at &&
+                (i.status === "pending" || i.status === "packed");
+                  return (
+                <div key={i.id} className="bg-card border border-border rounded-xl p-4 space-y-3">
+                  <div className="flex flex-wrap items-center gap-3">
+                    <div className="w-14 h-14 bg-secondary rounded-lg overflow-hidden shrink-0">
+                      {i.image_url && (
+                        <img src={i.image_url} alt="" className="w-full h-full object-cover" />
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-[180px]">
+                      <div className="font-semibold line-clamp-1">{i.title}</div>
+                      <div className="text-xs text-muted-foreground">
+                        № {i.order_id.slice(0, 8).toUpperCase()} · {i.quantity} ədəd · Kod:{" "}
+                        <b className="font-mono">{i.pickup_code ?? "—"}</b>
+                      </div>
+                      {i.order_created_at && (
+                        <div className="text-[10px] text-muted-foreground mt-0.5">
+                          📅 Sifariş: {formatDateTime(i.order_created_at)}
+                        </div>
+                      )}
+                      <div className="text-xs text-muted-foreground mt-0.5">
+                        Müştəri: {i.customer_name ?? "—"}
+                        {i.customer_phone ? ` · ${i.customer_phone}` : ""}
+                      </div>
+                      {i.delivered_at ? (
+                        <div className="text-[10px] text-success font-bold mt-1">
+                          ✅ Müştəriyə təhvil verildi · {formatDateTime(i.delivered_at)}
+                        </div>
+                      ) : i.accepted_at ? (
+                        <div className="text-[10px] text-primary font-bold mt-1">
+                          📦 PVZ paketi qəbul etdi · {formatDateTime(i.accepted_at)}
+                        </div>
+                      ) : null}
+                    </div>
+                    <div className="font-extrabold whitespace-nowrap">
+                      {formatAZN(Number(i.price) * i.quantity)}
+                    </div>
+                    <select
+                      value={i.status}
+                      onChange={(e) => updateOrderStatus(i, e.target.value)}
+                      disabled={
+                        !!i.accepted_at ||
+                        !!i.delivered_at ||
+                        !["pending", "preparing", "packed", "shipped"].includes(i.status)
+                      }
+                      className={`text-xs px-3 py-2 rounded-lg font-semibold border-0 ${st.c} cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed`}
+                    >
+                      {ORDER_STATUSES.filter(
+                        (s) =>
+                          ["pending", "preparing", "packed", "shipped"].includes(s.v) ||
+                          s.v === i.status,
+                      ).map((s) => (
+                        <option key={s.v} value={s.v}>
+                          {s.l}
+                        </option>
+                      ))}
+                    </select>
+                    <div className="flex gap-1">
+                      {canPack && (
+                        <button
+                          onClick={() => updateOrderStatus(i, "packed")}
+                          className="px-3 py-2 rounded-lg bg-purple-500/10 text-purple-600 hover:bg-purple-500 hover:text-white text-xs font-bold inline-flex items-center gap-1"
+                          title="Paketləndi olaraq qeyd et"
+                        >
+                          <Package className="h-3.5 w-3.5" /> Paketlə
+                        </button>
+                      )}
+                      {canShip && (
+                        <button
+                          onClick={() => updateOrderStatus(i, "shipped")}
+                          className="px-3 py-2 rounded-lg bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground text-xs font-bold inline-flex items-center gap-1"
+                          title="PVZ-yə göndərildi olaraq qeyd et"
+                        >
+                          <ShoppingBag className="h-3.5 w-3.5" /> Göndərildi
+                        </button>
+                      )}
+                      <button
+                        onClick={() => printShippingLabel(i)}
+                        className="px-3 py-2 rounded-lg bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground text-xs font-bold inline-flex items-center gap-1"
+                        title="Qablaşdırma etiketi (QR + sifariş kodu)"
+                      >
+                        <QrCode className="h-3.5 w-3.5" /> Etiket çap et
+                      </button>
+                    </div>
+                  </div>
+                  <SellerExternalDelivery
+                    orderItemId={i.id}
+                    itemStatus={i.status}
+                    onChanged={load}
+                  />
+                  {i.pickup_point ? (
+                    <div className="bg-primary/5 border border-primary/20 rounded-lg p-3 text-xs">
+                      <div className="font-bold text-primary mb-1">
+                        📍 Çatdırılma PVZ #{i.pickup_point.point_number ?? "-"}
+                      </div>
+                      <div>
+                        <b>{i.pickup_point.name}</b> — {i.pickup_point.city}
+                      </div>
+                      <div className="text-muted-foreground">{i.pickup_point.address}</div>
+                      <div className="text-muted-foreground">
+                        {i.pickup_point.working_hours}
+                        {i.pickup_point.phone ? ` · ${i.pickup_point.phone}` : ""}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-xs text-muted-foreground italic">
+                      PVZ punkt təyin olunmayıb
+                    </div>
+                  )}
+                </div>
+              );
+                })}
+              </>
+            );
+          })()}
+        </div>
+      )}
+
+      {tab === "returns" && <SellerReturns sellerId={user.id} />}
+
+      {tab === "messages" && <SellerMessages sellerId={user.id} />}
+
+      {tab === "notifications" && (
+        <SellerNotificationCenter
+          sellerId={user.id}
+          notifications={sellerNotifs as SellerNotificationItem[]}
+          onChanged={() => {
+            supabase
+              .from("notifications")
+              .select("id,title,body,type,pickup_code,is_read,created_at")
+              .eq("user_id", user.id)
+              .order("created_at", { ascending: false })
+              .limit(100)
+              .then(({ data }) => setSellerNotifs((data ?? []) as SellerNotif[]));
+          }}
+        />
+      )}
+
+      {tab === "analytics" && <SellerAnalytics sellerId={user.id} />}
+
+      {tab === "bulk" && <BulkProductUpload sellerId={user.id} onDone={load} />}
+
+      {tab === "inventory" && <SellerInventory sellerId={user.id} onChanged={load} />}
+
+      {tab === "customers" && (
+        <SellerCustomers sellerId={user.id} onOpenMessages={() => openSection("messages")} />
+      )}
+
+      {tab === "advertising" && <SellerAdvertising />}
+
+      {tab === "trends" && <SellerTrends sellerId={user.id} />}
+
+      {tab === "balance" && <SellerBalance sellerId={user.id} />}
+
+      {tab === "followers" && <SellerFollowers sellerId={user.id} />}
+
+      {tab === "support" && (
+        <div className="space-y-4">
+          <div>
+            <h1 className="text-2xl font-extrabold flex items-center gap-2">
+              <LifeBuoy className="h-6 w-6 text-primary" /> AI Dəstək
+            </h1>
+            <p className="text-sm text-muted-foreground mt-1">
+              Satıcı suallarınıza 24/7 avtomatik cavab — məhsul, sifariş, reklam, ödəniş,
+              mübahisələr.
+            </p>
+          </div>
+          <AISupportChat userId={user.id} audience="seller" />
+        </div>
+      )}
+
+      {tab === "shop" && profile && (
+        <div className="space-y-6 max-w-3xl">
+          {/* Banner & Logo */}
+          <div className="bg-card border border-border rounded-2xl overflow-hidden">
+            <div className="relative h-40 bg-gradient-soft">
+              {profile.shop_banner_url && (
+                <img src={profile.shop_banner_url} alt="" className="w-full h-full object-cover" />
+              )}
+              <label className="absolute bottom-2 right-2 bg-background/90 backdrop-blur px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer hover:bg-background inline-flex items-center gap-1">
+                <Upload className="h-3 w-3" /> Banner yüklə
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) =>
+                    e.target.files?.[0] && uploadShopImage(e.target.files[0], "shop_banner_url")
+                  }
+                />
+              </label>
+              <div className="absolute -bottom-10 left-6 w-20 h-20 rounded-2xl border-4 border-card bg-secondary overflow-hidden">
+                {profile.shop_logo_url && (
+                  <img src={profile.shop_logo_url} alt="" className="w-full h-full object-cover" />
+                )}
+              </div>
+            </div>
+            <div className="pt-12 pb-4 px-6">
+              <label className="text-xs text-primary font-semibold cursor-pointer inline-flex items-center gap-1 hover:underline">
+                <Upload className="h-3 w-3" /> Loqo dəyişdir
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) =>
+                    e.target.files?.[0] && uploadShopImage(e.target.files[0], "shop_logo_url")
+                  }
+                />
+              </label>
+            </div>
+          </div>
+
+          {/* Stats preview */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div className="bg-card border border-border rounded-2xl p-4 flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                <Package className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <div className="text-xs text-muted-foreground">Məhsul</div>
+                <div className="font-black text-lg">{products.length}</div>
+              </div>
+            </div>
+            <div className="bg-card border border-border rounded-2xl p-4 flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                <Heart className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <div className="text-xs text-muted-foreground">İzləyici</div>
+                <div className="font-black text-lg flex items-center gap-1">
+                  {myFollowers}
+                  {myFollowers >= 100 && (
+                    <BadgeCheck className="h-4 w-4 text-blue-500 fill-blue-500" />
+                  )}
+                </div>
+              </div>
+            </div>
+            <div className="bg-card border border-border rounded-2xl p-4 flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                <Calendar className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <div className="text-xs text-muted-foreground">Fəaliyyət</div>
+                <div className="font-black text-lg">
+                  {profile.created_at
+                    ? `${Math.floor((Date.now() - new Date(profile.created_at).getTime()) / (365.25 * 24 * 60 * 60 * 1000))} il`
+                    : "—"}
+                </div>
+              </div>
+            </div>
+            <div className="bg-card border border-border rounded-2xl p-4 flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                <Star className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <div className="text-xs text-muted-foreground">Reytinq</div>
+                <div className="font-black text-lg">
+                  {products.length > 0
+                    ? (
+                        products.reduce(
+                          (s, p) => s + Number(p.rating) * (p.reviews_count || 0),
+                          0,
+                        ) /
+                        Math.max(
+                          1,
+                          products.reduce((s, p) => s + (p.reviews_count || 0), 0),
+                        )
+                      ).toFixed(1)
+                    : "0.0"}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Form */}
+          <div className="bg-card border border-border rounded-2xl p-6 space-y-4">
+            <h3 className="font-bold text-lg flex items-center gap-2">
+              <Store className="h-5 w-5 text-primary" /> Mağaza məlumatları
+            </h3>
+            <div className="grid sm:grid-cols-2 gap-3">
+              <div className="sm:col-span-2">
+                <label className="text-sm font-semibold">Mağaza adı *</label>
+                <input
+                  value={profile.shop_name ?? ""}
+                  onChange={(e) => setProfile({ ...profile, shop_name: e.target.value })}
+                  maxLength={100}
+                  className="mt-1 w-full h-11 px-3 rounded-lg border border-input bg-background"
+                />
+              </div>
+              <div className="sm:col-span-2">
+                <label className="text-sm font-semibold">Mağaza haqqında</label>
+                <textarea
+                  value={profile.shop_description ?? ""}
+                  onChange={(e) => setProfile({ ...profile, shop_description: e.target.value })}
+                  maxLength={1000}
+                  placeholder="Müştərilərinizə özünüzdən bəhs edin..."
+                  className="mt-1 w-full px-3 py-2 rounded-lg border border-input bg-background min-h-24"
+                />
+              </div>
+              <div>
+                <label className="text-sm font-semibold">Tam ad</label>
+                <input
+                  value={profile.full_name ?? ""}
+                  onChange={(e) => setProfile({ ...profile, full_name: e.target.value })}
+                  maxLength={100}
+                  className="mt-1 w-full h-11 px-3 rounded-lg border border-input bg-background"
+                />
+              </div>
+              <div>
+                <label className="text-sm font-semibold">Telefon</label>
+                <input
+                  value={profile.phone ?? ""}
+                  onChange={(e) => setProfile({ ...profile, phone: e.target.value })}
+                  maxLength={20}
+                  placeholder="+994 ..."
+                  className="mt-1 w-full h-11 px-3 rounded-lg border border-input bg-background"
+                />
+              </div>
+              <div>
+                <label className="text-sm font-semibold">E-poçt (mağaza)</label>
+                <input
+                  type="email"
+                  value={profile.shop_email ?? ""}
+                  onChange={(e) => setProfile({ ...profile, shop_email: e.target.value })}
+                  maxLength={200}
+                  placeholder="info@magaza.az"
+                  className="mt-1 w-full h-11 px-3 rounded-lg border border-input bg-background"
+                />
+              </div>
+              <div>
+                <label className="text-sm font-semibold">Şəhər</label>
+                <CitySelect
+                  value={profile.shop_city ?? ""}
+                  onChange={(v) => setProfile({ ...profile, shop_city: v })}
+                  includeEmpty
+                  placeholder="Şəhər seçin"
+                  className="mt-1 w-full h-11"
+                />
+              </div>
+              <div className="sm:col-span-2">
+                <label className="text-sm font-semibold">Ünvan</label>
+                <input
+                  value={profile.shop_address ?? ""}
+                  onChange={(e) => setProfile({ ...profile, shop_address: e.target.value })}
+                  maxLength={300}
+                  placeholder="H. Əliyev pr. 12"
+                  className="mt-1 w-full h-11 px-3 rounded-lg border border-input bg-background"
+                />
+              </div>
+            </div>
+
+            <div className="pt-4 mt-2 border-t border-border">
+              <h4 className="font-bold text-base mb-1">💳 Ödəniş hesabı (payout)</h4>
+              <p className="text-xs text-muted-foreground mb-3">
+                Sifariş tamamlandıqdan 3 gün sonra satış məbləği (komissiya çıxılmaqla) avtomatik bu
+                hesaba köçürülür. IBAN tövsiyə olunur — limit yoxdur və qanuni sənədləşmə üçün
+                uyğundur.
+              </p>
+              <div className="grid sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="text-sm font-semibold">Üstün ödəniş üsulu</label>
+                  <select
+                    value={profile.payout_method ?? "iban"}
+                    onChange={(e) => setProfile({ ...profile, payout_method: e.target.value })}
+                    className="mt-1 w-full h-11 px-3 rounded-lg border border-input bg-background"
+                  >
+                    <option value="iban">IBAN (bank hesabı)</option>
+                    <option value="card">Kart nömrəsi</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-sm font-semibold">Hesab sahibi</label>
+                  <input
+                    value={profile.account_holder ?? ""}
+                    onChange={(e) =>
+                      setProfile({ ...profile, account_holder: e.target.value.toUpperCase() })
+                    }
+                    maxLength={100}
+                    placeholder="ADI SOYADI / ŞİRKƏT ADI"
+                    className="mt-1 w-full h-11 px-3 rounded-lg border border-input bg-background uppercase"
+                  />
+                </div>
+                <div className="sm:col-span-2">
+                  <label className="text-sm font-semibold">IBAN</label>
+                  <input
+                    value={profile.iban ?? ""}
+                    onChange={(e) =>
+                      setProfile({
+                        ...profile,
+                        iban: e.target.value.toUpperCase().replace(/[^A-Z0-9 ]/g, ""),
+                      })
+                    }
+                    maxLength={34}
+                    placeholder="AZ21 NABZ 0000 0000 1370 1000 1944"
+                    className="mt-1 w-full h-11 px-3 rounded-lg border border-input bg-background tracking-wider"
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    28 simvol, AZ ilə başlayır. Bütün banklarda işləyir.
+                  </p>
+                </div>
+                <div>
+                  <label className="text-sm font-semibold">Bank adı</label>
+                  <input
+                    value={profile.bank_name ?? ""}
+                    onChange={(e) => setProfile({ ...profile, bank_name: e.target.value })}
+                    maxLength={100}
+                    placeholder="Kapital Bank, ABB, ..."
+                    className="mt-1 w-full h-11 px-3 rounded-lg border border-input bg-background"
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-semibold">Kart nömrəsi (alternativ)</label>
+                  <input
+                    value={profile.card_number ?? ""}
+                    onChange={(e) => {
+                      const v = e.target.value.replace(/\D/g, "").slice(0, 19);
+                      const f = v.replace(/(\d{4})/g, "$1 ").trim();
+                      setProfile({ ...profile, card_number: f });
+                    }}
+                    maxLength={23}
+                    placeholder="4169 7388 0000 0000"
+                    className="mt-1 w-full h-11 px-3 rounded-lg border border-input bg-background tracking-wider"
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    m10, LeoBank, Birbank və s. Kiçik məbləğlər üçün uyğundur (gündəlik limit ola
+                    bilər).
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <button
+              onClick={saveShop}
+              disabled={savingShop}
+              className="bg-primary text-primary-foreground rounded-lg px-6 h-11 font-bold hover:bg-primary/90 disabled:opacity-60"
+            >
+              {savingShop ? "..." : "Mağazanı yadda saxla"}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {tab === "business_modules" && (
+        <BusinessModuleSelector
+          selectedCodes={selectedModuleCodes}
+          onSaved={setSelectedModuleCodes}
+        />
+      )}
+
+      {tab === "reservations" && (
+        <SellerReservations sellerId={user.id} selectedModuleCodes={selectedModuleCodes} />
+      )}
+
+      {editing && (
+        <div
+          className="fixed inset-0 z-50 bg-foreground/40 flex items-center justify-center p-4"
+          onClick={() => setEditing(null)}
+        >
+          <div
+            className="bg-card rounded-2xl max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-xl font-bold">
+                {editing.id ? "Məhsulu redaktə et" : "Yeni məhsul"}
+              </h3>
+              <button onClick={() => setEditing(null)} className="p-1 hover:bg-secondary rounded">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <div className="space-y-4">
+              {/* Images */}
+              <div>
+                <label className="text-sm font-semibold mb-2 block">
+                  Şəkillər (1-dən 10-a qədər, ilk şəkil əsas olacaq) —{" "}
+                  {(editing.images ?? []).length}/10
+                </label>
+                <div className="grid grid-cols-4 gap-2 mb-2">
+                  {(editing.images ?? []).map((url, idx) => (
+                    <div
+                      key={idx}
+                      className="relative aspect-square bg-secondary rounded-lg overflow-hidden group"
+                    >
+                      <img src={url} alt="" className="w-full h-full object-cover" />
+                      {idx === 0 && (
+                        <span className="absolute top-1 left-1 bg-primary text-primary-foreground text-[10px] px-1.5 py-0.5 rounded font-bold">
+                          Əsas
+                        </span>
+                      )}
+                      <button
+                        onClick={() => removeImage(url)}
+                        className="absolute top-1 right-1 bg-destructive text-destructive-foreground rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </div>
+                  ))}
+                  <button
+                    onClick={() => fileRef.current?.click()}
+                    disabled={uploading}
+                    className="aspect-square border-2 border-dashed border-border rounded-lg flex flex-col items-center justify-center hover:border-primary hover:bg-secondary/50 transition disabled:opacity-60"
+                  >
+                    {uploading ? (
+                      <span className="text-xs">Yüklənir...</span>
+                    ) : (
+                      <>
+                        <Upload className="h-5 w-5 text-muted-foreground mb-1" />
+                        <span className="text-xs text-muted-foreground">Şəkil əlavə et</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+                <input
+                  ref={fileRef}
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  className="hidden"
+                  onChange={(e) => uploadImages(e.target.files)}
+                />
+                <p className="text-xs text-muted-foreground flex items-center gap-1">
+                  <ImageIcon className="h-3 w-3" /> JPG, PNG, WebP. Maks 5MB.
+                </p>
+              </div>
+
+              {/* Video (max 60 sec) */}
+              <div>
+                <label className="text-sm font-semibold mb-2 block">
+                  🎬 Məhsul videosu (maks. 60 saniyə) — opsional
+                </label>
+                {editing.video_url ? (
+                  <div className="relative rounded-lg overflow-hidden bg-black">
+                    <video src={editing.video_url} controls className="w-full max-h-64" />
+                    <button
+                      onClick={() =>
+                        setEditing({ ...editing, video_url: null, video_duration: null })
+                      }
+                      className="absolute top-2 right-2 bg-destructive text-destructive-foreground rounded-full w-8 h-8 flex items-center justify-center"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                    {editing.video_duration && (
+                      <span className="absolute bottom-2 left-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
+                        {editing.video_duration} san
+                      </span>
+                    )}
+                  </div>
+                ) : (
+                  <label className="border-2 border-dashed border-border rounded-lg p-4 flex flex-col items-center justify-center cursor-pointer hover:border-primary hover:bg-secondary/50 transition">
+                    <Upload className="h-6 w-6 text-muted-foreground mb-2" />
+                    <span className="text-sm text-muted-foreground">
+                      {uploading ? "Yüklənir..." : "Video seçin (MP4, WebM, maks 50MB, 60 san)"}
+                    </span>
+                    <input
+                      type="file"
+                      accept="video/mp4,video/webm,video/quicktime"
+                      className="hidden"
+                      disabled={uploading}
+                      onChange={(e) => uploadVideo(e.target.files?.[0])}
+                    />
+                  </label>
+                )}
+                <p className="text-xs text-muted-foreground mt-1">
+                  Qısa video məhsulun satışını artırır. 60 saniyədən uzun videolar avtomatik rədd
+                  edilir.
+                </p>
+              </div>
+
+              <div>
+                <label className="text-sm font-semibold">Başlıq *</label>
+                <input
+                  value={editing.title ?? ""}
+                  onChange={(e) => setEditing({ ...editing, title: e.target.value })}
+                  placeholder="Məhsulun adı"
+                  maxLength={200}
+                  className="mt-1 w-full h-11 px-3 rounded-lg border border-input bg-background"
+                />
+              </div>
+
+              <div>
+                <label className="text-sm font-semibold">Təsvir</label>
+                <textarea
+                  value={editing.description ?? ""}
+                  onChange={(e) => setEditing({ ...editing, description: e.target.value })}
+                  placeholder="Məhsul haqqında ətraflı məlumat"
+                  maxLength={2000}
+                  className="mt-1 w-full px-3 py-2 rounded-lg border border-input bg-background min-h-24"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-sm font-semibold">Qiymət (₼) *</label>
+                  <input
+                    type="number"
+                    inputMode="decimal"
+                    step="0.01"
+                    value={editing.price ? String(editing.price) : ""}
+                    onChange={(e) =>
+                      setEditing({
+                        ...editing,
+                        price: e.target.value === "" ? 0 : parseFloat(e.target.value) || 0,
+                      })
+                    }
+                    placeholder="0"
+                    className="mt-1 w-full h-11 px-3 rounded-lg border border-input bg-background"
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-semibold">Köhnə qiymət (₼)</label>
+                  <input
+                    type="number"
+                    inputMode="decimal"
+                    step="0.01"
+                    value={editing.old_price ?? ""}
+                    onChange={(e) =>
+                      setEditing({
+                        ...editing,
+                        old_price: e.target.value ? parseFloat(e.target.value) : null,
+                      })
+                    }
+                    placeholder="Endirim üçün"
+                    className="mt-1 w-full h-11 px-3 rounded-lg border border-input bg-background"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-sm font-semibold">Stok *</label>
+                  <input
+                    type="number"
+                    inputMode="numeric"
+                    value={editing.stock ? String(editing.stock) : ""}
+                    onChange={(e) =>
+                      setEditing({
+                        ...editing,
+                        stock: e.target.value === "" ? 0 : parseInt(e.target.value) || 0,
+                      })
+                    }
+                    placeholder="0"
+                    className="mt-1 w-full h-11 px-3 rounded-lg border border-input bg-background"
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-semibold">Marka</label>
+                  <input
+                    value={editing.brand ?? ""}
+                    onChange={(e) => setEditing({ ...editing, brand: e.target.value })}
+                    maxLength={100}
+                    className="mt-1 w-full h-11 px-3 rounded-lg border border-input bg-background"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-sm font-semibold">SKU kodu</label>
+                  <input
                     value={editing.sku ?? ""}
                     onChange={(e) => setEditing({ ...editing, sku: e.target.value })}
                     maxLength={50}
@@ -596,7 +2629,7 @@ export function SellerPanel() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-sm font-semibold">Minimum stok xÉ™bÉ™rdarlÄ±ÄźÄ±</label>
+                  <label className="text-sm font-semibold">Minimum stok xəbərdarlığı</label>
                   <input
                     type="number"
                     inputMode="numeric"
@@ -612,7 +2645,7 @@ export function SellerPanel() {
                   />
                 </div>
                 <div>
-                  <label className="text-sm font-semibold">Ă‡É™ki (kq)</label>
+                  <label className="text-sm font-semibold">Çəki (kq)</label>
                   <input
                     type="number"
                     inputMode="decimal"
@@ -632,7 +2665,7 @@ export function SellerPanel() {
 
               <div>
                 <label className="text-sm font-semibold">Kateqoriya *</label>
-                <p className="mb-2 text-xs text-muted-foreground">KateqoriyanÄ± É™vvÉ™l seĂ§in â€” uyÄźun xĂĽsusiyyÉ™t vÉ™ variant sahÉ™lÉ™ri avtomatik hazÄ±rlanacaq.</p>
+                <p className="mb-2 text-xs text-muted-foreground">Kateqoriyanı əvvəl seçin — uyğun xüsusiyyət və variant sahələri avtomatik hazırlanacaq.</p>
                 <CategoryCascade
                   categories={categories}
                   value={editing.category_id ?? null}
@@ -643,9 +2676,9 @@ export function SellerPanel() {
               <div className="hidden border border-border rounded-xl p-4 space-y-3">
                 <div className="flex items-center justify-between gap-3">
                   <div>
-                    <h4 className="font-bold text-sm">MÉ™hsul variantlarÄ±</h4>
+                    <h4 className="font-bold text-sm">Məhsul variantları</h4>
                     <p className="text-xs text-muted-foreground">
-                      RÉ™ng, Ă¶lĂ§ĂĽ vÉ™ ya baĹźqa seĂ§imlÉ™r ĂĽĂ§ĂĽn ayrÄ±ca SKU, stok vÉ™ qiymÉ™t yaradÄ±n.
+                      Rəng, ölçü və ya başqa seçimlər üçün ayrıca SKU, stok və qiymət yaradın.
                     </p>
                   </div>
                   <button
@@ -657,7 +2690,7 @@ export function SellerPanel() {
                           ...(editing.variants ?? []),
                           {
                             attributes: { color: "" },
-                            name: "RÉ™ng",
+                            name: "Rəng",
                             value: "",
                             sku: "",
                             stock: 0,
@@ -668,7 +2701,7 @@ export function SellerPanel() {
                     }
                     className="px-3 py-2 rounded-lg bg-secondary text-xs font-bold"
                   >
-                    <Plus className="h-3.5 w-3.5 inline mr-1" /> Variant É™lavÉ™ et
+                    <Plus className="h-3.5 w-3.5 inline mr-1" /> Variant əlavə et
                   </button>
                 </div>
                 {(editing.variants ?? []).map((variant, index) => (
@@ -683,7 +2716,7 @@ export function SellerPanel() {
                         next[index] = { ...variant, name: e.target.value };
                         setEditing({ ...editing, variants: next });
                       }}
-                      placeholder="Tip: RÉ™ng"
+                      placeholder="Tip: Rəng"
                       className="h-9 px-2 rounded-lg border border-input bg-background text-xs"
                     />
                     <input
@@ -693,7 +2726,7 @@ export function SellerPanel() {
                         next[index] = { ...variant, value: e.target.value };
                         setEditing({ ...editing, variants: next });
                       }}
-                      placeholder="DÉ™yÉ™r: Qara"
+                      placeholder="Dəyər: Qara"
                       className="h-9 px-2 rounded-lg border border-input bg-background text-xs"
                     />
                     <input
@@ -734,7 +2767,7 @@ export function SellerPanel() {
                         };
                         setEditing({ ...editing, variants: next });
                       }}
-                      placeholder="QiymÉ™t"
+                      placeholder="Qiymət"
                       className="h-9 px-2 rounded-lg border border-input bg-background text-xs"
                     />
                     <button
@@ -748,7 +2781,7 @@ export function SellerPanel() {
                         })
                       }
                       className="h-9 rounded-lg text-destructive hover:bg-destructive/10"
-                      title="VariantÄ± sil"
+                      title="Variantı sil"
                     >
                       <Trash2 className="h-4 w-4 mx-auto" />
                     </button>
@@ -782,11 +2815,11 @@ export function SellerPanel() {
 
               <div className="border-t border-border pt-4">
                 <h4 className="text-sm font-bold mb-3 flex items-center gap-2">
-                  đźšš Ă‡atdÄ±rÄ±lma ĹźÉ™rtlÉ™ri
+                  🚚 Çatdırılma şərtləri
                 </h4>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="text-xs font-semibold text-muted-foreground">Min gĂĽn</label>
+                    <label className="text-xs font-semibold text-muted-foreground">Min gün</label>
                     <input
                       type="number"
                       inputMode="numeric"
@@ -804,7 +2837,7 @@ export function SellerPanel() {
                     />
                   </div>
                   <div>
-                    <label className="text-xs font-semibold text-muted-foreground">Max gĂĽn</label>
+                    <label className="text-xs font-semibold text-muted-foreground">Max gün</label>
                     <input
                       type="number"
                       inputMode="numeric"
@@ -824,10 +2857,10 @@ export function SellerPanel() {
                 </div>
                 <div className="mt-3">
                   <label className="text-xs font-semibold text-muted-foreground">
-                    Ă‡atdÄ±rÄ±lma ĹźÉ™hÉ™ri
+                    Çatdırılma şəhəri
                   </label>
                   <CitySelect
-                    value={editing.delivery_city ?? "BakÄ±"}
+                    value={editing.delivery_city ?? "Bakı"}
                     onChange={(v) => setEditing({ ...editing, delivery_city: v })}
                     className="mt-1 w-full"
                   />
@@ -840,7 +2873,7 @@ export function SellerPanel() {
                       onChange={(e) => setEditing({ ...editing, free_shipping: e.target.checked })}
                       className="w-4 h-4 accent-primary"
                     />
-                    <span className="text-xs font-semibold">đź†“ Pulsuz Ă§atdÄ±rÄ±lma</span>
+                    <span className="text-xs font-semibold">🆓 Pulsuz çatdırılma</span>
                   </label>
                   <label className="flex items-center gap-2 cursor-pointer p-2 rounded-lg border border-border hover:border-primary">
                     <input
@@ -849,18 +2882,18 @@ export function SellerPanel() {
                       onChange={(e) => setEditing({ ...editing, fast_delivery: e.target.checked })}
                       className="w-4 h-4 accent-primary"
                     />
-                    <span className="text-xs font-semibold">âšˇ 24 saat É™rzindÉ™</span>
+                    <span className="text-xs font-semibold">⚡ 24 saat ərzində</span>
                   </label>
                 </div>
                 <div className="mt-3">
-                  <label className="text-xs font-semibold text-muted-foreground">VÉ™ziyyÉ™ti</label>
+                  <label className="text-xs font-semibold text-muted-foreground">Vəziyyəti</label>
                   <select
                     value={editing.condition ?? "new"}
                     onChange={(e) => setEditing({ ...editing, condition: e.target.value })}
                     className="mt-1 w-full h-10 px-3 rounded-lg border border-input bg-background"
                   >
                     <option value="new">Yeni</option>
-                    <option value="used">Ä°ĹźlÉ™nmiĹź</option>
+                    <option value="used">İşlənmiş</option>
                   </select>
                 </div>
                 <label className="mt-3 flex items-center gap-2 cursor-pointer p-3 rounded-lg border-2 border-warning/40 bg-warning/5 hover:border-warning">
@@ -871,14 +2904,14 @@ export function SellerPanel() {
                     className="w-4 h-4 accent-warning"
                   />
                   <span className="text-sm font-bold">
-                    đźŽ UduĹźlu mÉ™hsul (Ă¶n sÉ™hifÉ™dÉ™ xĂĽsusi bĂ¶lmÉ™dÉ™ gĂ¶rĂĽnsĂĽn)
+                    🎁 Uduşlu məhsul (ön səhifədə xüsusi bölmədə görünsün)
                   </span>
                 </label>
               </div>
 
               <div className="rounded-lg border border-warning/40 bg-warning/5 p-3 text-sm">
-                <strong>Admin yoxlamasÄ±:</strong> mÉ™hsul yadda saxlandÄ±qdan sonra yoxlamaya
-                gĂ¶ndÉ™rilÉ™cÉ™k vÉ™ yalnÄ±z tÉ™sdiqdÉ™n sonra kataloqda gĂ¶rĂĽnÉ™cÉ™k.
+                <strong>Admin yoxlaması:</strong> məhsul yadda saxlandıqdan sonra yoxlamaya
+                göndəriləcək və yalnız təsdiqdən sonra kataloqda görünəcək.
               </div>
 
               <div className="flex gap-2 pt-2">
@@ -886,7 +2919,7 @@ export function SellerPanel() {
                   onClick={() => setEditing(null)}
                   className="flex-1 h-11 border border-border rounded-lg font-bold hover:bg-secondary"
                 >
-                  LÉ™Äźv et
+                  Ləğv et
                 </button>
                 <button
                   onClick={save}
@@ -911,7 +2944,7 @@ export function SellerPanel() {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between mb-4">
-              <h3 className="font-bold text-lg">MÉ™hsul QR kodu</h3>
+              <h3 className="font-bold text-lg">Məhsul QR kodu</h3>
               <button onClick={() => setQrProduct(null)} className="p-1 hover:bg-secondary rounded">
                 <X className="h-5 w-5" />
               </button>
@@ -930,7 +2963,7 @@ export function SellerPanel() {
                 onClick={downloadQR}
                 className="flex-1 min-w-[120px] bg-primary text-primary-foreground px-3 py-2 rounded-lg font-bold hover:bg-primary/90 inline-flex items-center justify-center gap-2 text-sm"
               >
-                <Download className="h-4 w-4" /> PNG yĂĽklÉ™
+                <Download className="h-4 w-4" /> PNG yüklə
               </button>
               <button
                 onClick={() => {
@@ -949,11 +2982,11 @@ export function SellerPanel() {
   @media print { .noprint { display:none; } }
   .btn { background:#000; color:#fff; border:0; padding:8px 16px; border-radius:6px; cursor:pointer; font-weight:700; }
 </style></head><body>
-<div class="noprint" style="text-align:center;margin-bottom:8px;"><button class="btn" onclick="window.print()">đź–¨ď¸Ź Ă‡ap et</button></div>
+<div class="noprint" style="text-align:center;margin-bottom:8px;"><button class="btn" onclick="window.print()">🖨️ Çap et</button></div>
 <div class="lbl">
   <div class="t">${qrProduct.title}</div>
   ${qrProduct.brand ? `<div class="b">${qrProduct.brand}</div>` : ""}
-  <div class="p">${Number(qrProduct.price).toFixed(2)} â‚Ľ</div>
+  <div class="p">${Number(qrProduct.price).toFixed(2)} ₼</div>
   <div class="qr"><img src="${qrDataUrl}" alt="QR"/></div>
   ${qrProduct.sku ? `<div class="sku">SKU: ${qrProduct.sku}</div>` : ""}
 </div>
@@ -961,7 +2994,7 @@ export function SellerPanel() {
 </body></html>`;
                   const w = window.open("", "_blank", "width=380,height=520");
                   if (!w) {
-                    toast.error("Pop-up bloklanÄ±b");
+                    toast.error("Pop-up bloklanıb");
                     return;
                   }
                   w.document.write(html);
@@ -969,13 +3002,13 @@ export function SellerPanel() {
                 }}
                 className="flex-1 min-w-[120px] bg-secondary text-foreground px-3 py-2 rounded-lg font-bold hover:bg-secondary/80 inline-flex items-center justify-center gap-2 text-sm"
               >
-                <QrCode className="h-4 w-4" /> Etiket Ă§ap et
+                <QrCode className="h-4 w-4" /> Etiket çap et
               </button>
               <button
                 onClick={() => setQrProduct(null)}
                 className="px-3 py-2 rounded-lg border border-border hover:bg-secondary text-sm"
               >
-                BaÄźla
+                Bağla
               </button>
             </div>
           </div>
@@ -984,4 +3017,3 @@ export function SellerPanel() {
     </PanelLayout>
   );
 }
-
