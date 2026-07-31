@@ -18,7 +18,18 @@ export interface Filters {
   maxDeliveryDays?: number; // 1, 3, 7, 14
   city?: string; // delivery city
   condition?: "new" | "used"; // product condition
+  attributeValues?: Record<string, string>;
   sort: SortKey;
+}
+
+export interface DynamicCatalogAttribute {
+  attribute_id: string;
+  code: string;
+  name_az: string;
+  data_type: string;
+  unit: string | null;
+  is_filterable: boolean;
+  options: Array<{ id: string; value: string; label_az: string }>;
 }
 
 import { AZ_CITY_NAMES } from "@/lib/azCities";
@@ -29,10 +40,12 @@ export function CatalogFilters({
   brands,
   value,
   onChange,
+  dynamicAttributes = [],
 }: {
   brands: string[];
   value: Filters;
   onChange: (f: Filters) => void;
+  dynamicAttributes?: DynamicCatalogAttribute[];
 }) {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
@@ -80,6 +93,7 @@ export function CatalogFilters({
     if (value.maxDeliveryDays) n++;
     if (value.city) n++;
     if (value.condition) n++;
+    n += Object.values(value.attributeValues ?? {}).filter(Boolean).length;
     return n;
   }, [value]);
 
@@ -168,6 +182,26 @@ export function CatalogFilters({
           </button>
         </div>
       </div>
+
+      {dynamicAttributes.filter((attribute) => attribute.is_filterable).length > 0 && (
+        <div className="space-y-4 border-t pt-4">
+          <div className="text-xs font-black uppercase tracking-wide text-primary">Kateqoriya xüsusiyyətləri</div>
+          {dynamicAttributes.filter((attribute) => attribute.is_filterable).map((attribute) => {
+            const selected = value.attributeValues?.[attribute.code] ?? "";
+            const update = (next: string) => onChange({ ...value, attributeValues: { ...(value.attributeValues ?? {}), [attribute.code]: next } });
+            return <label key={attribute.attribute_id} className="block space-y-1.5">
+              <span className="text-xs font-bold uppercase text-muted-foreground">{attribute.name_az}{attribute.unit ? ` (${attribute.unit})` : ""}</span>
+              {attribute.data_type === "boolean" ? (
+                <select value={selected} onChange={(event) => update(event.target.value)} className="h-10 w-full rounded-lg border bg-background px-3 text-sm"><option value="">Hamısı</option><option value="true">Bəli</option><option value="false">Xeyr</option></select>
+              ) : attribute.options?.length ? (
+                <select value={selected} onChange={(event) => update(event.target.value)} className="h-10 w-full rounded-lg border bg-background px-3 text-sm"><option value="">Hamısı</option>{attribute.options.map((option) => <option key={option.id} value={option.label_az}>{option.label_az}</option>)}</select>
+              ) : (
+                <input type={attribute.data_type === "number" ? "number" : "text"} value={selected} onChange={(event) => update(event.target.value)} placeholder="Dəyər" className="h-10 w-full rounded-lg border bg-background px-3 text-sm" />
+              )}
+            </label>;
+          })}
+        </div>
+      )}
 
       <div className="space-y-2">
         <label className="flex items-center gap-2 cursor-pointer select-none">

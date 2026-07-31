@@ -1,6 +1,9 @@
 export interface GuestCartItem {
   productId: string;
   quantity: number;
+  variantId?: string | null;
+  selectedAttributes?: Record<string, string>;
+  unitPrice?: number | null;
 }
 
 const STORAGE_KEY = "egshop_guest_cart";
@@ -31,24 +34,31 @@ function writeGuestCart(items: GuestCartItem[]) {
   window.dispatchEvent(new CustomEvent(CHANGE_EVENT));
 }
 
-export function addGuestCartItem(productId: string, quantity = 1) {
+export function addGuestCartItem(productId: string, quantity = 1, variant?: { id: string; attributes: Record<string, string>; price: number }) {
   const items = readGuestCart();
-  const existing = items.find((item) => item.productId === productId);
+  const variantId = variant?.id ?? null;
+  const existing = items.find((item) => item.productId === productId && (item.variantId ?? null) === variantId);
   if (existing) existing.quantity = Math.min(99, existing.quantity + quantity);
-  else items.push({ productId, quantity: Math.min(99, Math.max(1, quantity)) });
+  else items.push({
+    productId,
+    quantity: Math.min(99, Math.max(1, quantity)),
+    variantId,
+    selectedAttributes: variant?.attributes ?? {},
+    unitPrice: variant?.price ?? null,
+  });
   writeGuestCart(items);
 }
 
-export function updateGuestCartItem(productId: string, quantity: number) {
+export function updateGuestCartItem(productId: string, quantity: number, variantId?: string | null) {
   const items = readGuestCart();
-  const item = items.find((entry) => entry.productId === productId);
+  const item = items.find((entry) => entry.productId === productId && (variantId === undefined || (entry.variantId ?? null) === variantId));
   if (!item) return;
   item.quantity = Math.min(99, Math.max(1, quantity));
   writeGuestCart(items);
 }
 
-export function removeGuestCartItem(productId: string) {
-  writeGuestCart(readGuestCart().filter((item) => item.productId !== productId));
+export function removeGuestCartItem(productId: string, variantId?: string | null) {
+  writeGuestCart(readGuestCart().filter((item) => item.productId !== productId || (variantId !== undefined && (item.variantId ?? null) !== variantId)));
 }
 
 export function clearGuestCart() {

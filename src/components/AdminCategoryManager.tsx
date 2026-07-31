@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Edit3, Plus, Search, Star, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
 import { CategoryIcon } from "@/components/CategoryIcon";
+import { AdminCatalogAttributes } from "@/components/AdminCatalogAttributes";
 import { supabase } from "@/integrations/supabase/client";
 
 type Category = {
@@ -280,6 +281,7 @@ export function AdminCategoryManager() {
           </form>
         </div>
       )}
+      <AdminCatalogAttributes />
     </section>
   );
 }

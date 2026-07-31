@@ -86,6 +86,18 @@ interface Product {
   video_url?: string | null; video_duration?: number | null;
   delivery_days_min?: number | null; delivery_days_max?: number | null;
   delivery_city?: string | null; free_shipping?: boolean | null; fast_delivery?: boolean | null;
+  attributes?: Record<string, string | number | boolean> | null;
+}
+
+interface StoreVariant {
+  id: string;
+  sku: string | null;
+  price: number;
+  old_price: number | null;
+  stock: number;
+  image_url: string | null;
+  attributes: Record<string, string>;
+  is_active: boolean;
 }
 
 function ProductPage() {
@@ -115,6 +127,8 @@ function ProductPage() {
   } | null>(null);
   const [isFollowing, setIsFollowing] = useState(false);
   const [followersCount, setFollowersCount] = useState(0);
+  const [storeVariants, setStoreVariants] = useState<StoreVariant[]>([]);
+  const [selectedVariantId, setSelectedVariantId] = useState<string | null>(null);
 
   const sendMessage = async () => {
     if (!user) { navigate({ to: "/auth", search: { role: "buyer" } as never }); return; }
@@ -162,10 +176,14 @@ function ProductPage() {
       if (data) {
         const imgs = ((data as any).images as string[] | null) ?? [];
         setActiveImage((data as any).image_url || imgs[0] || null);
-        const [{ data: seller }, { count }] = await Promise.all([
+        const [{ data: seller }, { count }, { data: variantRows }] = await Promise.all([
           supabase.from("profiles_public").select("id,shop_name,full_name,shop_logo_url,shop_description,shop_city").eq("id", data.seller_id).maybeSingle(),
           supabase.from("shop_followers").select("id", { count: "exact", head: true }).eq("seller_id", data.seller_id),
+          (supabase as any).from("product_variants").select("id,sku,price,old_price,stock,image_url,attributes,is_active").eq("product_id", data.id).eq("is_active", true).order("created_at"),
         ]);
+        const normalizedVariants = ((variantRows ?? []) as StoreVariant[]).map((variant) => ({ ...variant, attributes: variant.attributes ?? {} }));
+        setStoreVariants(normalizedVariants);
+        setSelectedVariantId(normalizedVariants[0]?.id ?? null);
         const name = seller?.shop_name || seller?.full_name || t("product.seller");
         setShopName(name);
         setShopInfo(seller as any);
@@ -180,24 +198,51 @@ function ProductPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, user]);
 
+  const selectedVariant = storeVariants.find((variant) => variant.id === selectedVariantId) ?? null;
+  const effectivePrice = Number(selectedVariant?.price ?? p?.price ?? 0);
+  const effectiveOldPrice = selectedVariant?.old_price ?? p?.old_price ?? null;
+  const effectiveStock = selectedVariant?.stock ?? p?.stock ?? 0;
+  const variantAxes = Array.from(new Set(storeVariants.flatMap((variant) => Object.keys(variant.attributes))));
+  const selectedAttributes = selectedVariant?.attributes ?? {};
+
+  const selectAxisValue = (axis: string, value: string) => {
+    const desired = { ...selectedAttributes, [axis]: value };
+    const exact = storeVariants.find((variant) => variant.attributes[axis] === value && Object.entries(desired).every(([key, selected]) => !variant.attributes[key] || variant.attributes[key] === selected));
+    const fallback = storeVariants.find((variant) => variant.attributes[axis] === value);
+    const next = exact ?? fallback;
+    if (next) {
+      setSelectedVariantId(next.id);
+      if (next.image_url) setActiveImage(next.image_url);
+    }
+  };
+
   const addToCart = async () => {
     if (!p) return;
+    if (storeVariants.length && !selectedVariant) {
+      toast.error("Məhsul variantını seçin");
+      return;
+    }
+    if (effectiveStock <= 0) {
+      toast.error(t("product.outOfStock"));
+      return;
+    }
     if (!user) {
-      addGuestCartItem(p.id);
+      addGuestCartItem(p.id, 1, selectedVariant ? { id: selectedVariant.id, attributes: selectedVariant.attributes, price: effectivePrice } : undefined);
       toast.success(t("product.addedToCart"));
       return;
     }
-    const { data: existing } = await supabase.from("cart_items")
-      .select("id,quantity").eq("user_id", user.id).eq("product_id", p.id).maybeSingle();
+    let existingQuery = (supabase as any).from("cart_items").select("id,quantity").eq("user_id", user.id).eq("product_id", p.id);
+    existingQuery = selectedVariant ? existingQuery.eq("variant_id", selectedVariant.id) : existingQuery.is("variant_id", null);
+    const { data: existing } = await existingQuery.maybeSingle();
     let error: { message: string } | null = null;
     if (existing) {
-      if (existing.quantity >= p.stock) {
-        toast.error(t("product.maxStock", { count: p.stock }));
+      if (existing.quantity >= effectiveStock) {
+        toast.error(t("product.maxStock", { count: effectiveStock }));
         return;
       }
-      ({ error } = await supabase.from("cart_items").update({ quantity: existing.quantity + 1 }).eq("id", existing.id));
+      ({ error } = await (supabase as any).from("cart_items").update({ quantity: existing.quantity + 1 }).eq("id", existing.id));
     } else {
-      ({ error } = await supabase.from("cart_items").insert({ user_id: user.id, product_id: p.id, quantity: 1 }));
+      ({ error } = await (supabase as any).from("cart_items").insert({ user_id: user.id, product_id: p.id, variant_id: selectedVariant?.id ?? null, selected_attributes: selectedAttributes, unit_price: effectivePrice, quantity: 1 }));
     }
     if (error) { toast.error(t("product.cartUpdateError", { message: error.message })); return; }
     toast.success(t("product.addedToCart"));
@@ -364,24 +409,33 @@ function ProductPage() {
             <span className="font-bold">{Number(p.rating).toFixed(1)}</span>
             </span>
             <span className="text-muted-foreground">{t("product.reviewsShort", { count: p.reviews_count })}</span>
-            <span className={`rounded-full px-2.5 py-1 text-xs font-bold ${p.stock > 0 ? "bg-emerald-50 text-emerald-700" : "bg-red-50 text-red-700"}`}>{p.stock > 0 ? t("product.inStock") : t("product.outOfStock")}</span>
+            <span className={`rounded-full px-2.5 py-1 text-xs font-bold ${effectiveStock > 0 ? "bg-emerald-50 text-emerald-700" : "bg-red-50 text-red-700"}`}>{effectiveStock > 0 ? t("product.inStock") : t("product.outOfStock")}</span>
           </div>
+
+          {variantAxes.length > 0 && <div className="space-y-4 rounded-2xl border bg-card p-4">
+            <div><h2 className="font-black">Variant seçimi</h2><p className="text-xs text-muted-foreground">Qiymət və stok seçdiyiniz kombinasiyaya görə yenilənir.</p></div>
+            {variantAxes.map((axis) => {
+              const values = Array.from(new Set(storeVariants.map((variant) => variant.attributes[axis]).filter(Boolean)));
+              return <div key={axis}><div className="mb-2 text-xs font-bold capitalize">{axis.replace(/_/g, " ")}: <span className="text-primary">{selectedAttributes[axis] ?? "Seçilməyib"}</span></div><div className="flex flex-wrap gap-2">{values.map((value) => { const active = selectedAttributes[axis] === value; const available = storeVariants.some((variant) => variant.attributes[axis] === value && variant.stock > 0); return <button type="button" key={value} disabled={!available} onClick={() => selectAxisValue(axis, value)} className={`rounded-xl border px-3 py-2 text-sm font-bold transition disabled:cursor-not-allowed disabled:opacity-35 ${active ? "border-primary bg-primary text-primary-foreground" : "hover:border-primary"}`}>{value}</button>; })}</div></div>;
+            })}
+            {selectedVariant?.sku && <div className="text-xs text-muted-foreground">SKU: <span className="font-mono text-foreground">{selectedVariant.sku}</span></div>}
+          </div>}
 
           <div className="rounded-3xl border border-violet-100 bg-gradient-to-br from-white to-violet-50/70 p-5 sm:p-6 space-y-4 shadow-sm">
             <div className="flex items-baseline gap-3">
-              <span className="text-3xl sm:text-4xl font-black text-slate-950">{formatAZN(p.price)}</span>
-              {p.old_price && Number(p.old_price) > Number(p.price) && (
-                <span className="text-lg text-muted-foreground line-through">{formatAZN(p.old_price)}</span>
+              <span className="text-3xl sm:text-4xl font-black text-slate-950">{formatAZN(effectivePrice)}</span>
+              {effectiveOldPrice && Number(effectiveOldPrice) > effectivePrice && (
+                <span className="text-lg text-muted-foreground line-through">{formatAZN(effectiveOldPrice)}</span>
               )}
             </div>
             <div className="flex gap-2">
               <button
                 onClick={addToCart}
-                disabled={p.stock === 0}
+                disabled={effectiveStock === 0}
                 className="flex-1 min-h-[52px] bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl px-4 py-3.5 font-extrabold flex items-center justify-center gap-2 disabled:opacity-50 transition shadow-lg shadow-primary/15"
               >
                 <ShoppingCart className="h-5 w-5" />
-                {p.stock === 0 ? t("product.outOfStock") : t("product.addToCart")}
+                {effectiveStock === 0 ? t("product.outOfStock") : t("product.addToCart")}
               </button>
               <button
                 onClick={toggleFavorite}
@@ -394,7 +448,7 @@ function ProductPage() {
             </div>
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
               <ShieldCheck className="h-4 w-4 text-emerald-600" /> {t("product.securePurchase")} ·
-              {t("product.stockLabel")}: <span className="font-semibold text-success">{t("product.stockUnits", { count: p.stock })}</span>
+              {t("product.stockLabel")}: <span className="font-semibold text-success">{t("product.stockUnits", { count: effectiveStock })}</span>
             </div>
           </div>
 
@@ -501,6 +555,7 @@ function ProductPage() {
               <p className="text-sm text-foreground/80 whitespace-pre-line">{p.description}</p>
             </div>
           )}
+          {p.attributes && Object.keys(p.attributes).length > 0 && <div className="pt-4 border-t border-border"><h3 className="mb-3 font-bold">Texniki xüsusiyyətlər</h3><dl className="overflow-hidden rounded-xl border text-sm">{Object.entries(p.attributes).map(([key, value], index) => <div key={key} className={`grid grid-cols-2 gap-3 px-3 py-2.5 ${index % 2 ? "bg-secondary/40" : "bg-card"}`}><dt className="text-muted-foreground capitalize">{key.replace(/_/g, " ")}</dt><dd className="font-semibold">{typeof value === "boolean" ? (value ? "Bəli" : "Xeyr") : String(value)}</dd></div>)}</dl></div>}
         </div>
       </div>
 
@@ -511,8 +566,8 @@ function ProductPage() {
       </div>
       <div className="fixed inset-x-0 bottom-[60px] z-40 border-t border-border bg-card/95 px-3 py-2 shadow-[0_-8px_28px_rgba(15,23,42,0.12)] backdrop-blur md:hidden">
         <div className="mx-auto flex max-w-lg items-center gap-3">
-          <div className="min-w-0 flex-1"><span className="block text-[10px] font-bold uppercase text-muted-foreground">{t("common.price")}</span><strong className="block truncate text-lg leading-tight">{formatAZN(p.price)}</strong></div>
-          <button onClick={addToCart} disabled={p.stock === 0} className="inline-flex min-h-11 flex-[1.5] items-center justify-center gap-2 rounded-xl bg-primary px-4 font-extrabold text-primary-foreground disabled:opacity-50"><ShoppingCart className="h-5 w-5" />{p.stock === 0 ? t("product.outOfStock") : t("product.addToCart")}</button>
+          <div className="min-w-0 flex-1"><span className="block text-[10px] font-bold uppercase text-muted-foreground">{t("common.price")}</span><strong className="block truncate text-lg leading-tight">{formatAZN(effectivePrice)}</strong></div>
+          <button onClick={addToCart} disabled={effectiveStock === 0} className="inline-flex min-h-11 flex-[1.5] items-center justify-center gap-2 rounded-xl bg-primary px-4 font-extrabold text-primary-foreground disabled:opacity-50"><ShoppingCart className="h-5 w-5" />{effectiveStock === 0 ? t("product.outOfStock") : t("product.addToCart")}</button>
         </div>
       </div>
       <div className="fixed bottom-20 right-4 z-40 md:bottom-8">

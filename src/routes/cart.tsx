@@ -22,6 +22,11 @@ interface CartRow {
   id: string;
   quantity: number;
   product_id: string;
+  variant_id: string | null;
+  selected_attributes: Record<string, string>;
+  unit_price: number | null;
+  variant_stock?: number | null;
+  variant_image_url?: string | null;
   products: {
     id: string;
     title: string;
@@ -84,13 +89,25 @@ function CartPage() {
       return;
     }
     const productMap = new Map((data ?? []).map((product) => [product.id, product]));
+    const variantIds = guestItems.map((item) => item.variantId).filter((value): value is string => Boolean(value));
+    const { data: variantRows } = variantIds.length
+      ? await (supabase as any).from("product_variants").select("id,stock,price,image_url,attributes").in("id", variantIds)
+      : { data: [] };
+    const variantMap = new Map(((variantRows ?? []) as any[]).map((variant) => [variant.id, variant]));
     setItems(
-      guestItems.map((item) => ({
-        id: `guest:${item.productId}`,
+      guestItems.map((item) => {
+        const variant = item.variantId ? variantMap.get(item.variantId) : null;
+        return {
+        id: `guest:${item.productId}:${item.variantId ?? "base"}`,
         product_id: item.productId,
         quantity: item.quantity,
+        variant_id: item.variantId ?? null,
+        selected_attributes: variant?.attributes ?? item.selectedAttributes ?? {},
+        unit_price: Number(variant?.price ?? item.unitPrice ?? 0) || null,
+        variant_stock: variant?.stock ?? null,
+        variant_image_url: variant?.image_url ?? null,
         products: (productMap.get(item.productId) as CartRow["products"]) ?? null,
-      })),
+      };}),
     );
     setLoading(false);
   };
@@ -99,21 +116,22 @@ function CartPage() {
     const guestItems = readGuestCart();
     if (guestItems.length === 0) return;
     for (const item of guestItems) {
-      const { data: existing } = await supabase
+      let existingQuery = (supabase as any)
         .from("cart_items")
         .select("id,quantity")
         .eq("user_id", userId)
-        .eq("product_id", item.productId)
-        .maybeSingle();
+        .eq("product_id", item.productId);
+      existingQuery = item.variantId ? existingQuery.eq("variant_id", item.variantId) : existingQuery.is("variant_id", null);
+      const { data: existing } = await existingQuery.maybeSingle();
       if (existing) {
         await supabase
           .from("cart_items")
           .update({ quantity: Math.min(99, existing.quantity + item.quantity) })
           .eq("id", existing.id);
       } else {
-        await supabase
+        await (supabase as any)
           .from("cart_items")
-          .insert({ user_id: userId, product_id: item.productId, quantity: item.quantity });
+          .insert({ user_id: userId, product_id: item.productId, variant_id: item.variantId ?? null, selected_attributes: item.selectedAttributes ?? {}, unit_price: item.unitPrice ?? null, quantity: item.quantity });
       }
     }
     clearGuestCart();
@@ -123,7 +141,7 @@ function CartPage() {
     if (!user) return;
     setLoading(true);
     const [cart, prof, settings, pps] = await Promise.all([
-      supabase.from("cart_items").select("id,quantity,product_id").eq("user_id", user.id),
+      (supabase as any).from("cart_items").select("id,quantity,product_id,variant_id,selected_attributes,unit_price").eq("user_id", user.id),
       supabase.from("profiles").select("bonus_balance,full_name,phone").eq("id", user.id).maybeSingle(),
       supabase.from("system_settings").select("bonus_to_azn").limit(1).maybeSingle(),
       supabase
@@ -138,7 +156,7 @@ function CartPage() {
       setLoading(false);
       return;
     }
-    const cartRows = (cart.data ?? []) as { id: string; quantity: number; product_id: string }[];
+    const cartRows = (cart.data ?? []) as { id: string; quantity: number; product_id: string; variant_id: string | null; selected_attributes: Record<string,string>; unit_price: number | null }[];
     const productIds = [...new Set(cartRows.map((row) => row.product_id))];
     const { data: productRows, error: productsError } = productIds.length
       ? await supabase
@@ -152,11 +170,20 @@ function CartPage() {
       return;
     }
     const productMap = new Map((productRows ?? []).map((product) => [product.id, product]));
+    const variantIds = cartRows.map((row) => row.variant_id).filter((value): value is string => Boolean(value));
+    const { data: variantRows } = variantIds.length
+      ? await (supabase as any).from("product_variants").select("id,stock,price,image_url,attributes").in("id", variantIds)
+      : { data: [] };
+    const variantMap = new Map(((variantRows ?? []) as any[]).map((variant) => [variant.id, variant]));
     setItems(
-      cartRows.map((row) => ({
+      cartRows.map((row) => { const variant = row.variant_id ? variantMap.get(row.variant_id) : null; return {
         ...row,
+        selected_attributes: variant?.attributes ?? row.selected_attributes ?? {},
+        unit_price: Number(variant?.price ?? row.unit_price ?? 0) || null,
+        variant_stock: variant?.stock ?? null,
+        variant_image_url: variant?.image_url ?? null,
         products: (productMap.get(row.product_id) as CartRow["products"]) ?? null,
-      })),
+      };}),
     );
     setBonusBalance(prof.data?.bonus_balance ?? 0);
     setProfile({ full_name: prof.data?.full_name ?? null, phone: prof.data?.phone ?? null });
@@ -214,12 +241,13 @@ function CartPage() {
   const updateQty = async (id: string, qty: number) => {
     if (qty < 1) return;
     const item = items.find((i) => i.id === id);
-    if (item?.products && qty > item.products.stock) {
-      toast.error(`Maksimum stok: ${item.products.stock} ədəd`);
+    const availableStock = item?.variant_stock ?? item?.products?.stock ?? 0;
+    if (item?.products && qty > availableStock) {
+      toast.error(`Maksimum stok: ${availableStock} ədəd`);
       return;
     }
     if (!user || id.startsWith("guest:")) {
-      if (item) updateGuestCartItem(item.product_id, qty);
+      if (item) updateGuestCartItem(item.product_id, qty, item.variant_id);
       await loadGuest();
       return;
     }
@@ -230,7 +258,7 @@ function CartPage() {
   const remove = async (id: string) => {
     const item = items.find((i) => i.id === id);
     if (!user || id.startsWith("guest:")) {
-      if (item) removeGuestCartItem(item.product_id);
+      if (item) removeGuestCartItem(item.product_id, item.variant_id);
       await loadGuest();
       return;
     }
@@ -239,7 +267,7 @@ function CartPage() {
   };
 
   const subtotal = items.reduce(
-    (s, it) => s + (it.products ? Number(it.products.price) * it.quantity : 0),
+    (s, it) => s + (it.products ? Number(it.unit_price ?? it.products.price) * it.quantity : 0),
     0,
   );
   const total = subtotal;
@@ -321,15 +349,18 @@ function CartPage() {
         product_id: i.products!.id,
         seller_id: i.products!.seller_id,
         title: i.products!.title,
-        price: i.products!.price,
+        price: Number(i.unit_price ?? i.products!.price),
         quantity: i.quantity,
-        image_url: i.products!.image_url,
+        image_url: i.variant_image_url || i.products!.image_url,
+        variant_id: i.variant_id,
+        variant_sku: null,
+        variant_attributes: i.selected_attributes,
         pickup_point_id: chosenPvzId,
         customer_name: finalRecipientName,
         customer_email: finalRecipientEmail,
         customer_phone: finalRecipientPhone,
       }));
-    const { error: itemError } = await supabase.from("order_items").insert(orderItems);
+    const { error: itemError } = await (supabase as any).from("order_items").insert(orderItems);
     if (itemError) {
       toast.error(`Sifariş məhsulları əlavə olunmadı: ${itemError.message}`);
       setPlacing(false);
@@ -375,9 +406,9 @@ function CartPage() {
                       params={{ id: it.products.id }}
                       className="w-24 h-24 bg-secondary rounded-xl overflow-hidden shrink-0"
                     >
-                      {it.products.image_url && (
+                      {(it.variant_image_url || it.products.image_url) && (
                         <img
-                          src={it.products.image_url}
+                          src={it.variant_image_url || it.products.image_url || ""}
                           alt={it.products.title}
                           className="w-full h-full object-cover"
                         />
@@ -392,8 +423,17 @@ function CartPage() {
                         {it.products.title}
                       </Link>
                       <div className="text-lg font-extrabold mt-1">
-                        {formatAZN(Number(it.products.price) * it.quantity)}
+                        {formatAZN(Number(it.unit_price ?? it.products.price) * it.quantity)}
                       </div>
+                      {Object.keys(it.selected_attributes ?? {}).length > 0 && (
+                        <div className="mt-1 flex flex-wrap gap-1">
+                          {Object.entries(it.selected_attributes).map(([key, value]) => (
+                            <span key={key} className="rounded-full bg-secondary px-2 py-0.5 text-[10px] text-muted-foreground">
+                              <b className="capitalize">{key.replace(/_/g, " ")}</b>: {value}
+                            </span>
+                          ))}
+                        </div>
+                      )}
                       <div className="flex items-center gap-3 mt-2">
                         <div className="flex items-center border border-border rounded-lg">
                           <button

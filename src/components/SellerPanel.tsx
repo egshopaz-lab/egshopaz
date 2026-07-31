@@ -98,6 +98,28 @@ interface Product {
   category_id: string | null;
   brand: string | null;
   description: string | null;
+  short_description?: string | null;
+  model?: string | null;
+  gtin?: string | null;
+  manufacturer?: string | null;
+  origin_country?: string | null;
+  warranty_months?: number | null;
+  item_state?: "new" | "refurbished" | "used" | null;
+  currency?: string | null;
+  tax_percent?: number | null;
+  wholesale_price?: number | null;
+  discount_starts_at?: string | null;
+  discount_ends_at?: string | null;
+  unlimited_stock?: boolean | null;
+  allow_preorder?: boolean | null;
+  length_cm?: number | null;
+  width_cm?: number | null;
+  height_cm?: number | null;
+  shipping_price?: number | null;
+  seo_title?: string | null;
+  meta_description?: string | null;
+  url_slug?: string | null;
+  keywords?: string[] | null;
   sku: string | null;
   barcode?: string | null;
   min_stock?: number | null;
@@ -129,20 +151,6 @@ interface Category {
   icon?: string | null;
 }
 
-function getCategoryContext(categories: Category[], categoryId: string | null | undefined) {
-  if (!categoryId) return "";
-  const values: string[] = [];
-  const visited = new Set<string>();
-  let current = categories.find((category) => category.id === categoryId);
-  while (current && !visited.has(current.id)) {
-    visited.add(current.id);
-    values.push(current.name, current.name_ru ?? "", current.name_en ?? "", current.slug ?? "");
-    current = current.parent_id
-      ? categories.find((category) => category.id === current?.parent_id)
-      : undefined;
-  }
-  return values.filter(Boolean).join(" ");
-}
 interface OrderItem {
   id: string;
   title: string;
@@ -954,12 +962,34 @@ export function SellerPanel() {
       is_giveaway: !!editing.is_giveaway,
       video_url: editing.video_url ?? null,
       video_duration: editing.video_duration ?? null,
+      short_description: editing.short_description?.trim() || null,
+      model: editing.model?.trim() || null,
+      gtin: editing.gtin?.trim() || null,
+      manufacturer: editing.manufacturer?.trim() || null,
+      origin_country: editing.origin_country?.trim() || null,
+      warranty_months: editing.warranty_months == null ? null : Number(editing.warranty_months),
+      item_state: editing.item_state || "new",
+      currency: editing.currency || "AZN",
+      tax_percent: Number(editing.tax_percent ?? 0),
+      wholesale_price: editing.wholesale_price == null ? null : Number(editing.wholesale_price),
+      discount_starts_at: editing.discount_starts_at || null,
+      discount_ends_at: editing.discount_ends_at || null,
+      unlimited_stock: !!editing.unlimited_stock,
+      allow_preorder: !!editing.allow_preorder,
+      length_cm: editing.length_cm == null ? null : Number(editing.length_cm),
+      width_cm: editing.width_cm == null ? null : Number(editing.width_cm),
+      height_cm: editing.height_cm == null ? null : Number(editing.height_cm),
+      shipping_price: editing.shipping_price == null ? null : Number(editing.shipping_price),
+      seo_title: editing.seo_title?.trim() || null,
+      meta_description: editing.meta_description?.trim() || null,
+      url_slug: editing.url_slug?.trim() || null,
+      keywords: editing.keywords ?? [],
       attributes: (editing.attributes ?? {}) as never,
       variants: (editing.variants ?? []) as never,
     };
 
     if (editing.id) {
-      const { error } = await supabase.from("products").update(data).eq("id", editing.id);
+      const { error } = await (supabase as any).from("products").update(data).eq("id", editing.id);
       if (error) {
         console.error("Product update error:", error);
         toast.error("Yadda saxlanmadı: " + (error.message || "naməlum xəta"));
@@ -967,7 +997,7 @@ export function SellerPanel() {
       }
       toast.success("Dəyişikliklər yoxlamaya göndərildi");
     } else {
-      const { error } = await supabase.from("products").insert(data);
+      const { error } = await (supabase as any).from("products").insert(data);
       if (error) {
         console.error("Product insert error:", error);
         toast.error("Əlavə olunmadı: " + (error.message || "naməlum xəta"));
@@ -2537,6 +2567,20 @@ export function SellerPanel() {
                 />
               </div>
 
+              <div>
+                <label className="text-sm font-semibold">Qısa təsvir</label>
+                <input value={editing.short_description ?? ""} onChange={(e) => setEditing({ ...editing, short_description: e.target.value })} maxLength={300} placeholder="Kataloq kartında görünəcək qısa məlumat" className="mt-1 h-11 w-full rounded-lg border border-input bg-background px-3" />
+              </div>
+
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                <label className="text-sm font-semibold">Model<input value={editing.model ?? ""} onChange={(e) => setEditing({ ...editing, model: e.target.value })} className="mt-1 h-11 w-full rounded-lg border bg-background px-3 font-normal" /></label>
+                <label className="text-sm font-semibold">İstehsalçı<input value={editing.manufacturer ?? ""} onChange={(e) => setEditing({ ...editing, manufacturer: e.target.value })} className="mt-1 h-11 w-full rounded-lg border bg-background px-3 font-normal" /></label>
+                <label className="text-sm font-semibold">Mənşə ölkəsi<input value={editing.origin_country ?? ""} onChange={(e) => setEditing({ ...editing, origin_country: e.target.value })} className="mt-1 h-11 w-full rounded-lg border bg-background px-3 font-normal" /></label>
+                <label className="text-sm font-semibold">GTIN<input value={editing.gtin ?? ""} onChange={(e) => setEditing({ ...editing, gtin: e.target.value.replace(/\s/g, "") })} className="mt-1 h-11 w-full rounded-lg border bg-background px-3 font-mono font-normal" /></label>
+                <label className="text-sm font-semibold">Zəmanət (ay)<input type="number" min={0} value={editing.warranty_months ?? ""} onChange={(e) => setEditing({ ...editing, warranty_months: e.target.value ? Number(e.target.value) : null })} className="mt-1 h-11 w-full rounded-lg border bg-background px-3 font-normal" /></label>
+                <label className="text-sm font-semibold">Məhsulun vəziyyəti<select value={editing.item_state ?? "new"} onChange={(e) => setEditing({ ...editing, item_state: e.target.value as Product["item_state"] })} className="mt-1 h-11 w-full rounded-lg border bg-background px-3 font-normal"><option value="new">Yeni</option><option value="refurbished">Yenilənmiş</option><option value="used">İstifadə olunmuş</option></select></label>
+              </div>
+
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="text-sm font-semibold">Qiymət (₼) *</label>
@@ -2574,6 +2618,13 @@ export function SellerPanel() {
                 </div>
               </div>
 
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                <label className="text-sm font-semibold">Topdansatış qiyməti<input type="number" min={0} step="0.01" value={editing.wholesale_price ?? ""} onChange={(e) => setEditing({ ...editing, wholesale_price: e.target.value ? Number(e.target.value) : null })} className="mt-1 h-11 w-full rounded-lg border bg-background px-3 font-normal" /></label>
+                <label className="text-sm font-semibold">Vergi (%)<input type="number" min={0} max={100} step="0.01" value={editing.tax_percent ?? 0} onChange={(e) => setEditing({ ...editing, tax_percent: Number(e.target.value) })} className="mt-1 h-11 w-full rounded-lg border bg-background px-3 font-normal" /></label>
+                <label className="text-sm font-semibold">Endirim başlanğıcı<input type="datetime-local" value={editing.discount_starts_at?.slice(0, 16) ?? ""} onChange={(e) => setEditing({ ...editing, discount_starts_at: e.target.value || null })} className="mt-1 h-11 w-full rounded-lg border bg-background px-3 font-normal" /></label>
+                <label className="text-sm font-semibold">Endirim sonu<input type="datetime-local" value={editing.discount_ends_at?.slice(0, 16) ?? ""} onChange={(e) => setEditing({ ...editing, discount_ends_at: e.target.value || null })} className="mt-1 h-11 w-full rounded-lg border bg-background px-3 font-normal" /></label>
+              </div>
+
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="text-sm font-semibold">Stok *</label>
@@ -2600,6 +2651,11 @@ export function SellerPanel() {
                     className="mt-1 w-full h-11 px-3 rounded-lg border border-input bg-background"
                   />
                 </div>
+              </div>
+
+              <div className="flex flex-wrap gap-4 rounded-xl border bg-secondary/30 p-3 text-sm font-semibold">
+                <label className="flex items-center gap-2"><input type="checkbox" checked={!!editing.unlimited_stock} onChange={(e) => setEditing({ ...editing, unlimited_stock: e.target.checked })} className="h-4 w-4 accent-primary" /> Sonsuz stok</label>
+                <label className="flex items-center gap-2"><input type="checkbox" checked={!!editing.allow_preorder} onChange={(e) => setEditing({ ...editing, allow_preorder: e.target.checked })} className="h-4 w-4 accent-primary" /> Ön sifarişə icazə ver</label>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
@@ -2662,6 +2718,21 @@ export function SellerPanel() {
                   />
                 </div>
               </div>
+
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                {(["length_cm", "width_cm", "height_cm"] as const).map((key) => <label key={key} className="text-sm font-semibold">{{ length_cm: "Uzunluq (sm)", width_cm: "En (sm)", height_cm: "Hündürlük (sm)" }[key]}<input type="number" min={0} step="0.01" value={editing[key] ?? ""} onChange={(e) => setEditing({ ...editing, [key]: e.target.value ? Number(e.target.value) : null })} className="mt-1 h-11 w-full rounded-lg border bg-background px-3 font-normal" /></label>)}
+                <label className="text-sm font-semibold">Çatdırılma qiyməti<input type="number" min={0} step="0.01" value={editing.shipping_price ?? ""} onChange={(e) => setEditing({ ...editing, shipping_price: e.target.value ? Number(e.target.value) : null })} placeholder="Boşdursa sistem hesablayır" className="mt-1 h-11 w-full rounded-lg border bg-background px-3 font-normal" /></label>
+              </div>
+
+              <details className="rounded-xl border bg-card p-4">
+                <summary className="cursor-pointer text-sm font-black">SEO məlumatları</summary>
+                <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                  <label className="text-sm font-semibold">SEO başlıq<input value={editing.seo_title ?? ""} onChange={(e) => setEditing({ ...editing, seo_title: e.target.value })} maxLength={70} className="mt-1 h-11 w-full rounded-lg border bg-background px-3 font-normal" /></label>
+                  <label className="text-sm font-semibold">URL slug<input value={editing.url_slug ?? ""} onChange={(e) => setEditing({ ...editing, url_slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]+/g, "-") })} className="mt-1 h-11 w-full rounded-lg border bg-background px-3 font-mono font-normal" /></label>
+                  <label className="text-sm font-semibold sm:col-span-2">Meta təsvir<textarea value={editing.meta_description ?? ""} onChange={(e) => setEditing({ ...editing, meta_description: e.target.value })} maxLength={170} className="mt-1 min-h-20 w-full rounded-lg border bg-background p-3 font-normal" /></label>
+                  <label className="text-sm font-semibold sm:col-span-2">Açar sözlər<input value={(editing.keywords ?? []).join(", ")} onChange={(e) => setEditing({ ...editing, keywords: e.target.value.split(",").map((word) => word.trim()).filter(Boolean) })} placeholder="telefon, smartfon, 5G" className="mt-1 h-11 w-full rounded-lg border bg-background px-3 font-normal" /></label>
+                </div>
+              </details>
 
               <div>
                 <label className="text-sm font-semibold">Kateqoriya *</label>
@@ -2790,7 +2861,7 @@ export function SellerPanel() {
               </div>
 
               <ProductVariantEditor
-                categoryContext={getCategoryContext(categories, editing.category_id)}
+                categoryId={editing.category_id}
                 basePrice={Number(editing.price ?? 0)}
                 attributes={editing.attributes ?? {}}
                 variants={editing.variants ?? []}

@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { ProductCard, type ProductCardData } from "@/components/ProductCard";
 import { SponsoredProducts } from "@/components/SponsoredProducts";
-import { CatalogFilters, type Filters } from "@/components/CatalogFilters";
+import { CatalogFilters, type DynamicCatalogAttribute, type Filters } from "@/components/CatalogFilters";
 import { catName } from "@/lib/catName";
 import { CategoryIcon } from "@/components/CategoryIcon";
 import i18n from "@/i18n";
@@ -52,6 +52,7 @@ function Catalog() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [products, setProducts] = useState<ProductCardData[]>([]);
   const [availableBrands, setAvailableBrands] = useState<string[]>([]);
+  const [dynamicAttributes, setDynamicAttributes] = useState<DynamicCatalogAttribute[]>([]);
   const [loading, setLoading] = useState(true);
   const [openParents, setOpenParents] = useState<Record<string, boolean>>({});
   const [filters, setFilters] = useState<Filters>({ sort: "newest", brand });
@@ -68,6 +69,16 @@ function Catalog() {
       setAvailableBrands(brands.sort((a, b) => a.localeCompare(b, "az")));
     });
   }, []);
+
+  useEffect(() => {
+    const selected = categories.find((category) => category.slug === cat);
+    setFilters((current) => ({ ...current, attributeValues: {} }));
+    if (!selected) { setDynamicAttributes([]); return; }
+    (supabase as any).rpc("catalog_schema_for_category", { _category_id: selected.id }).then(({ data, error }: any) => {
+      if (error) { setDynamicAttributes([]); return; }
+      setDynamicAttributes((data ?? []).map((row: any) => ({ ...row, options: Array.isArray(row.options) ? row.options : [] })));
+    });
+  }, [cat, categories]);
 
   useEffect(() => {
     setLoading(true);
@@ -91,7 +102,7 @@ function Catalog() {
     let query: any = supabase.from("products")
       .select("id,title,price,old_price,image_url,video_url,rating,reviews_count,brand,stock,delivery_days_min,delivery_days_max,delivery_city,free_shipping,fast_delivery,condition,category_id")
       .eq("is_active", true);
-    if (q) query = query.ilike("title", `%${q}%`);
+    if (q) query = query.or(`title.ilike.%${q}%,brand.ilike.%${q}%,sku.ilike.%${q}%`);
     if (catSlugs) {
       const categoryIds = categories.filter((category) => catSlugs!.includes(category.slug)).map((category) => category.id);
       if (categoryIds.length === 0) {
@@ -112,6 +123,12 @@ function Catalog() {
     if (filters.maxDeliveryDays) query = query.lte("delivery_days_max", filters.maxDeliveryDays);
     if (filters.city) query = query.eq("delivery_city", filters.city);
     if (filters.condition) query = query.eq("condition", filters.condition);
+    for (const [code, rawValue] of Object.entries(filters.attributeValues ?? {})) {
+      if (!rawValue) continue;
+      const definition = dynamicAttributes.find((attribute) => attribute.code === code);
+      const value = definition?.data_type === "number" ? Number(rawValue) : definition?.data_type === "boolean" ? rawValue === "true" : rawValue;
+      query = query.contains("attributes", { [code]: value });
+    }
     if (filters.newArrivals) {
       const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
       query = query.gte("created_at", since);
@@ -144,7 +161,7 @@ function Catalog() {
       setProducts(list);
       setLoading(false);
     });
-  }, [q, cat, filters, categories]);
+  }, [q, cat, filters, categories, dynamicAttributes]);
 
   const allBrandsList = useMemo(() => availableBrands, [availableBrands]);
 
@@ -267,7 +284,7 @@ function Catalog() {
 
         <div className="min-w-0">
           <div className="mb-5 rounded-2xl border border-border bg-card p-3 shadow-sm">
-            <CatalogFilters brands={allBrandsList} value={filters} onChange={setFilters} />
+            <CatalogFilters brands={allBrandsList} value={filters} onChange={setFilters} dynamicAttributes={dynamicAttributes} />
           </div>
 
           {loading ? (
