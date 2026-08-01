@@ -57,7 +57,16 @@ export function SiteHeader() {
             className="flex shrink-0 items-center gap-2 transition-opacity hover:opacity-90"
             aria-label="EG Shop"
           >
-            <img src="/brand/eg-wordmark-light.svg" alt="EG Shop" width={520} height={128} className="h-9 w-[118px] shrink-0 object-contain object-left sm:h-11 sm:w-[165px]" />
+            <img
+              src="/brand/eg-logo-mark.png"
+              alt=""
+              width={512}
+              height={512}
+              className="h-10 w-10 shrink-0 rounded-xl object-cover shadow-sm ring-1 ring-white/25 sm:h-12 sm:w-12"
+            />
+            <span className="hidden whitespace-nowrap text-xl font-black tracking-normal leading-none sm:inline">
+              EG Shop
+            </span>
           </Link>
 
           <form onSubmit={onSearch} className="hidden max-w-3xl flex-1 lg:flex">

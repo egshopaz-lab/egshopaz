@@ -9,8 +9,13 @@ export function SiteFooter() {
     <footer className="mt-16 border-t border-border bg-slate-950 text-slate-300">
       <div className="mx-auto grid max-w-7xl gap-10 px-4 py-12 sm:grid-cols-2 lg:grid-cols-[1.35fr_1fr_1fr_1fr]">
         <div>
-          <Link to="/" className="inline-flex items-center text-white" aria-label="EG Shop">
-            <img src="/brand/eg-wordmark-light.svg" alt="EG Shop" className="h-12 w-[175px] object-contain object-left" />
+          <Link to="/" className="inline-flex items-center gap-3 text-white" aria-label="EG Shop">
+            <img
+              src="/brand/eg-logo-mark.png"
+              alt=""
+              className="h-12 w-12 shrink-0 rounded-xl object-cover ring-1 ring-white/15"
+            />
+            <span className="text-xl font-black leading-none">EG Shop</span>
           </Link>
           <p className="mt-4 max-w-sm text-sm leading-6 text-slate-400">{t("footer.description")}</p>
         </div>
