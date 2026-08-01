@@ -58,7 +58,7 @@ export function SiteHeader() {
             aria-label="EG Shop"
           >
             <img
-              src="/brand/eg-logo-mark-v2.png"
+              src="/brand/eg-logo-mark-v3.png"
               alt=""
               width={512}
               height={512}

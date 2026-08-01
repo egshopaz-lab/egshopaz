@@ -52,7 +52,7 @@ export const Route = createRootRoute({
       { name: "twitter:image", content: absoluteUrl("/brand/eg-social.svg") },
     ],
     links: [
-      { rel: "icon", type: "image/png", href: "/brand/eg-logo-mark-v2.png" },
+      { rel: "icon", type: "image/png", href: "/brand/eg-logo-mark-v3.png" },
     ],
     scripts: [
       {
@@ -62,7 +62,7 @@ export const Route = createRootRoute({
           "@type": "Organization",
           name: "EG Shop",
           url: SITE_URL,
-          logo: absoluteUrl("/brand/eg-logo-mark-v2.png"),
+          logo: absoluteUrl("/brand/eg-logo-mark-v3.png"),
           sameAs: [],
         }),
       },
@@ -132,7 +132,7 @@ function WorkHeader({ label }: { label: string }) {
     <header className="sticky top-0 z-50 bg-background border-b border-border shadow-sm">
       <div className="container mx-auto px-4 h-14 flex items-center gap-3">
         <div className="flex min-w-0 items-center gap-2">
-          <img src="/brand/eg-logo-mark-v2.png" alt="" className="h-9 w-9 shrink-0 rounded-lg object-cover" />
+          <img src="/brand/eg-logo-mark-v3.png" alt="" className="h-9 w-9 shrink-0 rounded-lg object-cover" />
           <span className="shrink-0 text-lg font-black leading-none">EG Shop</span>
           <span className="hidden truncate text-sm font-bold text-muted-foreground sm:inline">Â· {label}</span>
         </div>
@@ -232,7 +232,7 @@ function AppShell() {
   if (!portalReady && (isAuthRoute || isWorkPanel)) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background" aria-busy="true" aria-label="Portal yÃ¼klÉ™nir">
-        <img src="/brand/eg-logo-mark-v2.png" alt="EG Shop" className="h-14 w-14 animate-pulse rounded-xl object-cover" />
+        <img src="/brand/eg-logo-mark-v3.png" alt="EG Shop" className="h-14 w-14 animate-pulse rounded-xl object-cover" />
       </div>
     );
   }
