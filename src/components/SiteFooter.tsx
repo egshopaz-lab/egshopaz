@@ -11,7 +11,7 @@ export function SiteFooter() {
         <div>
           <Link to="/" className="inline-flex items-center gap-3 text-white" aria-label="EG Shop">
             <img
-              src="/brand/eg-logo-mark-v3.png"
+              src="/brand/eg-logo-mark-v4.png"
               alt=""
               className="h-12 w-12 shrink-0 rounded-xl object-cover ring-1 ring-white/15"
             />
