@@ -4,10 +4,10 @@ import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-const LANGS: { code: "az" | "ru" | "en"; label: string; flag: string }[] = [
-  { code: "az", label: "Azərbaycan", flag: "🇦🇿" },
-  { code: "ru", label: "Русский", flag: "🇷🇺" },
-  { code: "en", label: "English", flag: "🇬🇧" },
+const LANGS: { code: "az" | "ru" | "en"; label: string }[] = [
+  { code: "az", label: "Azərbaycan" },
+  { code: "ru", label: "Русский" },
+  { code: "en", label: "English" },
 ];
 
 export function LanguageSwitcher({ compact = false }: { compact?: boolean }) {
@@ -31,7 +31,6 @@ export function LanguageSwitcher({ compact = false }: { compact?: boolean }) {
           <span className="font-semibold uppercase text-xs">{current.code}</span>
         ) : (
           <>
-            <span className="hidden sm:inline">{current.flag}</span>
             <span className="hidden sm:inline font-medium">{current.code.toUpperCase()}</span>
             <span className="sm:hidden font-semibold">{t("header.language")}</span>
           </>
@@ -44,7 +43,9 @@ export function LanguageSwitcher({ compact = false }: { compact?: boolean }) {
             onClick={() => void changeLanguage(l.code)}
             className={l.code === current.code ? "bg-secondary font-semibold" : ""}
           >
-            <span className="mr-2 text-base">{l.flag}</span>
+            <span className="mr-2 inline-flex w-6 justify-center text-xs font-bold uppercase text-muted-foreground">
+              {l.code}
+            </span>
             {l.label}
           </DropdownMenuItem>
         ))}
@@ -52,3 +53,4 @@ export function LanguageSwitcher({ compact = false }: { compact?: boolean }) {
     </DropdownMenu>
   );
 }
+

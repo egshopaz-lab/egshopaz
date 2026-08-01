@@ -23,13 +23,13 @@ function NotFoundComponent() {
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="max-w-md text-center">
         <h1 className="text-7xl font-bold text-gradient-brand">404</h1>
-        <h2 className="mt-4 text-xl font-semibold">SÉ™hifÉ™ tapÄ±lmadÄ±</h2>
+        <h2 className="mt-4 text-xl font-semibold">Səhifə tapılmadı</h2>
         <p className="mt-2 text-sm text-muted-foreground">
-          AxtardÄ±ÄŸÄ±nÄ±z sÉ™hifÉ™ mÃ¶vcud deyil vÉ™ ya kÃ¶Ã§Ã¼rÃ¼lÃ¼b.
+          Axtardığınız səhifə mövcud deyil və ya köçürülüb.
         </p>
         <div className="mt-6">
           <Link to="/" className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition">
-            Ana sÉ™hifÉ™yÉ™ qayÄ±t
+            Ana səhifəyə qayıt
           </Link>
         </div>
       </div>
@@ -42,8 +42,8 @@ export const Route = createRootRoute({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1, maximum-scale=5.0, user-scalable=yes" },
-      { title: "EG Shop â€” AzÉ™rbaycanÄ±n onlayn marketi" },
-      { name: "description", content: "Milyonlarla mÉ™hsul, sÃ¼rÉ™tli Ã§atdÄ±rÄ±lma vÉ™ sÉ™rfÉ™li qiymÉ™tlÉ™r. EG Shop AzÉ™rbaycanda." },
+      { title: "EG Shop — Azərbaycanın onlayn marketi" },
+      { name: "description", content: "Milyonlarla məhsul, sürətli çatdırılma və sərfəli qiymətlər. EG Shop Azərbaycanda." },
       { property: "og:site_name", content: "EG Shop" },
       { property: "og:type", content: "website" },
       { property: "og:locale", content: "az_AZ" },
@@ -112,7 +112,7 @@ function LiveClock() {
     ? now.toLocaleTimeString("az-AZ", { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false })
     : "--:--:--";
   const date = now
-    ? `${String(now.getDate()).padStart(2, "0")} ${["yan", "fev", "mar", "apr", "may", "iyn", "iyl", "avq", "sen", "okt", "noy", "dek"][now.getMonth()]}, ${["Baz", "B.e", "Ã‡.a", "Ã‡", "C.a", "C", "Åž"][now.getDay()]}`
+    ? `${String(now.getDate()).padStart(2, "0")} ${["yan", "fev", "mar", "apr", "may", "iyn", "iyl", "avq", "sen", "okt", "noy", "dek"][now.getMonth()]}, ${["Baz", "B.e", "Ç.a", "Ç", "C.a", "C", "Ş"][now.getDay()]}`
     : "-- ---";
   return (
     <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-secondary/80 border border-border">
@@ -134,7 +134,7 @@ function WorkHeader({ label }: { label: string }) {
         <div className="flex min-w-0 items-center gap-2">
           <img src="/brand/eg-logo-mark-v4.png" alt="" className="h-9 w-9 shrink-0 rounded-lg object-cover" />
           <span className="shrink-0 text-lg font-black leading-none">EG Shop</span>
-          <span className="hidden truncate text-sm font-bold text-muted-foreground sm:inline">Â· {label}</span>
+          <span className="hidden truncate text-sm font-bold text-muted-foreground sm:inline">· {label}</span>
         </div>
         <div className="ml-auto flex items-center gap-3">
           <LiveClock />
@@ -143,7 +143,7 @@ function WorkHeader({ label }: { label: string }) {
           )}
           {user && (
             <Button variant="ghost" size="sm" onClick={async () => { await signOut(); navigate({ to: "/login" }); }}>
-              <LogOut className="h-4 w-4 mr-1" /> Ã‡Ä±xÄ±ÅŸ
+              <LogOut className="h-4 w-4 mr-1" /> Çıxış
             </Button>
           )}
         </div>
@@ -231,7 +231,7 @@ function AppShell() {
   // shell here would cause a visible wrong-page flash on admin/seller/PVZ.
   if (!portalReady && (isAuthRoute || isWorkPanel)) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background" aria-busy="true" aria-label="Portal yÃ¼klÉ™nir">
+      <div className="flex min-h-screen items-center justify-center bg-background" aria-busy="true" aria-label="Portal yüklənir">
         <img src="/brand/eg-logo-mark-v4.png" alt="EG Shop" className="h-14 w-14 animate-pulse rounded-xl object-cover" />
       </div>
     );
@@ -239,25 +239,25 @@ function AppShell() {
 
   if (!loading && user && accountStatus !== "active") {
     const statusLabel = accountStatus === "temporary_blocked"
-      ? "Hesab mÃ¼vÉ™qqÉ™ti bloklanÄ±b"
+      ? "Hesab müvəqqəti bloklanıb"
       : accountStatus === "permanently_blocked"
-        ? "Hesab daimi bloklanÄ±b"
+        ? "Hesab daimi bloklanıb"
         : "Hesab deaktiv edilib";
     return (
       <div className="min-h-screen flex items-center justify-center bg-muted/30 px-4">
         <div className="w-full max-w-lg rounded-2xl border bg-card p-8 text-center shadow-card">
           <h1 className="text-2xl font-extrabold text-destructive">{statusLabel}</h1>
           <p className="mt-3 text-sm text-muted-foreground">
-            Bu hesabÄ±n sistemÉ™ vÉ™ panellÉ™rÉ™ giriÅŸi dayandÄ±rÄ±lÄ±b.
+            Bu hesabın sistemə və panellərə girişi dayandırılıb.
           </p>
-          {blockReason && <p className="mt-4 rounded-lg bg-muted p-3 text-sm">SÉ™bÉ™b: {blockReason}</p>}
+          {blockReason && <p className="mt-4 rounded-lg bg-muted p-3 text-sm">Səbəb: {blockReason}</p>}
           {blockedUntil && accountStatus === "temporary_blocked" && (
             <p className="mt-3 text-sm text-muted-foreground">
-              BitmÉ™ vaxtÄ±: {new Date(blockedUntil).toLocaleString("az-AZ")}
+              Bitmə vaxtı: {new Date(blockedUntil).toLocaleString("az-AZ")}
             </p>
           )}
           <Button className="mt-6" onClick={() => void signOut()}>
-            <LogOut className="mr-2 h-4 w-4" /> Ã‡Ä±xÄ±ÅŸ
+            <LogOut className="mr-2 h-4 w-4" /> Çıxış
           </Button>
         </div>
       </div>
@@ -270,9 +270,9 @@ function AppShell() {
 
   if (isWorkPanel || isSellerTrends || (portal !== "marketplace" && isAuthRoute) || (portal === "seller" && pathname === "/become-seller")) {
     const label = portal === "seller"
-      ? pathname === "/become-seller" ? "SatÄ±cÄ± qeydiyyatÄ± vÉ™ Ã¶dÉ™niÅŸ" : "SatÄ±cÄ± portalÄ±"
-      : portal === "pvz" ? "PVZ PUNKT portalÄ±"
-      : "Admin portalÄ±";
+      ? pathname === "/become-seller" ? "Satıcı qeydiyyatı və ödəniş" : "Satıcı portalı"
+      : portal === "pvz" ? "PVZ PUNKT portalı"
+      : "Admin portalı";
     return (
       <div className="flex min-h-screen w-full flex-col overflow-x-hidden bg-background">
         <WorkHeader label={label} />
@@ -314,4 +314,5 @@ function RootComponent() {
     </PortalProvider>
   );
 }
+
 
