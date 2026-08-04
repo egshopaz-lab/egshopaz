@@ -69,6 +69,7 @@ export function AdminCommercialSettings() {
   }, [load]);
 
   const update = async (table: string, idField: string, id: string, patch: Row, success = "Dəyişiklik dərhal tətbiq edildi") => {
+    if (!window.confirm("Bu dəyişikliyi təsdiqləyirsiniz?")) return;
     const { error } = await db.from(table).update(patch).eq(idField, id);
     if (error) return toast.error(error.message);
     toast.success(success);

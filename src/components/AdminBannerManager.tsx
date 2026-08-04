@@ -147,7 +147,7 @@ export function AdminBannerManager() {
   };
 
   const remove = async (banner: Banner) => {
-    if (!window.confirm(`“${banner.title}” banneri silinsin?`)) return;
+    if (!window.confirm(`"${banner.title}" banneri silinsin?`)) return;
     const { error } = await supabase.from("banners").delete().eq("id", banner.id);
     if (error) return toast.error(error.message);
     setBanners((current) => current.filter((item) => item.id !== banner.id));

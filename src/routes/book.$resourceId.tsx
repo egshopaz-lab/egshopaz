@@ -154,7 +154,7 @@ function BookingPage() {
       });
       setSubmitting(false);
       if (result.error || !result.data?.redirect_url) {
-        toast.error("Rezervasiya yaradıldı, amma ödəniş səhifəsi açılmadı. “Rezervasiyalarım” bölməsindən yenidən cəhd edin.");
+        toast.error('Rezervasiya yaradıldı, amma ödəniş səhifəsi açılmadı. "Rezervasiyalarım" bölməsindən yenidən cəhd edin.');
         navigate({ to: "/reservations" });
         return;
       }
@@ -236,4 +236,3 @@ function BookingPage() {
     </main>
   );
 }
-

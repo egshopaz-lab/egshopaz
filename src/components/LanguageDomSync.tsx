@@ -11,7 +11,7 @@ type TranslationEntry = { ru: string; en: string };
 const textOriginals = new WeakMap<Text, string>();
 const attrOriginals = new WeakMap<Element, Partial<Record<string, string>>>();
 
-const AZ_CHARS = /[ƏəĞğİıÖöÜüÇçŞş]/;
+const AZ_CHARS = /[ƏəĞğİıÖöÜüÇ窺]/;
 const ATTRS = ["placeholder", "title", "aria-label"] as const;
 
 const EXTRA_PHRASES: Record<string, TranslationEntry> = {

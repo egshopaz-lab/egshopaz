@@ -10,8 +10,9 @@ const db = supabase as unknown as LooseClient;
 
 interface Plan { id: string; name: string; description: string | null; price: number; duration_days: number; campaign_price: number | null; campaign_starts_at: string | null; campaign_ends_at: string | null }
 interface Subscription { id: string; plan_id: string; status: "active" | "passive" | "blocked"; status_reason: string; access_type: "paid" | "free"; starts_at: string | null; ends_at: string | null; next_payment_at: string | null; admin_note: string | null }
-interface TrendPost { id: string; title: string; body: string; media_url: string | null; media_type: "image" | "video"; product_id: string | null; link_url: string | null; status: "visible" | "hidden" | "passive"; created_at: string; updated_at: string }
-interface ProductRow { id: string; title: string; price: number; image_url: string | null }
+interface TrendPost { id: string; title: string; body: string; media_url: string | null; media_type: "image" | "video"; product_id: string | null; shop_id: string | null; link_url: string | null; status: "visible" | "hidden" | "passive"; created_at: string; updated_at: string }
+interface ProductRow { id: string; title: string; price: number; image_url: string | null; shop_id: string | null }
+interface ShopRow { id:string; name:string; city:string|null; is_primary:boolean }
 interface HistoryRow { id: string; event_type: string; amount: number | null; starts_at: string | null; ends_at: string | null; note: string | null; created_at: string }
 interface PaymentRow { id: string; amount: number; currency: string; status: string; paid_at: string | null; created_at: string }
 
@@ -37,6 +38,7 @@ export function SellerTrends({ sellerId }: { sellerId: string }) {
   const [history, setHistory] = useState<HistoryRow[]>([]);
   const [payments, setPayments] = useState<PaymentRow[]>([]);
   const [products, setProducts] = useState<ProductRow[]>([]);
+  const [shops, setShops] = useState<ShopRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [paying, setPaying] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -46,19 +48,21 @@ export function SellerTrends({ sellerId }: { sellerId: string }) {
   const [mediaUrl, setMediaUrl] = useState("");
   const [mediaType, setMediaType] = useState<"image" | "video">("image");
   const [productId, setProductId] = useState("");
+  const [shopId, setShopId] = useState("");
   const [linkUrl, setLinkUrl] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
 
   const load = useCallback(async () => {
-    const [planRows, subRow, postRows, historyRows, paymentRows, productRows] = await Promise.all([
+    const [planRows, subRow, postRows, historyRows, paymentRows, productRows, shopRows] = await Promise.all([
       db.from("eg_trends_plans").select("*").eq("is_active", true).order("sort_order"),
       db.from("eg_trends_subscriptions").select("*").eq("seller_id", sellerId).maybeSingle(),
       db.from("eg_trends_posts").select("*").eq("seller_id", sellerId).order("created_at", { ascending: false }),
       db.from("eg_trends_subscription_history").select("*").eq("seller_id", sellerId).order("created_at", { ascending: false }).limit(100),
       db.from("eg_trends_payments").select("*").eq("seller_id", sellerId).order("created_at", { ascending: false }).limit(100),
-      db.from("products").select("id,title,price,image_url").eq("seller_id", sellerId).eq("is_active", true).order("created_at", { ascending: false }),
+      db.from("products").select("id,title,price,image_url,shop_id").eq("seller_id", sellerId).eq("is_active", true).order("created_at", { ascending: false }),
+      db.from("shops").select("id,name,city,is_primary").eq("seller_id", sellerId).order("is_primary", { ascending: false }).order("created_at"),
     ]);
-    const error = planRows.error || subRow.error || postRows.error || historyRows.error || paymentRows.error || productRows.error;
+    const error = planRows.error || subRow.error || postRows.error || historyRows.error || paymentRows.error || productRows.error || shopRows.error;
     if (error) toast.error(error.message);
     setPlans((planRows.data ?? []) as Plan[]);
     setSubscription((subRow.data ?? null) as Subscription | null);
@@ -66,6 +70,9 @@ export function SellerTrends({ sellerId }: { sellerId: string }) {
     setHistory((historyRows.data ?? []) as HistoryRow[]);
     setPayments((paymentRows.data ?? []) as PaymentRow[]);
     setProducts((productRows.data ?? []) as ProductRow[]);
+    const loadedShops=(shopRows.data ?? []) as ShopRow[];
+    setShops(loadedShops);
+    setShopId(current=>current||loadedShops.find(shop=>shop.is_primary)?.id||loadedShops[0]?.id||"");
     setLoading(false);
   }, [sellerId]);
 
@@ -115,8 +122,8 @@ export function SellerTrends({ sellerId }: { sellerId: string }) {
     window.location.assign(data.redirect_url as string);
   };
 
-  const resetForm = () => { setEditingId(null); setTitle(""); setBody(""); setMediaUrl(""); setMediaType("image"); setProductId(""); setLinkUrl(""); };
-  const editPost = (post: TrendPost) => { setEditingId(post.id); setTitle(post.title); setBody(post.body); setMediaUrl(post.media_url ?? ""); setMediaType(post.media_type ?? "image"); setProductId(post.product_id ?? ""); setLinkUrl(post.link_url ?? ""); };
+  const resetForm = () => { setEditingId(null); setTitle(""); setBody(""); setMediaUrl(""); setMediaType("image"); setProductId(""); setShopId(shops.find(shop=>shop.is_primary)?.id??shops[0]?.id??""); setLinkUrl(""); };
+  const editPost = (post: TrendPost) => { setEditingId(post.id); setTitle(post.title); setBody(post.body); setMediaUrl(post.media_url ?? ""); setMediaType(post.media_type ?? "image"); setProductId(post.product_id ?? ""); setShopId(post.shop_id??""); setLinkUrl(post.link_url ?? ""); };
 
   const uploadImage = async (file: File) => {
     if (!active) return;
@@ -157,7 +164,7 @@ export function SellerTrends({ sellerId }: { sellerId: string }) {
     if (!active) { toast.error("Aktiv EG Trends abunəliyi tələb olunur"); return; }
     if (title.trim().length < 3 || body.trim().length < 3) { toast.error("Başlıq və mətn daxil edin"); return; }
     setSaving(true);
-    const payload = { seller_id: sellerId, title: title.trim(), body: body.trim(), media_url: mediaUrl.trim() || null, media_type: mediaType, product_id: productId || null, link_url: linkUrl.trim() || null };
+    const payload = { seller_id: sellerId, shop_id: shopId || null, title: title.trim(), body: body.trim(), media_url: mediaUrl.trim() || null, media_type: mediaType, product_id: productId || null, link_url: linkUrl.trim() || null };
     const query = editingId ? db.from("eg_trends_posts").update(payload).eq("id", editingId) : db.from("eg_trends_posts").insert(payload);
     const { error } = await query;
     setSaving(false);
@@ -202,7 +209,7 @@ export function SellerTrends({ sellerId }: { sellerId: string }) {
       </div>)}</div>
     </div> : <div className="border border-border rounded-lg bg-card p-5 space-y-4">
       <div className="flex items-center justify-between gap-3"><div><h2 className="font-black text-lg">{editingId ? "Paylaşımı redaktə et" : "Yeni paylaşım"}</h2><p className="text-xs text-muted-foreground">Paylaşım əsas lentdə və EG Trends səhifəsində görünəcək.</p></div>{editingId && <button onClick={resetForm} className="h-9 w-9 rounded-md border border-border inline-flex items-center justify-center"><X className="h-4 w-4" /></button>}</div>
-      <div className="grid md:grid-cols-3 gap-3"><label className="block"><span className="text-xs font-bold">Başlıq</span><input maxLength={140} value={title} onChange={(e) => setTitle(e.target.value)} className={inputClass} /></label><label className="block"><span className="text-xs font-bold">Əlaqəli məhsul</span><select value={productId} onChange={(e) => setProductId(e.target.value)} className={inputClass}><option value="">Məhsul seçilməyib</option>{products.map((product) => <option key={product.id} value={product.id}>{product.title} — {formatAZN(product.price)}</option>)}</select></label><label className="block"><span className="text-xs font-bold">Keçid linki</span><input value={linkUrl} onChange={(e) => setLinkUrl(e.target.value)} className={inputClass} placeholder="https://..." /></label></div>
+      <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-3"><label className="block"><span className="text-xs font-bold">Başlıq</span><input maxLength={140} value={title} onChange={(e) => setTitle(e.target.value)} className={inputClass} /></label><label className="block"><span className="text-xs font-bold">Mağaza</span><select value={shopId} onChange={(e)=>setShopId(e.target.value)} className={inputClass}><option value="">Mağaza seçin</option>{shops.map(shop=><option key={shop.id} value={shop.id}>{shop.name}{shop.city?` — ${shop.city}`:""}</option>)}</select></label><label className="block"><span className="text-xs font-bold">Əlaqəli məhsul</span><select value={productId} onChange={(e) => {const value=e.target.value;setProductId(value);const product=products.find(item=>item.id===value);if(product?.shop_id)setShopId(product.shop_id);}} className={inputClass}><option value="">Məhsul seçilməyib</option>{products.filter(product=>!shopId||product.shop_id===shopId).map((product) => <option key={product.id} value={product.id}>{product.title} — {formatAZN(product.price)}</option>)}</select></label><label className="block"><span className="text-xs font-bold">Keçid linki</span><input value={linkUrl} onChange={(e) => setLinkUrl(e.target.value)} className={inputClass} placeholder="https://..." /></label></div>
       <label className="block"><span className="text-xs font-bold">Mətn</span><textarea rows={5} maxLength={3000} value={body} onChange={(e) => setBody(e.target.value)} className="w-full p-3 rounded-md border border-input bg-background text-sm" /></label>
       <div className="flex flex-wrap items-center gap-3"><input ref={fileRef} type="file" accept="image/*,video/*" className="hidden" onChange={(e) => { const file = e.target.files?.[0]; if (!file) return; if (file.type.startsWith("video/")) void uploadVideo(file); else void uploadImage(file); }} /><button onClick={() => fileRef.current?.click()} className="h-10 px-3 rounded-md border border-border font-bold inline-flex items-center gap-2">{mediaType === "video" ? <Video className="h-4 w-4" /> : <Image className="h-4 w-4" />} Şəkil və ya video seç</button>{mediaUrl && <span className="text-xs text-success font-bold">{mediaType === "video" ? "Video" : "Şəkil"} hazırdır</span>}{productId && <span className="text-xs text-primary font-bold inline-flex items-center gap-1"><Package className="h-3.5 w-3.5" /> Məhsul bağlanıb</span>}<button disabled={saving} onClick={() => void savePost()} className="h-10 px-4 rounded-md bg-primary text-primary-foreground font-bold inline-flex items-center gap-2 ml-auto"><Megaphone className="h-4 w-4" /> {saving ? "Saxlanılır..." : editingId ? "Yenilə" : "Paylaş"}</button></div>
     </div>}

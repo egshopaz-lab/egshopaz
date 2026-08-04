@@ -14,8 +14,6 @@ import { AdminTreasury } from "@/components/AdminTreasury";
 import { AdminAdvertisingPackages } from "@/components/AdminAdvertisingPackages";
 import { AdminTrends } from "@/components/AdminTrends";
 import { AdminDashboardStats } from "@/components/AdminDashboardStats";
-import { AdminAccountManagement } from "@/components/AdminAccountManagement";
-import { AdminAuditLog } from "@/components/AdminAuditLog";
 import { AdminDeliveryManagement } from "@/components/AdminDeliveryManagement";
 import { AdminBannerManager } from "@/components/AdminBannerManager";
 import { AdminCategoryManager } from "@/components/AdminCategoryManager";
@@ -33,10 +31,10 @@ import { PanelLayout, type PanelNavItem } from "@/components/PanelLayout";
 import { AZ_CITY_NAMES, findCity } from "@/lib/azCities";
 
 type TabKey =
-  | "dashboard" | "operations" | "customers" | "sellers" | "couriers" | "deliveries" | "pvz_staff"
+  | "dashboard" | "operations" | "users" | "couriers" | "deliveries"
   | "categories" | "products" | "shops" | "business_modules" | "warehouses" | "pickup_points"
   | "orders" | "reservations" | "returns" | "finance" | "treasury" | "payouts" | "marketing" | "banners" | "packages" | "trends" | "promo" | "analytics"
-  | "security" | "audit" | "disputes" | "message_reports" | "content" | "settings" | "commercial_settings" | "support" | "ai_bot";
+  | "security" | "disputes" | "message_reports" | "content" | "settings" | "commercial_settings" | "support" | "ai_bot";
 
 interface Stat { users: number; products: number; orders: number; revenue: number; sellers: number }
 interface ProfileRow { id: string; full_name: string | null; shop_name: string | null; created_at: string; phone: string | null }
@@ -361,6 +359,7 @@ export function AdminPanel() {
 
   const updateSettings = async (patch: Partial<SettingsRow>) => {
     if (!settings) return;
+    if (!window.confirm("Bu sistem dəyişikliyini təsdiqləyirsiniz?")) return;
     const { error } = await supabase.from("system_settings").update(patch as never).eq("id", settings.id);
     if (error) toast.error(error.message); else { toast.success("Saxlandı"); reload(); }
   };
@@ -408,7 +407,7 @@ export function AdminPanel() {
 
   const can = (permission: string) => adminPermissions.includes("*") || adminPermissions.includes(permission);
   const navPermission: Partial<Record<TabKey, string>> = {
-    customers: "accounts.manage", sellers: "accounts.manage", pvz_staff: "accounts.manage",
+    users: "accounts.manage",
     products: "products.manage", categories: "products.manage", shops: "products.manage", business_modules: "products.manage",
     reservations: "orders.manage",
     finance: "payments.manage", treasury: "payments.manage", payouts: "payments.manage",
@@ -417,18 +416,16 @@ export function AdminPanel() {
     support: "support.manage", message_reports: "support.manage", ai_bot: "support.manage",
     couriers: "delivery.manage", deliveries: "delivery.manage", warehouses: "delivery.manage",
     pickup_points: "delivery.manage", orders: "delivery.manage", returns: "delivery.manage",
-    disputes: "disputes.manage", analytics: "reports.view", audit: "reports.view",
+    disputes: "disputes.manage", analytics: "reports.view",
     security: "admins.manage", settings: "admins.manage", commercial_settings: "admins.manage",
   };
   const allNavItems: PanelNavItem[] = [
     { key: "commercial_settings", label: "Tariflər və qaydalar", icon: Coins, active: tab === "commercial_settings", onClick: () => setTab("commercial_settings") },
     { key: "dashboard", label: "Ana səhifə", icon: LayoutDashboard, active: tab === "dashboard", onClick: () => setTab("dashboard") },
     { key: "operations", label: "İş mərkəzi", icon: ListChecks, active: tab === "operations", onClick: () => setTab("operations") },
-    { key: "customers", label: "Müştərilər", icon: Users, active: tab === "customers", onClick: () => setTab("customers") },
-    { key: "sellers", label: "Satıcılar", icon: Store, active: tab === "sellers", onClick: () => setTab("sellers") },
+    { key: "users", label: "İstifadəçilər", icon: Users, active: tab === "users", onClick: () => setTab("users") },
     { key: "couriers", label: "Kuryerlər", icon: Truck, badge: couriers.filter((c) => c.is_active).length, active: tab === "couriers", onClick: () => setTab("couriers") },
     { key: "deliveries", label: "Çatdırılmalar", icon: Truck, active: tab === "deliveries", onClick: () => setTab("deliveries") },
-    { key: "pvz_staff", label: "PVZ işçiləri", icon: Users, active: tab === "pvz_staff", onClick: () => setTab("pvz_staff") },
     { key: "categories", label: "Kateqoriyalar", icon: LayoutDashboard, active: tab === "categories", onClick: () => setTab("categories") },
     { key: "products", label: "Məhsullar", icon: Package, active: tab === "products", onClick: () => setTab("products") },
     { key: "shops", label: "Mağazalar", icon: Store, active: tab === "shops", onClick: () => setTab("shops") },
@@ -447,7 +444,6 @@ export function AdminPanel() {
     { key: "promo", label: "Promokodlar", icon: Tag, active: tab === "promo", onClick: () => setTab("promo") },
     { key: "analytics", label: "Analitika", icon: BarChart3, active: tab === "analytics", onClick: () => setTab("analytics") },
     { key: "security", label: "Təhlükəsizlik", icon: Lock, active: tab === "security", onClick: () => setTab("security") },
-    { key: "audit", label: "Audit Log", icon: History, active: tab === "audit", onClick: () => setTab("audit") },
     { key: "disputes", label: "Mübahisələr", icon: Scale, badge: disputes.filter((d) => d.status === "open").length, active: tab === "disputes", onClick: () => setTab("disputes") },
     { key: "message_reports", label: "Mesaj şikayətləri", icon: AlertTriangle, active: tab === "message_reports", onClick: () => setTab("message_reports") },
     { key: "content", label: "Kontent", icon: FileText, active: tab === "content", onClick: () => setTab("content") },
@@ -472,12 +468,10 @@ export function AdminPanel() {
 
       {tab === "commercial_settings" && <AdminCommercialSettings />}
       {tab === "dashboard" && <div className="space-y-6"><AdminDashboardStats /><DashboardSection stats={stats} orders={orders} couriers={couriers} disputes={disputes} /></div>}
-      {tab === "operations" && <AdminOperationsCenter />}
-      {tab === "customers" && <AdminAccountManagement initialRole="buyer" />}
-      {tab === "sellers" && <AdminAccountManagement initialRole="seller" />}
+      {tab === "operations" && <AdminOperationsCenter workspace="operations" />}
+      {tab === "users" && <AdminOperationsCenter workspace="users" />}
       {tab === "couriers" && <CouriersSection couriers={couriers} addCourier={addCourier} toggleCourier={toggleCourier} />}
       {tab === "deliveries" && <AdminDeliveryManagement />}
-      {tab === "pvz_staff" && <AdminAccountManagement initialRole="pvz" />}
       {tab === "categories" && <AdminCategoryManager />}
       {tab === "products" && <ProductsSection products={products} toggleProductActive={toggleProductActive} />}
         {tab === "shops" && <AdminShopManagement />}
@@ -496,7 +490,6 @@ export function AdminPanel() {
       {tab === "promo" && <PromoSection promos={promos} addPromo={addPromo} togglePromo={togglePromo} />}
       {tab === "analytics" && <AnalyticsSection products={products} orders={orders} categories={categories} />}
       {tab === "security" && <SecuritySection />}
-      {tab === "audit" && <AdminAuditLog />}
       {tab === "disputes" && <DisputesSection disputes={disputes} resolveDispute={resolveDispute} />}
       {tab === "message_reports" && <AdminMessageReports />}
       {tab === "content" && <AdminContentHub onNavigate={(section) => setTab(section as TabKey)} />}
@@ -1179,7 +1172,7 @@ function SettingsSection({ settings, updateSettings }: { settings: SettingsRow |
         <div className="rounded-xl border border-border p-4 space-y-3">
           <div className="font-bold">Qeydiyyat mənbəyi sahəsi</div>
           <div className="flex items-center justify-between gap-4">
-            <div><div className="font-semibold text-sm">Formada göstər</div><div className="text-xs text-muted-foreground">Satıcı və PVZ qeydiyyatında “Sizi haradan tanıdıq?” sahəsini göstərir.</div></div>
+            <div><div className="font-semibold text-sm">Formada göstər</div><div className="text-xs text-muted-foreground">Satıcı və PVZ qeydiyyatında "Sizi haradan tanıdıq?" sahəsini göstərir.</div></div>
             <button onClick={() => updateSettings({ acquisition_source_enabled: !settings.acquisition_source_enabled })} className={`px-4 py-2 rounded-lg font-bold text-sm ${settings.acquisition_source_enabled ? "bg-success text-white" : "bg-secondary"}`}>{settings.acquisition_source_enabled ? "Aktiv" : "Deaktiv"}</button>
           </div>
           <div className="flex items-center justify-between gap-4 border-t border-border pt-3">

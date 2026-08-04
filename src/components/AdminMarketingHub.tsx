@@ -47,7 +47,7 @@ export function AdminMarketingHub({ onNavigate }: AdminMarketingHubProps) {
             <h2 className="font-bold">Marketinq idarəetmə mərkəzi</h2>
             <p className="mt-1 text-sm text-muted-foreground">
               Buradakı kartlar işlək admin bölmələrini açır. Email, SMS və push göndərişi provayder
-              qoşulmadan saxta “Göndər” əməliyyatı göstərmir.
+              qoşulmadan saxta "Göndər" əməliyyatı göstərmir.
             </p>
           </div>
         </div>

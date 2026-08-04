@@ -830,7 +830,7 @@ const WILDBERRIES_CATEGORY_NAMES: Record<string, { ru: string; en: string }> = {
   },
   "kitablar-ve-ofis-usaq-kitablari": {
     "ru": "Детские книги",
-    "en": "Children’s books"
+    "en": "Children's books"
   },
   "kitablar-ve-ofis-derslikler": {
     "ru": "Учебники",
@@ -1749,7 +1749,7 @@ const FALLBACK_CATEGORY_NAMES_BY_AZ: Record<string, { ru: string; en: string }> 
   },
   "Uşaq kitabları": {
     "ru": "Детские книги",
-    "en": "Children’s books"
+    "en": "Children's books"
   },
   "Dərsliklər": {
     "ru": "Учебники",

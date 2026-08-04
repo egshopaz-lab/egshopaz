@@ -105,7 +105,7 @@ export function AdminCategoryManager() {
   const remove = async (c: Category) => {
     if (
       !window.confirm(
-        `“${c.name}” kateqoriyası silinsin? Alt kateqoriyalar varsa əməliyyat bloklana bilər.`,
+        `"${c.name}" kateqoriyası silinsin? Alt kateqoriyalar varsa əməliyyat bloklana bilər.`,
       )
     )
       return;

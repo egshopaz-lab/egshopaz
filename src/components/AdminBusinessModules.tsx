@@ -151,7 +151,7 @@ export function AdminBusinessModules() {
       toast.error("Bu modul satıcılar tərəfindən seçilib. Silmək əvəzinə deaktiv edin.");
       return;
     }
-    if (!window.confirm(`“${module.name_az}” modulunu silmək istəyirsiniz?`)) return;
+    if (!window.confirm(`"${module.name_az}" modulunu silmək istəyirsiniz?`)) return;
     const { error } = await (supabase as any)
       .from("business_modules")
       .delete()

@@ -153,7 +153,7 @@ export function AdminCatalogAttributes() {
   };
 
   const addOption = async (definition: Definition) => {
-    const label = prompt(`“${definition.name_az}” üçün yeni seçim:`)?.trim();
+    const label = prompt(`"${definition.name_az}" üçün yeni seçim:`)?.trim();
     if (!label) return;
     const current = options.filter((option) => option.attribute_id === definition.id);
     const { error } = await db.from("catalog_attribute_options").insert({

@@ -222,7 +222,7 @@ export function BusinessModuleSelector({
                 {" · "}Aylıq: {formatAZN(modules.filter((module) => selected.has(module.code)).reduce((sum, module) => sum + Number(module.monthly_fee ?? 0), 0))}
               </p>
               <p className="text-xs text-muted-foreground">
-                Seçimi sonradan “Biznes modulları” bölməsindən dəyişə bilərsiniz.
+                Seçimi sonradan "Biznes modulları" bölməsindən dəyişə bilərsiniz.
               </p>
             </div>
             <button

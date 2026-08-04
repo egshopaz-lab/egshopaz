@@ -96,7 +96,7 @@ export function SellerStoresManager({ sellerId, onChanged }: { sellerId: string;
   };
 
   const remove = async (shop: SellerShop) => {
-    if (!window.confirm(`“${shop.name}” mağazası silinsin?`)) return;
+    if (!window.confirm(`"${shop.name}" mağazası silinsin?`)) return;
     const { error } = await (supabase as any).rpc("delete_my_shop", { _shop_id: shop.id });
     if (error) return toast.error(error.message);
     toast.success("Mağaza silindi");

@@ -202,7 +202,7 @@ export function SellerReservations({
   };
 
   const deleteResource = async (resource: Resource) => {
-    if (!confirm(`“${resource.name}” resursu silinsin?`)) return;
+    if (!confirm(`"${resource.name}" resursu silinsin?`)) return;
     const { error } = await (supabase as any).from("reservation_resources").delete().eq("id", resource.id);
     if (error) toast.error(error.message);
     else { toast.success("Resurs silindi"); await load(); }
@@ -289,7 +289,7 @@ export function SellerReservations({
         <CalendarDays className="mx-auto h-10 w-10 text-primary" />
         <h2 className="mt-3 text-xl font-bold">Rezervasiya modulu seçilməyib</h2>
         <p className="mt-2 text-sm text-muted-foreground">
-          “Biznes modulları” bölməsindən rezervasiya dəstəkləyən modul seçin.
+          "Biznes modulları" bölməsindən rezervasiya dəstəkləyən modul seçin.
         </p>
       </div>
     );
