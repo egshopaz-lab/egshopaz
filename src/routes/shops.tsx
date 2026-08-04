@@ -13,12 +13,14 @@ export const Route = createFileRoute("/shops")({
 
 interface Shop {
   id: string;
+  seller_id: string;
   shop_name: string | null;
   full_name: string | null;
   shop_logo_url: string | null;
   shop_banner_url: string | null;
   shop_city: string | null;
   shop_description: string | null;
+  shop_address: string | null;
 }
 
 function ShopsPage() {
@@ -33,16 +35,16 @@ function ShopsPage() {
     setLoading(true);
     const { data, error } = await (supabase as any)
       .from("active_seller_storefronts")
-      .select("id,shop_name,full_name,shop_logo_url,shop_banner_url,shop_city,shop_description")
+      .select("id,seller_id,shop_name,full_name,shop_logo_url,shop_banner_url,shop_city,shop_address,shop_description")
       .order("shop_name");
     if (error) toast.error("Mağazalar yüklənmədi: " + error.message);
     setShops((data ?? []) as Shop[]);
     if (user) {
-      const { data: f } = await supabase
+      const { data: f } = await (supabase as any)
         .from("shop_followers")
-        .select("seller_id")
+        .select("shop_id")
         .eq("user_id", user.id);
-      setFollowing(new Set((f ?? []).map((r: { seller_id: string }) => r.seller_id)));
+      setFollowing(new Set((f ?? []).map((r: { shop_id?: string | null }) => r.shop_id).filter(Boolean) as string[]));
     }
     setLoading(false);
   };
@@ -59,17 +61,17 @@ function ShopsPage() {
     );
   }, [shops, q]);
 
-  const toggleFollow = async (sellerId: string) => {
+  const toggleFollow = async (shop: Shop) => {
     if (!user) { toast.error(t("shops.loginRequired")); return; }
-    if (user.id === sellerId) { toast.error(t("shops.ownShopFollowError")); return; }
-    if (following.has(sellerId)) {
-      await supabase.from("shop_followers").delete().eq("user_id", user.id).eq("seller_id", sellerId);
-      const n = new Set(following); n.delete(sellerId); setFollowing(n);
+    if (user.id === shop.seller_id) { toast.error(t("shops.ownShopFollowError")); return; }
+    if (following.has(shop.id)) {
+      await (supabase as any).from("shop_followers").delete().eq("user_id", user.id).eq("shop_id", shop.id);
+      const n = new Set(following); n.delete(shop.id); setFollowing(n);
       toast.success(t("shops.unfollowed"));
     } else {
-      const { error } = await supabase.from("shop_followers").insert({ user_id: user.id, seller_id: sellerId });
+      const { error } = await (supabase as any).from("shop_followers").insert({ user_id: user.id, seller_id: shop.seller_id, shop_id: shop.id });
       if (error) { toast.error(error.message); return; }
-      const n = new Set(following); n.add(sellerId); setFollowing(n);
+      const n = new Set(following); n.add(shop.id); setFollowing(n);
       toast.success(t("shops.followedSuccess"));
     }
   };
@@ -113,7 +115,7 @@ function ShopsPage() {
           {filtered.map((p) => {
             const name = p.shop_name || p.full_name || t("shops.shopFallback");
             const isFollowing = following.has(p.id);
-            const own = user?.id === p.id;
+            const own = user?.id === p.seller_id;
             return (
               <div key={p.id} className="bg-card border border-border rounded-2xl overflow-hidden hover:shadow-elegant transition">
                 <Link to="/shop/$id" params={{ id: p.id }} className="block">
@@ -128,17 +130,18 @@ function ShopsPage() {
                     </div>
                     <div className="min-w-0 flex-1 pt-7">
                       <div className="font-bold line-clamp-1">{name}</div>
-                      {p.shop_city && <div className="text-xs text-muted-foreground flex items-center gap-1"><MapPin className="h-3 w-3" />{p.shop_city}</div>}
+                      <div className="text-xs text-muted-foreground flex items-center gap-1"><MapPin className="h-3 w-3" />{p.shop_city || "Şəhər qeyd edilməyib"}</div>
                     </div>
                   </div>
-                  {p.shop_description && <p className="px-4 pt-2 text-xs text-muted-foreground line-clamp-2">{p.shop_description}</p>}
+                  {p.shop_address && <p className="px-4 pt-2 text-xs font-medium line-clamp-1">{p.shop_address}</p>}
+                  {p.shop_description && <p className="px-4 pt-1 text-xs text-muted-foreground line-clamp-2">{p.shop_description}</p>}
                 </Link>
                 <div className="p-4 pt-3">
                   {own ? (
                     <div className="text-xs text-center text-muted-foreground py-2">{t("shops.ownShop")}</div>
                   ) : (
                     <button
-                      onClick={() => toggleFollow(p.id)}
+                      onClick={() => void toggleFollow(p)}
                       className={`w-full text-xs font-bold py-2 rounded-lg transition inline-flex items-center justify-center gap-1 ${
                         isFollowing
                           ? "bg-primary/10 text-primary hover:bg-destructive/10 hover:text-destructive"

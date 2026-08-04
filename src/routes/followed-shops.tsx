@@ -13,6 +13,7 @@ export const Route = createFileRoute("/followed-shops")({
 
 interface Row {
   seller_id: string;
+  shop_id: string;
   profiles: {
     id: string;
     shop_name: string | null;
@@ -37,9 +38,9 @@ function FollowedShopsPage() {
       return;
     }
     setLoading(true);
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from("shop_followers")
-      .select("seller_id")
+      .select("seller_id,shop_id")
       .eq("user_id", user.id)
       .order("created_at", { ascending: false });
     if (error) {
@@ -48,19 +49,20 @@ function FollowedShopsPage() {
       setLoading(false);
       return;
     }
-    const sellerIds = (data ?? []).map((row) => row.seller_id);
-    const { data: profiles, error: profileError } = sellerIds.length
-      ? await supabase
-          .from("profiles_public")
-          .select("id,shop_name,full_name,shop_logo_url,shop_banner_url,shop_city,shop_description")
-          .in("id", sellerIds)
+    const shopIds = (data ?? []).map((row: { seller_id: string; shop_id: string | null }) => row.shop_id ?? row.seller_id);
+    const { data: profiles, error: profileError } = shopIds.length
+      ? await (supabase as any)
+          .from("active_seller_storefronts")
+          .select("id,seller_id,shop_name,full_name,shop_logo_url,shop_banner_url,shop_city,shop_description")
+          .in("id", shopIds)
       : { data: [], error: null };
     if (profileError) toast.error(profileError.message);
-    const profileMap = new Map((profiles ?? []).map((profile) => [profile.id, profile]));
+    const profileMap = new Map((profiles ?? []).map((profile: Row["profiles"] & { id: string }) => [profile.id, profile]));
     setRows(
-      (data ?? []).map((row) => ({
+      (data ?? []).map((row: { seller_id: string; shop_id: string | null }) => ({
         seller_id: row.seller_id,
-        profiles: profileMap.get(row.seller_id) ?? null,
+        shop_id: row.shop_id ?? row.seller_id,
+        profiles: profileMap.get(row.shop_id ?? row.seller_id) ?? null,
       })) as Row[],
     );
     setLoading(false);
@@ -70,9 +72,9 @@ function FollowedShopsPage() {
     void load();
   }, [user]);
 
-  const unfollow = async (sellerId: string) => {
+  const unfollow = async (shopId: string) => {
     if (!user) return;
-    await supabase.from("shop_followers").delete().eq("user_id", user.id).eq("seller_id", sellerId);
+    await (supabase as any).from("shop_followers").delete().eq("user_id", user.id).eq("shop_id", shopId);
     toast.success(t("shops.unfollowed"));
     void load();
   };
@@ -125,10 +127,10 @@ function FollowedShopsPage() {
             const name = p.shop_name || p.full_name || t("shops.shopFallback");
             return (
               <div
-                key={r.seller_id}
+                key={r.shop_id}
                 className="bg-card border border-border rounded-2xl overflow-hidden hover:shadow-elegant transition"
               >
-                <Link to="/shop/$id" params={{ id: r.seller_id }} className="block">
+                <Link to="/shop/$id" params={{ id: r.shop_id }} className="block">
                   <div className="aspect-[16/7] bg-gradient-brand">
                     {p.shop_banner_url && (
                       <img
@@ -169,7 +171,7 @@ function FollowedShopsPage() {
                 </Link>
                 <div className="p-4 pt-3">
                   <button
-                    onClick={() => unfollow(r.seller_id)}
+                    onClick={() => void unfollow(r.shop_id)}
                     className="w-full text-xs font-bold py-2 rounded-lg bg-secondary text-foreground hover:bg-destructive/10 hover:text-destructive transition"
                   >
                     {t("shops.unfollowed")}

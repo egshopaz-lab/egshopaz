@@ -100,7 +100,7 @@ function Catalog() {
     }
 
     let query: any = supabase.from("products")
-      .select("id,title,price,old_price,image_url,video_url,rating,reviews_count,brand,stock,delivery_days_min,delivery_days_max,delivery_city,free_shipping,fast_delivery,condition,category_id")
+      .select("id,title,price,old_price,image_url,video_url,rating,reviews_count,brand,stock,delivery_days_min,delivery_days_max,delivery_city,free_shipping,fast_delivery,condition,category_id,shop_id,shop:shops(name,city)")
       .eq("is_active", true);
     if (q) query = query.or(`title.ilike.%${q}%,brand.ilike.%${q}%,sku.ilike.%${q}%`);
     if (catSlugs) {

@@ -16,7 +16,7 @@ interface Review {
 interface ProductLite { id: string; title: string; image_url: string | null }
 interface ProfileLite { full_name: string | null; avatar_url: string | null }
 
-export function ShopReviews({ sellerId }: { sellerId: string }) {
+export function ShopReviews({ sellerId, shopId }: { sellerId: string; shopId?: string }) {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [products, setProducts] = useState<Record<string, ProductLite>>({});
   const [profiles, setProfiles] = useState<Record<string, ProfileLite>>({});
@@ -25,10 +25,11 @@ export function ShopReviews({ sellerId }: { sellerId: string }) {
   useEffect(() => {
     (async () => {
       setLoading(true);
-      const { data: prods } = await supabase
-        .from("products").select("id,title,image_url").eq("seller_id", sellerId);
+      let productQuery = (supabase as any).from("products").select("id,title,image_url").eq("seller_id", sellerId);
+      if (shopId) productQuery = productQuery.eq("shop_id", shopId);
+      const { data: prods } = await productQuery;
       const pmap: Record<string, ProductLite> = {};
-      (prods ?? []).forEach((p) => { pmap[p.id] = p as ProductLite; });
+      (prods ?? []).forEach((p: ProductLite) => { pmap[p.id] = p; });
       setProducts(pmap);
       const ids = Object.keys(pmap);
       if (!ids.length) { setReviews([]); setLoading(false); return; }
@@ -47,7 +48,7 @@ export function ShopReviews({ sellerId }: { sellerId: string }) {
       }
       setLoading(false);
     })();
-  }, [sellerId]);
+  }, [sellerId, shopId]);
 
   if (loading) return <div className="text-muted-foreground text-sm">Yüklənir...</div>;
   if (!reviews.length) return (

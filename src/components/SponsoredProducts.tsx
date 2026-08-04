@@ -16,6 +16,8 @@ interface SponsoredItem {
     images: string[];
     rating: number;
     reviews_count: number;
+    shop_id: string | null;
+    shop: { name: string | null; city: string | null } | null;
   } | null;
 }
 
@@ -40,12 +42,12 @@ export function SponsoredProducts({ limit = 6 }: { limit?: number }) {
         return;
       }
 
-      const { data: products } = await supabase
+      const { data: products } = await (supabase as any)
         .from("products")
-        .select("id,title,price,old_price,image_url,images,rating,reviews_count")
+        .select("id,title,price,old_price,image_url,images,rating,reviews_count,shop_id,shop:shops(name,city)")
         .in("id", ids)
         .eq("is_active", true);
-      const productMap = new Map((products ?? []).map((p) => [p.id, p]));
+      const productMap = new Map((products ?? []).map((p: SponsoredItem["products"] & { id: string }) => [p.id, p]));
       if (active) {
         setItems(placements.map((p) => ({ ...p, products: productMap.get(p.product_id) ?? null })) as SponsoredItem[]);
       }
@@ -75,6 +77,8 @@ export function SponsoredProducts({ limit = 6 }: { limit?: number }) {
             rating: prod.rating,
             reviews_count: prod.reviews_count,
             brand: null,
+            shop_id: prod.shop_id,
+            shop: prod.shop,
           };
           return (
             <div key={s.id} className="relative">

@@ -42,7 +42,7 @@ interface PromoCode {
 }
 
 const PRODUCT_COLUMNS =
-  "id,title,price,old_price,image_url,video_url,rating,reviews_count,brand,delivery_days_min,delivery_days_max,delivery_city,free_shipping,fast_delivery,stock";
+  "id,title,price,old_price,image_url,video_url,rating,reviews_count,brand,delivery_days_min,delivery_days_max,delivery_city,free_shipping,fast_delivery,stock,shop_id,shop:shops(name,city)";
 
 function ProductSection({
   title,
@@ -108,26 +108,26 @@ function Index() {
         { data: prizes },
         { data: codes },
       ] = await Promise.all([
-        supabase
+        (supabase as any)
           .from("products")
           .select(PRODUCT_COLUMNS)
           .eq("is_active", true)
           .order("created_at", { ascending: false })
           .limit(18),
-        supabase
+        (supabase as any)
           .from("products")
           .select(PRODUCT_COLUMNS)
           .eq("is_active", true)
           .not("old_price", "is", null)
           .order("created_at", { ascending: false })
           .limit(12),
-        supabase
+        (supabase as any)
           .from("products")
           .select(PRODUCT_COLUMNS)
           .eq("is_active", true)
           .order("reviews_count", { ascending: false })
           .limit(12),
-        supabase
+        (supabase as any)
           .from("products")
           .select(PRODUCT_COLUMNS)
           .eq("is_active", true)

@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { Heart, ShoppingCart, Star, Truck } from "lucide-react";
+import { Heart, MapPin, ShoppingCart, Star, Store, Truck } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { formatAZN, calcDiscount } from "@/lib/format";
 import { supabase } from "@/integrations/supabase/client";
@@ -25,6 +25,8 @@ export interface ProductCardData {
   free_shipping?: boolean | null;
   fast_delivery?: boolean | null;
   stock?: number | null;
+  shop_id?: string | null;
+  shop?: { name: string | null; city: string | null } | null;
 }
 
 export function ProductCard({
@@ -163,6 +165,12 @@ export function ProductCard({
           {p.brand && <span className="font-bold mr-1">{p.brand}</span>}
           {p.title}
         </p>
+        {p.shop?.name && (
+          <div className="flex min-w-0 items-center gap-1 text-[11px] text-muted-foreground">
+            <Store className="h-3 w-3 shrink-0" /><span className="truncate font-semibold">{p.shop.name}</span>
+            {p.shop.city && <><span>•</span><MapPin className="h-3 w-3 shrink-0" /><span className="truncate">{p.shop.city}</span></>}
+          </div>
+        )}
         <div className="mt-auto flex h-4 items-center gap-1 text-xs text-muted-foreground">
           <Star className="h-3.5 w-3.5 fill-warning text-warning" />
           <span className="font-semibold text-foreground">{Number(p.rating).toFixed(1)}</span>

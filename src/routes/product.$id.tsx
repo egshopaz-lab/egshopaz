@@ -82,7 +82,7 @@ interface Product {
   price: number; old_price: number | null; image_url: string | null;
   images?: string[] | null;
   rating: number; reviews_count: number; brand: string | null;
-  stock: number; seller_id: string;
+  stock: number; seller_id: string; shop_id?: string | null;
   video_url?: string | null; video_duration?: number | null;
   delivery_days_min?: number | null; delivery_days_max?: number | null;
   delivery_city?: string | null; free_shipping?: boolean | null; fast_delivery?: boolean | null;
@@ -122,8 +122,8 @@ function ProductPage() {
   const [zoomOpen, setZoomOpen] = useState(false);
   const [zoom, setZoom] = useState(1);
   const [shopInfo, setShopInfo] = useState<{
-    id: string; shop_name: string | null; full_name: string | null;
-    shop_logo_url: string | null; shop_description: string | null; shop_city: string | null;
+    id: string; seller_id: string; shop_name: string | null; full_name: string | null;
+    shop_logo_url: string | null; shop_description: string | null; shop_city: string | null; shop_address: string | null;
   } | null>(null);
   const [isFollowing, setIsFollowing] = useState(false);
   const [followersCount, setFollowersCount] = useState(0);
@@ -137,9 +137,10 @@ function ProductPage() {
     if (body.length < 2) { toast.error(t("orders.messageShort")); return; }
     if (user.id === p.seller_id) { toast.error(t("orders.ownShopError")); return; }
     setMsgSending(true);
-    const { error } = await supabase.from("shop_messages").insert({
+    const { error } = await (supabase as any).from("shop_messages").insert({
       buyer_id: user.id,
       seller_id: p.seller_id,
+      shop_id: p.shop_id ?? null,
       product_id: p.id,
       sender_role: "buyer",
       body,
@@ -156,12 +157,12 @@ function ProductPage() {
     if (!p) return;
     if (user.id === p.seller_id) { toast.error(t("product.ownShopFollowError")); return; }
     if (isFollowing) {
-      await supabase.from("shop_followers").delete().eq("user_id", user.id).eq("seller_id", p.seller_id);
+      await (supabase as any).from("shop_followers").delete().eq("user_id", user.id).eq("shop_id", p.shop_id ?? p.seller_id);
       setIsFollowing(false);
       setFollowersCount((c) => Math.max(0, c - 1));
       toast.success(t("product.unfollowedShop"));
     } else {
-      const { error } = await supabase.from("shop_followers").insert({ user_id: user.id, seller_id: p.seller_id });
+      const { error } = await (supabase as any).from("shop_followers").insert({ user_id: user.id, seller_id: p.seller_id, shop_id: p.shop_id ?? p.seller_id });
       if (error) { toast.error(error.message); return; }
       setIsFollowing(true);
       setFollowersCount((c) => c + 1);
@@ -177,8 +178,8 @@ function ProductPage() {
         const imgs = ((data as any).images as string[] | null) ?? [];
         setActiveImage((data as any).image_url || imgs[0] || null);
         const [{ data: seller }, { count }, { data: variantRows }] = await Promise.all([
-          supabase.from("profiles_public").select("id,shop_name,full_name,shop_logo_url,shop_description,shop_city").eq("id", data.seller_id).maybeSingle(),
-          supabase.from("shop_followers").select("id", { count: "exact", head: true }).eq("seller_id", data.seller_id),
+          (supabase as any).from("active_seller_storefronts").select("id,seller_id,shop_name,full_name,shop_logo_url,shop_description,shop_city,shop_address").eq("id", (data as any).shop_id ?? data.seller_id).maybeSingle(),
+          (supabase as any).from("shop_followers").select("id", { count: "exact", head: true }).eq("shop_id", (data as any).shop_id ?? data.seller_id),
           (supabase as any).from("product_variants").select("id,sku,price,old_price,stock,image_url,attributes,is_active").eq("product_id", data.id).eq("is_active", true).order("created_at"),
         ]);
         const normalizedVariants = ((variantRows ?? []) as StoreVariant[]).map((variant) => ({ ...variant, attributes: variant.attributes ?? {} }));
@@ -189,7 +190,7 @@ function ProductPage() {
         setShopInfo(seller as any);
         setFollowersCount(count ?? 0);
         if (user) {
-          const { data: f } = await supabase.from("shop_followers").select("id").eq("user_id", user.id).eq("seller_id", data.seller_id).maybeSingle();
+          const { data: f } = await (supabase as any).from("shop_followers").select("id").eq("user_id", user.id).eq("shop_id", (data as any).shop_id ?? data.seller_id).maybeSingle();
           setIsFollowing(!!f);
         }
       }
@@ -478,7 +479,7 @@ function ProductPage() {
 
           <div className="bg-card border border-border rounded-2xl p-4 space-y-3">
             <div className="flex items-start gap-3">
-              <Link to="/shop/$id" params={{ id: p.seller_id }} className="shrink-0">
+              <Link to="/shop/$id" params={{ id: p.shop_id ?? p.seller_id }} className="shrink-0">
                 <div className="w-12 h-12 rounded-xl bg-secondary overflow-hidden flex items-center justify-center">
                   {shopInfo?.shop_logo_url
                     ? <img src={shopInfo.shop_logo_url} alt={shopName} className="w-full h-full object-cover" />
@@ -486,7 +487,7 @@ function ProductPage() {
                 </div>
               </Link>
               <div className="flex-1 min-w-0">
-                <Link to="/shop/$id" params={{ id: p.seller_id }} className="font-bold hover:text-primary inline-flex items-center gap-1.5">
+                <Link to="/shop/$id" params={{ id: p.shop_id ?? p.seller_id }} className="font-bold hover:text-primary inline-flex items-center gap-1.5">
                   <Store className="h-4 w-4" /> {shopName}
                 </Link>
                 {shopInfo?.shop_description && (
@@ -494,6 +495,7 @@ function ProductPage() {
                 )}
                 <div className="flex flex-wrap items-center gap-3 mt-1.5 text-xs text-muted-foreground">
                   {shopInfo?.shop_city && <span className="inline-flex items-center gap-1"><MapPin className="h-3 w-3" />{shopInfo.shop_city}</span>}
+                  {shopInfo?.shop_address && <span className="line-clamp-1">{shopInfo.shop_address}</span>}
                   <span className="inline-flex items-center gap-1"><Heart className="h-3 w-3" />{t("product.followers", { count: followersCount })}</span>
                 </div>
               </div>

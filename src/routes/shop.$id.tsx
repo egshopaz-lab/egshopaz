@@ -16,7 +16,7 @@ export const Route = createFileRoute("/shop/$id")({
   loader: async ({ params }) => {
     const { data } = await (supabase as any)
       .from("active_seller_storefronts")
-      .select("id,shop_name,full_name,shop_description,shop_city,shop_logo_url,shop_banner_url")
+      .select("id,seller_id,shop_name,full_name,shop_description,shop_city,shop_address,shop_logo_url,shop_banner_url")
       .eq("id", params.id)
       .maybeSingle();
     return { shop: data };
@@ -63,8 +63,9 @@ export const Route = createFileRoute("/shop/$id")({
 });
 
 interface Profile {
-  id: string; shop_name: string | null; full_name: string | null;
+  id: string; seller_id: string; shop_name: string | null; full_name: string | null;
   shop_description: string | null; shop_city: string | null; shop_email: string | null;
+  shop_address: string | null;
   shop_logo_url: string | null; shop_banner_url: string | null;
   phone: string | null; created_at: string; seller_tier: string | null;
   seller_total_orders: number | null;
@@ -102,10 +103,10 @@ function ShopPage() {
   useEffect(() => {
     setLoading(true);
     Promise.all([
-      (supabase as any).from("active_seller_storefronts").select("id,shop_name,full_name,shop_description,shop_city,shop_email,shop_logo_url,shop_banner_url,created_at,seller_tier,seller_total_orders").eq("id", id).maybeSingle(),
-      supabase.from("products").select("id,title,price,old_price,image_url,video_url,rating,reviews_count,brand").eq("seller_id", id).eq("is_active", true).order("created_at", { ascending: false }),
-      supabase.from("shop_followers").select("id", { count: "exact", head: true }).eq("seller_id", id),
-      (supabase as any).from("reservation_resources").select("id,module_code,name,description,duration_minutes,capacity,price,online_payment_enabled,onsite_payment_enabled").eq("seller_id", id).eq("is_active", true).order("created_at"),
+      (supabase as any).from("active_seller_storefronts").select("id,seller_id,shop_name,full_name,shop_description,shop_city,shop_address,shop_email,shop_logo_url,shop_banner_url,created_at,seller_tier,seller_total_orders").eq("id", id).maybeSingle(),
+      (supabase as any).from("products").select("id,title,price,old_price,image_url,video_url,rating,reviews_count,brand,shop_id").eq("shop_id", id).eq("is_active", true).order("created_at", { ascending: false }),
+      (supabase as any).from("shop_followers").select("id", { count: "exact", head: true }).eq("shop_id", id),
+      (supabase as any).from("reservation_resources").select("id,module_code,name,description,duration_minutes,capacity,price,online_payment_enabled,onsite_payment_enabled").eq("shop_id", id).eq("is_active", true).order("created_at"),
     ]).then(([{ data: prof }, { data: prods }, { count }, { data: resourceRows }]) => {
       setProfile(prof as Profile | null);
       const list = (prods ?? []) as ProductCardData[];
@@ -122,19 +123,19 @@ function ShopPage() {
 
   useEffect(() => {
     if (!user) { setFollowing(false); return; }
-    void supabase.from("shop_followers").select("id").eq("user_id", user.id).eq("seller_id", id).maybeSingle()
-      .then(({ data }) => setFollowing(!!data));
+    void (supabase as any).from("shop_followers").select("id").eq("user_id", user.id).eq("shop_id", id).maybeSingle()
+      .then(({ data }: { data: { id: string } | null }) => setFollowing(!!data));
   }, [user, id]);
 
   const toggleFollow = async () => {
     if (!user) { toast.error("İzləmək üçün daxil olun"); return; }
-    if (user.id === id) { toast.error("Öz mağazanızı izləyə bilməzsiniz"); return; }
+    if (user.id === profile?.seller_id) { toast.error("Öz mağazanızı izləyə bilməzsiniz"); return; }
     if (following) {
-      await supabase.from("shop_followers").delete().eq("user_id", user.id).eq("seller_id", id);
+      await (supabase as any).from("shop_followers").delete().eq("user_id", user.id).eq("shop_id", id);
       setFollowing(false); setFollowers((c) => Math.max(0, c - 1));
       toast.success("İzləməkdən çıxarıldı");
     } else {
-      const { error } = await supabase.from("shop_followers").insert({ user_id: user.id, seller_id: id });
+      const { error } = await (supabase as any).from("shop_followers").insert({ user_id: user.id, seller_id: profile!.seller_id, shop_id: id });
       if (error) { toast.error(error.message); return; }
       setFollowing(true); setFollowers((c) => c + 1);
       toast.success("Mağaza izlənildi 💙");
@@ -146,7 +147,7 @@ function ShopPage() {
       void navigate({ to: "/auth", search: { role: "buyer" } });
       return;
     }
-    if (user.id === id) {
+    if (user.id === profile?.seller_id) {
       toast.error("Öz mağazanıza mesaj yaza bilməzsiniz");
       return;
     }
@@ -159,7 +160,8 @@ function ShopPage() {
     setMessageSending(true);
     const { error } = await (supabase as any).from("shop_messages").insert({
       buyer_id: user.id,
-      seller_id: id,
+      seller_id: profile!.seller_id,
+      shop_id: id,
       sender_role: "buyer",
       body,
     });
@@ -233,9 +235,10 @@ function ShopPage() {
                         <MapPin className="h-3.5 w-3.5" /> {profile.shop_city}
                       </span>
                     )}
+                    {profile.shop_address && <span>• {profile.shop_address}</span>}
                   </div>
                 </div>
-                {user?.id !== id && (
+                {user?.id !== profile.seller_id && (
                   <div className="flex flex-wrap gap-2">
                     <button
                       onClick={openMessage}
@@ -259,7 +262,7 @@ function ShopPage() {
                 <p className="text-sm text-foreground/80 mt-3 max-w-2xl line-clamp-2">{profile.shop_description}</p>
               )}
 
-              {messageOpen && user?.id !== id && (
+              {messageOpen && user?.id !== profile.seller_id && (
                 <div className="mt-4 max-w-2xl rounded-2xl border bg-background p-3 shadow-sm">
                   <textarea
                     value={messageBody}
@@ -368,7 +371,7 @@ function ShopPage() {
           </div>
         )}
 
-        {tab === "reviews" && <ShopReviews sellerId={id} />}
+        {tab === "reviews" && <ShopReviews sellerId={profile.seller_id} shopId={id} />}
 
         {tab === "about" && (
           <div className="bg-card border border-border rounded-2xl p-5 md:p-6 space-y-4 max-w-2xl">
@@ -383,6 +386,12 @@ function ShopPage() {
                 <div className="flex items-start gap-2.5 text-sm">
                   <MapPin className="h-4 w-4 text-primary mt-0.5 shrink-0" />
                   <div><div className="text-xs text-muted-foreground">Şəhər</div><div className="font-semibold">{profile.shop_city}</div></div>
+                </div>
+              )}
+              {profile.shop_address && (
+                <div className="flex items-start gap-2.5 text-sm sm:col-span-2">
+                  <MapPin className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                  <div><div className="text-xs text-muted-foreground">Tam ünvan</div><div className="font-semibold">{profile.shop_address}</div></div>
                 </div>
               )}
               {profile.shop_email && (

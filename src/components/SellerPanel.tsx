@@ -66,6 +66,7 @@ import { BusinessModuleSelector } from "@/components/BusinessModuleSelector";
 import { SellerReservations } from "@/components/SellerReservations";
 import { isReservationModule } from "@/lib/reservations";
 import { ProductVariantEditor } from "@/components/ProductVariantEditor";
+import { SellerStoresManager, type SellerShop } from "@/components/SellerStoresManager";
 import type { ProductAttributeValue, ProductVariantValue } from "@/lib/productAttributes";
 import {
   SellerNotificationCenter,
@@ -88,6 +89,7 @@ import {
 
 interface Product {
   id: string;
+  shop_id?: string | null;
   title: string;
   price: number;
   old_price: number | null;
@@ -259,6 +261,7 @@ export function SellerPanel() {
     | "analytics"
     | "bulk"
     | "shop"
+    | "stores"
     | "support"
     | "returns"
     | "followers"
@@ -283,6 +286,7 @@ export function SellerPanel() {
             "analytics",
             "bulk",
             "shop",
+            "stores",
             "support",
             "returns",
             "followers",
@@ -305,6 +309,7 @@ export function SellerPanel() {
   const [orderViewFilter, setOrderViewFilter] = useState<OrderViewFilter>("all");
   const [productViewFilter, setProductViewFilter] = useState<ProductViewFilter>("all");
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [shops, setShops] = useState<SellerShop[]>([]);
   const [editing, setEditing] = useState<Partial<Product> | null>(null);
   const [qrProduct, setQrProduct] = useState<Product | null>(null);
   const [qrDataUrl, setQrDataUrl] = useState<string>("");
@@ -386,6 +391,7 @@ export function SellerPanel() {
       { data: ois, error: itemsError },
       { data: pr, error: profileError },
       { count: followersCount },
+      { data: shopRows, error: shopsError },
     ] = await Promise.all([
       supabase
         .from("products")
@@ -408,8 +414,14 @@ export function SellerPanel() {
         .from("shop_followers")
         .select("id", { count: "exact", head: true })
         .eq("seller_id", user.id),
+      (supabase as any)
+        .from("shops")
+        .select("id,seller_id,name,description,city,address,email,logo_url,banner_url,is_active,is_primary,created_at")
+        .eq("seller_id", user.id)
+        .order("is_primary", { ascending: false })
+        .order("created_at"),
     ]);
-    const firstError = productsError ?? categoriesError ?? itemsError ?? profileError;
+    const firstError = productsError ?? categoriesError ?? itemsError ?? profileError ?? shopsError;
     if (firstError) {
       toast.error(`Məlumat yüklənmədi: ${firstError.message}`);
       setPanelError(firstError.message);
@@ -452,6 +464,7 @@ export function SellerPanel() {
     }
     const pickupMap = new Map((pickupRows ?? []).map((p) => [p.id, p]));
     setProducts((ps ?? []) as unknown as Product[]);
+    setShops((shopRows ?? []) as SellerShop[]);
     setCategories((cs ?? []) as Category[]);
     setOrderItems(
       rawItems
@@ -917,6 +930,11 @@ export function SellerPanel() {
 
   const save = async () => {
     if (!user || !editing) return;
+    const selectedShopId = editing.shop_id || shops.find((shop) => shop.is_primary)?.id || shops[0]?.id;
+    if (!selectedShopId) {
+      toast.error("Məhsul əlavə etmək üçün əvvəlcə mağaza yaradın");
+      return;
+    }
     const payload = {
       title: (editing.title ?? "").trim(),
       price: Number(editing.price ?? 0),
@@ -951,6 +969,7 @@ export function SellerPanel() {
       min_stock: payload.min_stock,
       description: payload.description || null,
       seller_id: user.id,
+      shop_id: selectedShopId,
       // Hər yeni və redaktə edilmiş məhsul admin yoxlamasından sonra yayımlanır.
       is_active: false,
       delivery_days_min: editing.delivery_days_min != null ? Number(editing.delivery_days_min) : 1,
@@ -1186,7 +1205,28 @@ export function SellerPanel() {
       { onConflict: "id" },
     );
     if (error) toast.error(error.message);
-    else toast.success("Mağaza məlumatları yadda saxlanıldı");
+    else {
+      const { error: shopError } = await (supabase as any)
+        .from("shops")
+        .update({
+          name: profile.shop_name?.slice(0, 100),
+          description: profile.shop_description?.slice(0, 1000) || null,
+          logo_url: profile.shop_logo_url ?? null,
+          banner_url: profile.shop_banner_url ?? null,
+          address: profile.shop_address?.slice(0, 300) || null,
+          city: profile.shop_city?.slice(0, 100) || null,
+          email: profile.shop_email?.slice(0, 200) || null,
+          lat: c?.lat ?? null,
+          lng: c?.lng ?? null,
+        })
+        .eq("seller_id", user.id)
+        .eq("is_primary", true);
+      if (shopError) toast.error("Əsas mağaza yenilənmədi: " + shopError.message);
+      else {
+        toast.success("Əsas mağaza məlumatları yadda saxlanıldı");
+        void load();
+      }
+    }
     setSavingShop(false);
   };
 
@@ -1331,6 +1371,15 @@ export function SellerPanel() {
       icon: BarChart3,
       active: tab === "analytics",
       onClick: () => openSection("analytics"),
+    },
+    {
+      key: "stores",
+      label: "Mağazalarım",
+      group: "Ayarlar",
+      icon: Store,
+      badge: shops.length,
+      active: tab === "stores",
+      onClick: () => openSection("stores"),
     },
     {
       key: "shop",
@@ -1776,6 +1825,10 @@ export function SellerPanel() {
                       >
                         {product.title}
                       </Link>
+                      <div className="mt-1 text-xs font-semibold text-muted-foreground">
+                        {shops.find((shop) => shop.id === product.shop_id)?.name ?? "Əsas mağaza"}
+                        {shops.find((shop) => shop.id === product.shop_id)?.city ? ` • ${shops.find((shop) => shop.id === product.shop_id)?.city}` : ""}
+                      </div>
                       <div className="mt-1 text-lg font-black text-primary">{formatAZN(product.price)}</div>
                       <div className="mt-1 flex flex-wrap gap-2 text-xs">
                         <span className={product.stock <= (product.min_stock ?? 5) ? "font-bold text-destructive" : "text-muted-foreground"}>
@@ -1842,6 +1895,10 @@ export function SellerPanel() {
                             {p.sku && (
                               <div className="text-xs text-muted-foreground">SKU: {p.sku}</div>
                             )}
+                            <div className="text-xs text-muted-foreground">
+                              {shops.find((shop) => shop.id === p.shop_id)?.name ?? "Əsas mağaza"}
+                              {shops.find((shop) => shop.id === p.shop_id)?.city ? ` • ${shops.find((shop) => shop.id === p.shop_id)?.city}` : ""}
+                            </div>
                           </div>
                         </div>
                       </td>
@@ -2133,6 +2190,10 @@ export function SellerPanel() {
       {tab === "balance" && <SellerBalance sellerId={user.id} />}
 
       {tab === "followers" && <SellerFollowers sellerId={user.id} />}
+
+      {tab === "stores" && (
+        <SellerStoresManager sellerId={user.id} onChanged={setShops} />
+      )}
 
       {tab === "support" && (
         <div className="space-y-4">
@@ -2543,6 +2604,21 @@ export function SellerPanel() {
                   Qısa video məhsulun satışını artırır. 60 saniyədən uzun videolar avtomatik rədd
                   edilir.
                 </p>
+              </div>
+
+              <div>
+                <label className="text-sm font-semibold">Mağaza *</label>
+                <select
+                  value={editing.shop_id || shops.find((shop) => shop.is_primary)?.id || shops[0]?.id || ""}
+                  onChange={(e) => setEditing({ ...editing, shop_id: e.target.value || null })}
+                  className="mt-1 h-11 w-full rounded-lg border border-input bg-background px-3"
+                >
+                  {!shops.length && <option value="">Əvvəlcə mağaza yaradın</option>}
+                  {shops.map((shop) => (
+                    <option key={shop.id} value={shop.id}>{shop.name} — {shop.city || "şəhər qeyd edilməyib"}{shop.is_primary ? " (əsas)" : ""}</option>
+                  ))}
+                </select>
+                <p className="mt-1 text-xs text-muted-foreground">Məhsul müştəriyə bu mağazanın adı və şəhəri ilə göstəriləcək.</p>
               </div>
 
               <div>
