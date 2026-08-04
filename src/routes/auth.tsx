@@ -111,7 +111,7 @@ export function PortalAuthForm({
   const validLocked: RoleTab | null = lockedRole && ["buyer","seller","pvz","admin"].includes(lockedRole) ? lockedRole : null;
   const [role, setRole] = useState<RoleTab>(validLocked ?? "buyer");
   useEffect(() => {
-    if (validLocked === "admin" || fixedMode === "login") setMode("login");
+    if (fixedMode === "login") setMode("login");
     else if (fixedMode === "signup") setMode("signup");
   }, [fixedMode, validLocked]);
 
@@ -266,7 +266,7 @@ export function PortalAuthForm({
     }
 
     // signup validations
-    if (!agree) { toast.error("Müqavilə şərtlərini qəbul etməlisiniz"); return; }
+    if (role !== "admin" && !agree) { toast.error("Müqavilə şərtlərini qəbul etməlisiniz"); return; }
     if (name.trim().length < 2) { toast.error("Ad daxil edin"); return; }
     const normalizedPhone = normalizeE164Phone(phone);
     if (!isValidE164Phone(normalizedPhone)) {
@@ -380,6 +380,18 @@ export function PortalAuthForm({
       return;
     }
 
+    if (role === "admin") {
+      setBusy(false);
+      toast.success(data.session
+        ? "İşçi hesabı yaradıldı. Super Admin səlahiyyət təyin etdikdən sonra admin panelinə daxil ola bilərsiniz."
+        : "İşçi hesabı yaradıldı. E-poçtunuzu təsdiqləyin; sonra Super Admin sizə səlahiyyət təyin edəcək.");
+      if (data.session) {
+        await supabase.auth.signOut({ scope: "local" }).catch(() => {});
+        navigate({ to: "/login" });
+      }
+      return;
+    }
+
     // buyer
     setBusy(false);
     if (!data.session) {
@@ -415,6 +427,12 @@ export function PortalAuthForm({
         <p className="text-sm text-muted-foreground mb-4 text-center">
           {portalLabel ?? "Hesab növünü seçin"}
         </p>
+
+        {mode === "signup" && role === "admin" && (
+          <div className="mb-4 rounded-xl border border-primary/20 bg-primary/5 px-4 py-3 text-sm text-muted-foreground">
+            İşçi hesabınızı yaradın. Bu qeydiyyat avtomatik admin hüququ vermir; Super Admin sizi təsdiqləyib səlahiyyət dərəcəsi təyin edəcək.
+          </div>
+        )}
 
         <div className="mb-5 grid grid-cols-4 gap-2">
           {([
@@ -574,7 +592,7 @@ export function PortalAuthForm({
           <button type="submit" disabled={busy}
             className="w-full h-11 bg-primary text-primary-foreground rounded-lg font-bold hover:bg-primary/90 disabled:opacity-60">
             {busy ? "..." : mode === "login" ? "Daxil ol" : (
-              role === "seller" ? "Satıcı kimi qeydiyyat" : role === "pvz" ? "PVZ PUNKT qeydiyyatı" : "Qeydiyyat"
+              role === "seller" ? "Satıcı kimi qeydiyyat" : role === "pvz" ? "PVZ PUNKT qeydiyyatı" : role === "admin" ? "İşçi müraciəti yarat" : "Qeydiyyat"
             )}
           </button>
         </form>
