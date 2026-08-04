@@ -26,6 +26,8 @@ import { AdminFinanceCenter } from "@/components/AdminFinanceCenter";
 import { AdminBusinessModules } from "@/components/AdminBusinessModules";
 import { AdminReservations } from "@/components/AdminReservations";
 import { AdminCommercialSettings } from "@/components/AdminCommercialSettings";
+import { AdminContentHub } from "@/components/AdminContentHub";
+import { AdminMarketingHub } from "@/components/AdminMarketingHub";
 import { toast } from "sonner";
 import { PanelLayout, type PanelNavItem } from "@/components/PanelLayout";
 import { AZ_CITY_NAMES, findCity } from "@/lib/azCities";
@@ -487,7 +489,7 @@ export function AdminPanel() {
       {tab === "finance" && <AdminFinanceCenter commissionPercent={settings?.commission_percent ?? 10} />}
       {tab === "treasury" && <AdminTreasury />}
       {tab === "payouts" && <AdminPayouts />}
-      {tab === "marketing" && <MarketingSection />}
+      {tab === "marketing" && <AdminMarketingHub onNavigate={(section) => setTab(section as TabKey)} />}
       {tab === "banners" && <AdminBannerManager />}
       {tab === "packages" && <AdminAdvertisingPackages />}
       {tab === "trends" && <AdminTrends />}
@@ -497,7 +499,7 @@ export function AdminPanel() {
       {tab === "audit" && <AdminAuditLog />}
       {tab === "disputes" && <DisputesSection disputes={disputes} resolveDispute={resolveDispute} />}
       {tab === "message_reports" && <AdminMessageReports />}
-      {tab === "content" && <ContentSection />}
+      {tab === "content" && <AdminContentHub onNavigate={(section) => setTab(section as TabKey)} />}
       {tab === "settings" && <SettingsSection settings={settings} updateSettings={updateSettings} />}
       {tab === "support" && <SupportSection tickets={tickets} replyTicket={replyTicket} />}
       {tab === "ai_bot" && <AIBotSection />}
