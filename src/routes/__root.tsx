@@ -133,9 +133,14 @@ function WorkHeader({ label }: { label: string }) {
     <header className="sticky top-0 z-50 bg-background border-b border-border shadow-sm">
       <div className="container mx-auto px-4 h-14 flex items-center gap-3">
         <div className="flex min-w-0 items-center gap-2">
-          <img src="/brand/eg-mark.svg" alt="" className="h-9 w-9 shrink-0 object-contain" />
-          <span className="shrink-0 text-lg font-black leading-none">EG Shop</span>
-          <span className="hidden truncate text-sm font-bold text-muted-foreground sm:inline">· {label}</span>
+          <img
+            src="/brand/eg-wordmark-dark.svg"
+            alt="EG Shop"
+            width={560}
+            height={128}
+            className="h-8 w-[140px] shrink-0 object-contain object-left sm:h-9 sm:w-[158px]"
+          />
+          <span className="hidden truncate border-l border-border pl-2 text-sm font-bold text-muted-foreground sm:inline">{label}</span>
         </div>
         <div className="ml-auto flex items-center gap-3">
           <LiveClock />
