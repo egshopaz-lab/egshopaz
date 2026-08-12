@@ -6,7 +6,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 
-export function CompareButton({ productId }: { productId: string }) {
+export function CompareButton({ productId, compact = false }: { productId: string; compact?: boolean }) {
   const { t } = useTranslation();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -37,8 +37,20 @@ export function CompareButton({ productId }: { productId: string }) {
   };
 
   return (
-    <button onClick={toggle} className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg border text-sm transition ${active ? "border-primary text-primary bg-primary/5" : "border-border hover:bg-secondary"}`}>
-      <Scale className="h-4 w-4" /> {active ? t("compare.inCompare") : t("compare.compare")}
+    <button
+      onClick={toggle}
+      aria-label={active ? t("compare.inCompare") : t("compare.compare")}
+      title={active ? t("compare.inCompare") : t("compare.compare")}
+      className={`inline-flex shrink-0 items-center justify-center rounded-xl border transition ${
+        compact ? "h-11 w-11 p-0" : "gap-2 rounded-lg px-3 py-2 text-sm"
+      } ${active ? "border-primary bg-primary/5 text-primary" : "border-border bg-card hover:bg-secondary"}`}
+    >
+      <Scale className={compact ? "h-5 w-5" : "h-4 w-4"} />
+      {compact ? (
+        <span className="sr-only">{active ? t("compare.inCompare") : t("compare.compare")}</span>
+      ) : (
+        active ? t("compare.inCompare") : t("compare.compare")
+      )}
     </button>
   );
 }

@@ -567,12 +567,13 @@ function ProductPage() {
         <ProductReviews productId={p.id} />
       </div>
       <div className="fixed inset-x-0 bottom-[60px] z-40 border-t border-border bg-card/95 px-3 py-2 shadow-[0_-8px_28px_rgba(15,23,42,0.12)] backdrop-blur md:hidden">
-        <div className="mx-auto flex max-w-lg items-center gap-3">
+        <div className="mx-auto flex max-w-lg items-center gap-2">
           <div className="min-w-0 flex-1"><span className="block text-[10px] font-bold uppercase text-muted-foreground">{t("common.price")}</span><strong className="block truncate text-lg leading-tight">{formatAZN(effectivePrice)}</strong></div>
-          <button onClick={addToCart} disabled={effectiveStock === 0} className="inline-flex min-h-11 flex-[1.5] items-center justify-center gap-2 rounded-xl bg-primary px-4 font-extrabold text-primary-foreground disabled:opacity-50"><ShoppingCart className="h-5 w-5" />{effectiveStock === 0 ? t("product.outOfStock") : t("product.addToCart")}</button>
+          <CompareButton productId={p.id} compact />
+          <button onClick={addToCart} disabled={effectiveStock === 0} className="inline-flex min-h-11 min-w-0 flex-[1.5] items-center justify-center gap-2 rounded-xl bg-primary px-3 text-sm font-extrabold text-primary-foreground disabled:opacity-50"><ShoppingCart className="h-5 w-5 shrink-0" /><span className="truncate">{effectiveStock === 0 ? t("product.outOfStock") : t("product.addToCart")}</span></button>
         </div>
       </div>
-      <div className="fixed bottom-20 right-4 z-40 md:bottom-8">
+      <div className="fixed bottom-8 right-4 z-40 hidden md:block">
         <CompareButton productId={p.id} />
       </div>
     </div>
