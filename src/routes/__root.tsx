@@ -132,7 +132,7 @@ function WorkHeader({ label }: { label: string }) {
   return (
     <header className="sticky top-0 z-50 bg-background border-b border-border shadow-sm">
       <div className="container mx-auto px-4 h-14 flex items-center gap-3">
-        <div className="flex min-w-0 items-center gap-2">
+        <a href="https://egshop.az/" className="flex min-w-0 items-center gap-2" aria-label="EG Shop ana səhifəsinə keç">
           <img
             src="/brand/eg-wordmark-dark.svg"
             alt="EG Shop"
@@ -141,7 +141,7 @@ function WorkHeader({ label }: { label: string }) {
             className="h-8 w-[140px] shrink-0 object-contain object-left sm:h-9 sm:w-[158px]"
           />
           <span className="hidden truncate border-l border-border pl-2 text-sm font-bold text-muted-foreground sm:inline">{label}</span>
-        </div>
+        </a>
         <div className="ml-auto flex items-center gap-3">
           <LiveClock />
           {user && (

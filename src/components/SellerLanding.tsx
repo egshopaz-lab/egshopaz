@@ -107,7 +107,7 @@ export function SellerLanding() {
 
       <header className="sticky top-0 z-50 border-b border-slate-200/80 bg-white/95 backdrop-blur">
         <div className="mx-auto flex h-18 max-w-7xl items-center gap-8 px-4 sm:px-6 lg:px-8">
-          <a href="/" className="flex shrink-0 items-center gap-3" aria-label="EG Shop Satıcı">
+          <a href="https://egshop.az/" className="flex shrink-0 items-center gap-3" aria-label="EG Shop ana səhifəsinə keç">
             <img src="/brand/eg-wordmark-dark.svg" alt="EG Shop" className="h-10 w-[145px] object-contain object-left" />
             <div>
               <div className="mt-1 text-[11px] font-bold uppercase tracking-[0.16em] text-violet-600">
@@ -398,13 +398,13 @@ export function SellerLanding() {
 
       <footer className="border-t border-slate-200 bg-slate-50">
         <div className="mx-auto flex max-w-7xl flex-col gap-6 px-4 py-10 sm:px-6 lg:flex-row lg:items-center lg:px-8">
-          <div className="flex items-center gap-3">
+          <a href="https://egshop.az/" className="flex items-center gap-3" aria-label="EG Shop ana səhifəsinə keç">
             <img src="/brand/eg-wordmark-dark.svg" alt="EG Shop" className="h-9 w-[132px] object-contain object-left" />
             <div>
               <p className="font-black">Satıcı portalı</p>
               <p className="text-xs font-semibold text-slate-500">Biznesiniz üçün etibarlı tərəfdaş</p>
             </div>
-          </div>
+          </a>
           <div className="flex flex-wrap gap-x-6 gap-y-3 text-xs font-bold text-slate-600 lg:ml-auto">
             <a href="https://egshop.az/terms" className="hover:text-violet-700">İstifadəçi şərtləri</a>
             <a href="https://egshop.az/privacy" className="hover:text-violet-700">Məxfilik siyasəti</a>
