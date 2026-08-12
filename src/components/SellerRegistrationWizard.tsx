@@ -7,6 +7,7 @@ import {
   ChevronRight,
   Eye,
   EyeOff,
+  ExternalLink,
   FileCheck2,
   IdCard,
   Loader2,
@@ -20,10 +21,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { AcquisitionSourceFields } from "@/components/AcquisitionSourceFields";
 import { PhoneNumberField } from "@/components/PhoneNumberField";
-import {
-  ACQUISITION_DETAIL_SOURCES,
-  type AcquisitionSource,
-} from "@/lib/acquisitionSources";
+import { ACQUISITION_DETAIL_SOURCES, type AcquisitionSource } from "@/lib/acquisitionSources";
 import { isValidE164Phone, normalizeE164Phone } from "@/lib/phone";
 import { portalUrl } from "@/lib/portals";
 
@@ -48,6 +46,9 @@ interface SellerRegistrationForm {
   shopName: string;
   sellerType: SellerType;
   voen: string;
+  epointAccountEmail: string;
+  epointBusinessName: string;
+  epointRegistrationAccepted: boolean;
   acquisitionSource: string;
   acquisitionDetail: string;
   termsAccepted: boolean;
@@ -92,6 +93,9 @@ const initialForm: SellerRegistrationForm = {
   shopName: "",
   sellerType: "individual",
   voen: "",
+  epointAccountEmail: "",
+  epointBusinessName: "",
+  epointRegistrationAccepted: false,
   acquisitionSource: "",
   acquisitionDetail: "",
   termsAccepted: false,
@@ -110,7 +114,10 @@ function dateYearsAgo(years: number) {
 }
 
 function normalizeIdentityNumber(value: string) {
-  return value.toLocaleUpperCase("az-AZ").replace(/[^A-Z0-9]/g, "").slice(0, 20);
+  return value
+    .toLocaleUpperCase("az-AZ")
+    .replace(/[^A-Z0-9]/g, "")
+    .slice(0, 20);
 }
 
 export function SellerRegistrationWizard({ referralCode }: SellerRegistrationWizardProps) {
@@ -126,7 +133,7 @@ export function SellerRegistrationWizard({ referralCode }: SellerRegistrationWiz
   const [phoneOtpRequired, setPhoneOtpRequired] = useState(true);
 
   const normalizedPhone = useMemo(() => normalizeE164Phone(form.phone), [form.phone]);
-  const needsVoen = form.sellerType !== "individual";
+  const needsVoen = true;
   const maximumBirthDate = useMemo(() => dateYearsAgo(18), []);
 
   useEffect(() => {
@@ -171,10 +178,10 @@ export function SellerRegistrationWizard({ referralCode }: SellerRegistrationWiz
         return "Düzgün e-poçt ünvanı daxil edin";
       }
       if (
-        form.password.length < 8
-        || !/[a-z]/.test(form.password)
-        || !/[A-Z]/.test(form.password)
-        || !/\d/.test(form.password)
+        form.password.length < 8 ||
+        !/[a-z]/.test(form.password) ||
+        !/[A-Z]/.test(form.password) ||
+        !/\d/.test(form.password)
       ) {
         return "Şifrə ən azı 8 simvol, böyük və kiçik hərf, həmçinin rəqəm içərməlidir";
       }
@@ -193,22 +200,31 @@ export function SellerRegistrationWizard({ referralCode }: SellerRegistrationWiz
 
     if (index === 2) {
       if (form.shopName.trim().length < 2) return "Satıcı və ya mağaza adını daxil edin";
-      if (needsVoen && !/^\d{10}$/.test(form.voen.replace(/\D/g, ""))) {
-        return "Sahibkar və şirkətlər üçün VÖEN 10 rəqəmdən ibarət olmalıdır";
+      if (!/^\d{10}$/.test(form.voen.replace(/\D/g, ""))) {
+        return "Epoint qeydiyyatı üçün VÖEN 10 rəqəmdən ibarət olmalıdır";
       }
       if (acquisitionEnabled && acquisitionRequired && !form.acquisitionSource) {
         return "Bizi necə tanıdığınızı seçin";
       }
       if (
-        acquisitionEnabled
-        && ACQUISITION_DETAIL_SOURCES.has(form.acquisitionSource as AcquisitionSource)
-        && !form.acquisitionDetail.trim()
+        acquisitionEnabled &&
+        ACQUISITION_DETAIL_SOURCES.has(form.acquisitionSource as AcquisitionSource) &&
+        !form.acquisitionDetail.trim()
       ) {
         return "Kim tərəfindən cəlb olunduğunuzu qeyd edin";
       }
     }
 
     if (index === 3) {
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.epointAccountEmail.trim())) {
+        return "Epoint hesabında istifadə etdiyiniz düzgün e-poçt ünvanını daxil edin";
+      }
+      if (form.epointBusinessName.trim().length < 2) {
+        return "Epoint biznes səhifəsinin adını daxil edin";
+      }
+      if (!form.epointRegistrationAccepted) {
+        return "Epoint qeydiyyatını tamamladığınızı təsdiqləyin";
+      }
       if (!form.termsAccepted) return "İstifadəçi şərtlərini qəbul edin";
       if (!form.privacyAccepted) return "Məxfilik siyasətini qəbul edin";
       if (!form.sellerAgreementAccepted) return "Satıcı müqaviləsini qəbul edin";
@@ -267,6 +283,10 @@ export function SellerRegistrationWizard({ referralCode }: SellerRegistrationWiz
           shop_name: form.shopName.trim(),
           seller_type: form.sellerType,
           voen: needsVoen ? form.voen.replace(/\D/g, "") : undefined,
+          epoint_account_email: form.epointAccountEmail.trim().toLowerCase(),
+          epoint_business_name: form.epointBusinessName.trim(),
+          epoint_registration_declared: true,
+          epoint_registration_declared_at: new Date().toISOString(),
           referral_code: referralCode?.trim().toUpperCase() || undefined,
           acquisition_source:
             acquisitionEnabled && form.acquisitionSource ? form.acquisitionSource : undefined,
@@ -338,15 +358,17 @@ export function SellerRegistrationWizard({ referralCode }: SellerRegistrationWiz
     <div className="container mx-auto max-w-4xl px-4 py-8 md:py-12">
       <div className="mb-6 rounded-3xl bg-gradient-brand p-6 text-primary-foreground shadow-elegant md:p-8">
         <div className="flex items-center gap-3">
-          <div className="rounded-2xl bg-white/15 p-3"><Store className="h-8 w-8" /></div>
+          <div className="rounded-2xl bg-white/15 p-3">
+            <Store className="h-8 w-8" />
+          </div>
           <div>
             <div className="text-sm font-semibold opacity-80">EG Shop · Satıcı portalı</div>
             <h1 className="text-2xl font-black md:text-4xl">Satıcı qeydiyyatı</h1>
           </div>
         </div>
         <p className="mt-4 max-w-2xl text-sm opacity-90 md:text-base">
-          Məlumatlarınızı mərhələli şəkildə daxil edin. Hər addımdan sonra məlumatlar
-          yoxlanılır və yalnız tamamlandıqda növbəti mərhələyə keçilir.
+          Məlumatlarınızı mərhələli şəkildə daxil edin. Hər addımdan sonra məlumatlar yoxlanılır və
+          yalnız tamamlandıqda növbəti mərhələyə keçilir.
         </p>
       </div>
 
@@ -360,21 +382,29 @@ export function SellerRegistrationWizard({ referralCode }: SellerRegistrationWiz
               <div key={item.title} className="flex flex-1 items-center last:flex-none">
                 <button
                   type="button"
-                  onClick={() => { if (index <= step) setStep(index); }}
+                  onClick={() => {
+                    if (index <= step) setStep(index);
+                  }}
                   className="group flex min-w-[105px] flex-col items-center gap-2 text-center"
                 >
-                  <span className={`flex h-10 w-10 items-center justify-center rounded-full border-2 transition ${
-                    complete
-                      ? "border-primary bg-primary text-primary-foreground"
-                      : active
-                        ? "border-primary bg-primary/10 text-primary"
-                        : "border-border bg-card text-muted-foreground"
-                  }`}>
+                  <span
+                    className={`flex h-10 w-10 items-center justify-center rounded-full border-2 transition ${
+                      complete
+                        ? "border-primary bg-primary text-primary-foreground"
+                        : active
+                          ? "border-primary bg-primary/10 text-primary"
+                          : "border-border bg-card text-muted-foreground"
+                    }`}
+                  >
                     {complete ? <BadgeCheck className="h-5 w-5" /> : <Icon className="h-5 w-5" />}
                   </span>
-                  <span className={`text-xs font-bold ${
-                    active || complete ? "text-foreground" : "text-muted-foreground"
-                  }`}>{item.short}</span>
+                  <span
+                    className={`text-xs font-bold ${
+                      active || complete ? "text-foreground" : "text-muted-foreground"
+                    }`}
+                  >
+                    {item.short}
+                  </span>
                 </button>
                 {index < STEPS.length - 1 && (
                   <div className={`mx-2 h-0.5 flex-1 ${complete ? "bg-primary" : "bg-border"}`} />
@@ -398,32 +428,54 @@ export function SellerRegistrationWizard({ referralCode }: SellerRegistrationWiz
             <div className="grid gap-4 md:grid-cols-3">
               <div>
                 <label className={labelClass}>Ad *</label>
-                <input value={form.firstName} onChange={(e) => update("firstName", e.target.value)}
-                  autoComplete="given-name" maxLength={80} className={inputClass} />
+                <input
+                  value={form.firstName}
+                  onChange={(e) => update("firstName", e.target.value)}
+                  autoComplete="given-name"
+                  maxLength={80}
+                  className={inputClass}
+                />
               </div>
               <div>
                 <label className={labelClass}>Soyad *</label>
-                <input value={form.lastName} onChange={(e) => update("lastName", e.target.value)}
-                  autoComplete="family-name" maxLength={80} className={inputClass} />
+                <input
+                  value={form.lastName}
+                  onChange={(e) => update("lastName", e.target.value)}
+                  autoComplete="family-name"
+                  maxLength={80}
+                  className={inputClass}
+                />
               </div>
               <div>
                 <label className={labelClass}>Ata adı *</label>
-                <input value={form.fatherName} onChange={(e) => update("fatherName", e.target.value)}
-                  maxLength={80} className={inputClass} />
+                <input
+                  value={form.fatherName}
+                  onChange={(e) => update("fatherName", e.target.value)}
+                  maxLength={80}
+                  className={inputClass}
+                />
               </div>
             </div>
             <div className="grid gap-4 md:grid-cols-2">
               <div>
                 <label className={labelClass}>Doğum tarixi *</label>
-                <input type="date" value={form.dateOfBirth} max={maximumBirthDate}
+                <input
+                  type="date"
+                  value={form.dateOfBirth}
+                  max={maximumBirthDate}
                   onChange={(e) => update("dateOfBirth", e.target.value)}
-                  autoComplete="bday" className={inputClass} />
+                  autoComplete="bday"
+                  className={inputClass}
+                />
               </div>
               <div>
                 <label className={labelClass}>Telefon nömrəsi *</label>
                 <div className="mt-1">
-                  <PhoneNumberField value={form.phone}
-                    onChange={(value) => update("phone", value)} required />
+                  <PhoneNumberField
+                    value={form.phone}
+                    onChange={(value) => update("phone", value)}
+                    required
+                  />
                 </div>
                 <p className="mt-1 text-xs text-muted-foreground">
                   {phoneOtpRequired
@@ -434,28 +486,47 @@ export function SellerRegistrationWizard({ referralCode }: SellerRegistrationWiz
             </div>
             <div>
               <label className={labelClass}>E-poçt ünvanı *</label>
-              <input type="email" value={form.email} onChange={(e) => update("email", e.target.value)}
-                autoComplete="email" maxLength={255} className={inputClass} />
+              <input
+                type="email"
+                value={form.email}
+                onChange={(e) => update("email", e.target.value)}
+                autoComplete="email"
+                maxLength={255}
+                className={inputClass}
+              />
             </div>
             <div className="grid gap-4 md:grid-cols-2">
               <div>
                 <label className={labelClass}>Şifrə *</label>
                 <div className="relative">
-                  <input type={showPassword ? "text" : "password"} value={form.password}
-                    onChange={(e) => update("password", e.target.value)} autoComplete="new-password"
-                    maxLength={72} className={`${inputClass} pr-11`} />
-                  <button type="button" aria-label={showPassword ? "Şifrəni gizlət" : "Şifrəni göstər"}
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    value={form.password}
+                    onChange={(e) => update("password", e.target.value)}
+                    autoComplete="new-password"
+                    maxLength={72}
+                    className={`${inputClass} pr-11`}
+                  />
+                  <button
+                    type="button"
+                    aria-label={showPassword ? "Şifrəni gizlət" : "Şifrəni göstər"}
                     onClick={() => setShowPassword((value) => !value)}
-                    className="absolute right-3 top-4 text-muted-foreground">
+                    className="absolute right-3 top-4 text-muted-foreground"
+                  >
                     {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                   </button>
                 </div>
               </div>
               <div>
                 <label className={labelClass}>Şifrəni təsdiqlə *</label>
-                <input type={showPassword ? "text" : "password"} value={form.passwordConfirm}
+                <input
+                  type={showPassword ? "text" : "password"}
+                  value={form.passwordConfirm}
                   onChange={(e) => update("passwordConfirm", e.target.value)}
-                  autoComplete="new-password" maxLength={72} className={inputClass} />
+                  autoComplete="new-password"
+                  maxLength={72}
+                  className={inputClass}
+                />
               </div>
             </div>
             <p className="text-xs text-muted-foreground">
@@ -478,26 +549,42 @@ export function SellerRegistrationWizard({ referralCode }: SellerRegistrationWiz
             <div className="grid gap-4 md:grid-cols-2">
               <div>
                 <label className={labelClass}>FİN kodu *</label>
-                <input value={form.finCode}
-                  onChange={(e) => update("finCode", normalizeIdentityNumber(e.target.value).slice(0, 7))}
-                  autoCapitalize="characters" maxLength={7} placeholder="7 simvol"
-                  className={`${inputClass} uppercase tracking-widest`} />
+                <input
+                  value={form.finCode}
+                  onChange={(e) =>
+                    update("finCode", normalizeIdentityNumber(e.target.value).slice(0, 7))
+                  }
+                  autoCapitalize="characters"
+                  maxLength={7}
+                  placeholder="7 simvol"
+                  className={`${inputClass} uppercase tracking-widest`}
+                />
               </div>
               <div>
                 <label className={labelClass}>Şəxsiyyət vəsiqəsinin seriya və nömrəsi *</label>
-                <input value={form.identityDocumentNumber}
-                  onChange={(e) => update("identityDocumentNumber", normalizeIdentityNumber(e.target.value))}
-                  autoCapitalize="characters" maxLength={20} placeholder="Məsələn: AA1234567"
-                  className={`${inputClass} uppercase`} />
+                <input
+                  value={form.identityDocumentNumber}
+                  onChange={(e) =>
+                    update("identityDocumentNumber", normalizeIdentityNumber(e.target.value))
+                  }
+                  autoCapitalize="characters"
+                  maxLength={20}
+                  placeholder="Məsələn: AA1234567"
+                  className={`${inputClass} uppercase`}
+                />
               </div>
             </div>
             <div>
               <label className={labelClass}>Yaşayış ünvanı *</label>
-              <textarea value={form.residentialAddress}
+              <textarea
+                value={form.residentialAddress}
                 onChange={(e) => update("residentialAddress", e.target.value)}
-                autoComplete="street-address" maxLength={300} rows={3}
+                autoComplete="street-address"
+                maxLength={300}
+                rows={3}
                 placeholder="Şəhər/rayon, küçə, bina və mənzil"
-                className="mt-1 w-full resize-y rounded-lg border border-input bg-background px-3 py-3 outline-none transition focus:ring-2 focus:ring-ring" />
+                className="mt-1 w-full resize-y rounded-lg border border-input bg-background px-3 py-3 outline-none transition focus:ring-2 focus:ring-ring"
+              />
             </div>
           </div>
         )}
@@ -506,22 +593,34 @@ export function SellerRegistrationWizard({ referralCode }: SellerRegistrationWiz
           <div className="space-y-5">
             <div>
               <label className={labelClass}>Satıcı adı (Mağaza adı) *</label>
-              <input value={form.shopName} onChange={(e) => update("shopName", e.target.value)}
-                maxLength={100} placeholder="Müştərilərin görəcəyi mağaza adı"
-                className={inputClass} />
+              <input
+                value={form.shopName}
+                onChange={(e) => update("shopName", e.target.value)}
+                maxLength={100}
+                placeholder="Müştərilərin görəcəyi mağaza adı"
+                className={inputClass}
+              />
             </div>
             <fieldset>
               <legend className={labelClass}>Satıcı növü *</legend>
               <div className="mt-2 grid gap-3 md:grid-cols-3">
                 {SELLER_TYPES.map((item) => (
-                  <label key={item.value} className={`cursor-pointer rounded-2xl border p-4 transition ${
-                    form.sellerType === item.value
-                      ? "border-primary bg-primary/5 ring-1 ring-primary"
-                      : "border-border hover:border-primary/50"
-                  }`}>
-                    <input type="radio" name="seller-type" value={item.value}
+                  <label
+                    key={item.value}
+                    className={`cursor-pointer rounded-2xl border p-4 transition ${
+                      form.sellerType === item.value
+                        ? "border-primary bg-primary/5 ring-1 ring-primary"
+                        : "border-border hover:border-primary/50"
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="seller-type"
+                      value={item.value}
                       checked={form.sellerType === item.value}
-                      onChange={() => update("sellerType", item.value)} className="sr-only" />
+                      onChange={() => update("sellerType", item.value)}
+                      className="sr-only"
+                    />
                     <Building2 className="mb-2 h-5 w-5 text-primary" />
                     <div className="font-bold">{item.label}</div>
                     <div className="mt-1 text-xs text-muted-foreground">{item.description}</div>
@@ -532,46 +631,130 @@ export function SellerRegistrationWizard({ referralCode }: SellerRegistrationWiz
             {needsVoen && (
               <div className="rounded-2xl border border-border bg-secondary/30 p-4">
                 <label className={labelClass}>VÖEN *</label>
-                <input value={form.voen}
+                <input
+                  value={form.voen}
                   onChange={(e) => update("voen", e.target.value.replace(/\D/g, "").slice(0, 10))}
-                  inputMode="numeric" maxLength={10} placeholder="10 rəqəm" className={inputClass} />
+                  inputMode="numeric"
+                  maxLength={10}
+                  placeholder="10 rəqəm"
+                  className={inputClass}
+                />
                 <p className="mt-1 text-xs text-muted-foreground">
                   VÖEN yalnız fərdi sahibkar və hüquqi şəxslər üçün məcburidir.
                 </p>
               </div>
             )}
-            <AcquisitionSourceFields source={form.acquisitionSource}
-              detail={form.acquisitionDetail} enabled={acquisitionEnabled}
+            <AcquisitionSourceFields
+              source={form.acquisitionSource}
+              detail={form.acquisitionDetail}
+              enabled={acquisitionEnabled}
               required={acquisitionRequired}
               onSourceChange={(value) => update("acquisitionSource", value)}
-              onDetailChange={(value) => update("acquisitionDetail", value)} />
+              onDetailChange={(value) => update("acquisitionDetail", value)}
+            />
           </div>
         )}
 
         {step === 3 && (
           <div className="space-y-4">
+            <div className="rounded-2xl border-2 border-primary/30 bg-primary/5 p-5">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                <div>
+                  <h3 className="text-lg font-black">Epoint qeydiyyatı məcburidir</h3>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    Epoint hesabı admin tərəfindən yoxlanmadan satıcı kabineti, mağaza və məhsul
+                    yerləşdirmə açılmayacaq.
+                  </p>
+                </div>
+                <a
+                  href="https://epoint.az/az/registration"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-xl bg-primary px-4 font-bold text-primary-foreground hover:bg-primary/90"
+                >
+                  Epoint-də qeydiyyat <ExternalLink className="h-4 w-4" />
+                </a>
+              </div>
+              <div className="mt-5 grid gap-4 md:grid-cols-2">
+                <div>
+                  <label className={labelClass}>Epoint hesabının e-poçtu *</label>
+                  <input
+                    type="email"
+                    value={form.epointAccountEmail}
+                    onChange={(event) => update("epointAccountEmail", event.target.value)}
+                    placeholder="Epoint-də qeyd etdiyiniz e-poçt"
+                    maxLength={255}
+                    className={inputClass}
+                  />
+                </div>
+                <div>
+                  <label className={labelClass}>Epoint biznes səhifəsinin adı *</label>
+                  <input
+                    value={form.epointBusinessName}
+                    onChange={(event) => update("epointBusinessName", event.target.value)}
+                    placeholder="Epoint-dəki biznes səhifəsinin adı"
+                    maxLength={120}
+                    className={inputClass}
+                  />
+                </div>
+              </div>
+              <label className="mt-4 flex cursor-pointer items-start gap-3 rounded-xl border border-primary/20 bg-background p-4">
+                <input
+                  type="checkbox"
+                  checked={form.epointRegistrationAccepted}
+                  onChange={(event) => update("epointRegistrationAccepted", event.target.checked)}
+                  className="mt-0.5 h-5 w-5 rounded border-input accent-primary"
+                />
+                <span className="text-sm font-semibold">
+                  Epoint qeydiyyatını tamamlamışam və yuxarıdakı məlumatların yoxlanılmasına
+                  razıyam.
+                </span>
+              </label>
+            </div>
             <p className="text-sm text-muted-foreground">
               Qeydiyyatı tamamlamaq üçün aşağıdakı sənədləri oxuyub ayrıca təsdiqləyin.
             </p>
             {[
-              { key: "termsAccepted" as const, label: "İstifadəçi şərtlərini qəbul edirəm.",
-                href: "https://egshop.az/terms", link: "Şərtləri oxu" },
-              { key: "privacyAccepted" as const, label: "Məxfilik siyasəti ilə razıyam.",
-                href: "https://egshop.az/privacy", link: "Siyasəti oxu" },
-              { key: "sellerAgreementAccepted" as const, label: "Satıcı müqaviləsini qəbul edirəm.",
-                href: "https://egshop.az/terms", link: "Müqaviləni oxu" },
+              {
+                key: "termsAccepted" as const,
+                label: "İstifadəçi şərtlərini qəbul edirəm.",
+                href: "https://egshop.az/terms",
+                link: "Şərtləri oxu",
+              },
+              {
+                key: "privacyAccepted" as const,
+                label: "Məxfilik siyasəti ilə razıyam.",
+                href: "https://egshop.az/privacy",
+                link: "Siyasəti oxu",
+              },
+              {
+                key: "sellerAgreementAccepted" as const,
+                label: "Satıcı müqaviləsini qəbul edirəm.",
+                href: "https://egshop.az/terms",
+                link: "Müqaviləni oxu",
+              },
             ].map((item) => (
-              <label key={item.key} className={`flex cursor-pointer items-start gap-3 rounded-2xl border p-4 transition ${
-                form[item.key] ? "border-primary bg-primary/5" : "border-border"
-              }`}>
-                <input type="checkbox" checked={form[item.key]}
+              <label
+                key={item.key}
+                className={`flex cursor-pointer items-start gap-3 rounded-2xl border p-4 transition ${
+                  form[item.key] ? "border-primary bg-primary/5" : "border-border"
+                }`}
+              >
+                <input
+                  type="checkbox"
+                  checked={form[item.key]}
                   onChange={(e) => update(item.key, e.target.checked)}
-                  className="mt-1 h-5 w-5 rounded border-input accent-primary" />
+                  className="mt-1 h-5 w-5 rounded border-input accent-primary"
+                />
                 <span className="min-w-0 flex-1">
                   <span className="block font-semibold">{item.label}</span>
-                  <a href={item.href} target="_blank" rel="noreferrer"
+                  <a
+                    href={item.href}
+                    target="_blank"
+                    rel="noreferrer"
                     onClick={(e) => e.stopPropagation()}
-                    className="mt-1 inline-block text-sm font-semibold text-primary hover:underline">
+                    className="mt-1 inline-block text-sm font-semibold text-primary hover:underline"
+                  >
                     {item.link}
                   </a>
                 </span>
@@ -585,20 +768,42 @@ export function SellerRegistrationWizard({ referralCode }: SellerRegistrationWiz
             <div className="rounded-2xl border border-border bg-secondary/30 p-5">
               <h3 className="font-black">Məlumatları yoxlayın</h3>
               <dl className="mt-4 grid gap-x-6 gap-y-3 text-sm md:grid-cols-2">
-                <div><dt className="text-muted-foreground">Ad, soyad, ata adı</dt>
-                  <dd className="font-semibold">{form.firstName} {form.lastName} {form.fatherName}</dd></div>
-                <div><dt className="text-muted-foreground">Doğum tarixi</dt>
-                  <dd className="font-semibold">{form.dateOfBirth}</dd></div>
-                <div><dt className="text-muted-foreground">Telefon</dt>
-                  <dd className="font-semibold">{normalizedPhone}</dd></div>
-                <div><dt className="text-muted-foreground">E-poçt</dt>
-                  <dd className="font-semibold">{form.email}</dd></div>
-                <div><dt className="text-muted-foreground">Mağaza</dt>
-                  <dd className="font-semibold">{form.shopName}</dd></div>
-                <div><dt className="text-muted-foreground">Satıcı növü</dt>
+                <div>
+                  <dt className="text-muted-foreground">Ad, soyad, ata adı</dt>
+                  <dd className="font-semibold">
+                    {form.firstName} {form.lastName} {form.fatherName}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-muted-foreground">Doğum tarixi</dt>
+                  <dd className="font-semibold">{form.dateOfBirth}</dd>
+                </div>
+                <div>
+                  <dt className="text-muted-foreground">Telefon</dt>
+                  <dd className="font-semibold">{normalizedPhone}</dd>
+                </div>
+                <div>
+                  <dt className="text-muted-foreground">E-poçt</dt>
+                  <dd className="font-semibold">{form.email}</dd>
+                </div>
+                <div>
+                  <dt className="text-muted-foreground">Mağaza</dt>
+                  <dd className="font-semibold">{form.shopName}</dd>
+                </div>
+                <div>
+                  <dt className="text-muted-foreground">Epoint hesabı</dt>
+                  <dd className="font-semibold">{form.epointAccountEmail}</dd>
+                </div>
+                <div>
+                  <dt className="text-muted-foreground">Epoint biznes səhifəsi</dt>
+                  <dd className="font-semibold">{form.epointBusinessName}</dd>
+                </div>
+                <div>
+                  <dt className="text-muted-foreground">Satıcı növü</dt>
                   <dd className="font-semibold">
                     {SELLER_TYPES.find((item) => item.value === form.sellerType)?.label}
-                  </dd></div>
+                  </dd>
+                </div>
               </dl>
             </div>
             <div className="rounded-2xl border border-primary/20 bg-primary/5 p-5">
@@ -617,22 +822,38 @@ export function SellerRegistrationWizard({ referralCode }: SellerRegistrationWiz
                 )}
               </ol>
             </div>
-            <button type="button" onClick={submit} disabled={busy}
-              className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-primary px-5 font-bold text-primary-foreground hover:bg-primary/90 disabled:opacity-60">
-              {busy ? <Loader2 className="h-5 w-5 animate-spin" /> : <MailCheck className="h-5 w-5" />}
+            <button
+              type="button"
+              onClick={submit}
+              disabled={busy}
+              className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-primary px-5 font-bold text-primary-foreground hover:bg-primary/90 disabled:opacity-60"
+            >
+              {busy ? (
+                <Loader2 className="h-5 w-5 animate-spin" />
+              ) : (
+                <MailCheck className="h-5 w-5" />
+              )}
               {busy ? "Hesab yaradılır..." : "Qeydiyyatı tamamla və e-poçtu təsdiqlə"}
             </button>
           </div>
         )}
 
         <div className="mt-8 flex items-center justify-between gap-3 border-t border-border pt-5">
-          <button type="button" onClick={back} disabled={step === 0 || busy}
-            className="inline-flex h-11 items-center gap-2 rounded-lg border border-border px-4 font-semibold disabled:invisible">
+          <button
+            type="button"
+            onClick={back}
+            disabled={step === 0 || busy}
+            className="inline-flex h-11 items-center gap-2 rounded-lg border border-border px-4 font-semibold disabled:invisible"
+          >
             <ChevronLeft className="h-4 w-4" /> Geri
           </button>
           {step < STEPS.length - 1 && (
-            <button type="button" onClick={next} disabled={busy}
-              className="inline-flex h-11 items-center gap-2 rounded-lg bg-primary px-5 font-bold text-primary-foreground hover:bg-primary/90">
+            <button
+              type="button"
+              onClick={next}
+              disabled={busy}
+              className="inline-flex h-11 items-center gap-2 rounded-lg bg-primary px-5 font-bold text-primary-foreground hover:bg-primary/90"
+            >
               Davam et <ChevronRight className="h-4 w-4" />
             </button>
           )}

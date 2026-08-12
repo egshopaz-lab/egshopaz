@@ -3,7 +3,15 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { BadgeCheck, CreditCard, LockKeyhole, Package, Store, TrendingUp } from "lucide-react";
+import {
+  BadgeCheck,
+  CreditCard,
+  ExternalLink,
+  LockKeyhole,
+  Package,
+  Store,
+  TrendingUp,
+} from "lucide-react";
 import { toast } from "sonner";
 import { AcquisitionSourceFields } from "@/components/AcquisitionSourceFields";
 import { ACQUISITION_DETAIL_SOURCES, type AcquisitionSource } from "@/lib/acquisitionSources";
@@ -20,8 +28,17 @@ interface SellerApplication {
   shop_city: string | null;
   phone: string | null;
   voen: string | null;
-  status: "pending_payment" | "active" | "payment_returned" | "suspended";
+  status:
+    | "pending_payment"
+    | "pending_epoint_verification"
+    | "active"
+    | "payment_returned"
+    | "suspended";
   payment_status: "pending" | "success" | "error" | "returned" | "migrated";
+  epoint_account_email: string | null;
+  epoint_business_name: string | null;
+  epoint_registration_status: "pending" | "verified" | "rejected" | "legacy_verified";
+  epoint_registration_declared_at: string | null;
 }
 
 export const Route = createFileRoute("/become-seller")({
@@ -45,6 +62,9 @@ function BecomeSeller() {
   const [shopCity, setShopCity] = useState("");
   const [phone, setPhone] = useState("");
   const [voen, setVoen] = useState("");
+  const [epointAccountEmail, setEpointAccountEmail] = useState("");
+  const [epointBusinessName, setEpointBusinessName] = useState("");
+  const [epointConfirmed, setEpointConfirmed] = useState(false);
   const [acquisitionSource, setAcquisitionSource] = useState("");
   const [acquisitionDetail, setAcquisitionDetail] = useState("");
   const [acquisitionEnabled, setAcquisitionEnabled] = useState(true);
@@ -56,16 +76,16 @@ function BecomeSeller() {
   const normalizedPhone = normalizeE164Phone(phone);
   const verifiedPhone = user?.phone ? normalizeE164Phone(user.phone) : "";
   const isPhoneVerified = Boolean(
-    user?.phone_confirmed_at
-    && verifiedPhone
-    && verifiedPhone === normalizedPhone,
+    user?.phone_confirmed_at && verifiedPhone && verifiedPhone === normalizedPhone,
   );
 
   const loadApplication = useCallback(async () => {
     if (!user) return null;
     const { data, error } = await supabase
       .from("seller_applications")
-      .select("id,shop_name,shop_city,phone,voen,status,payment_status")
+      .select(
+        "id,shop_name,shop_city,phone,voen,status,payment_status,epoint_account_email,epoint_business_name,epoint_registration_status,epoint_registration_declared_at",
+      )
       .eq("user_id", user.id)
       .maybeSingle();
 
@@ -82,6 +102,9 @@ function BecomeSeller() {
       setShopCity((value) => value || current.shop_city || "");
       setPhone((value) => value || current.phone || "");
       setVoen((value) => value || current.voen || "");
+      setEpointAccountEmail((value) => value || current.epoint_account_email || "");
+      setEpointBusinessName((value) => value || current.epoint_business_name || "");
+      setEpointConfirmed(Boolean(current.epoint_registration_declared_at));
     }
     setChecking(false);
 
@@ -108,18 +131,30 @@ function BecomeSeller() {
     setShopCity((value) => value || String(metadata.shop_city ?? ""));
     setPhone((value) => value || String(metadata.phone ?? ""));
     setVoen((value) => value || String(metadata.voen ?? ""));
+    setEpointAccountEmail((value) => value || String(metadata.epoint_account_email ?? ""));
+    setEpointBusinessName((value) => value || String(metadata.epoint_business_name ?? ""));
+    setEpointConfirmed((value) => value || metadata.epoint_registration_declared === true);
     setAcquisitionSource((value) => value || String(metadata.acquisition_source ?? ""));
     setAcquisitionDetail((value) => value || String(metadata.acquisition_detail ?? ""));
 
     void Promise.all([
-      supabase.from("profiles").select("acquisition_source,acquisition_detail").eq("id", user.id).maybeSingle(),
+      supabase
+        .from("profiles")
+        .select("acquisition_source,acquisition_detail")
+        .eq("id", user.id)
+        .maybeSingle(),
       supabase
         .from("system_settings")
-        .select("acquisition_source_enabled,acquisition_source_required,seller_signup_fee,seller_phone_otp_required")
+        .select(
+          "acquisition_source_enabled,acquisition_source_required,seller_signup_fee,seller_phone_otp_required",
+        )
         .limit(1)
         .maybeSingle(),
     ]).then(([profileResult, settingsResult]) => {
-      const profile = profileResult.data as { acquisition_source?: string | null; acquisition_detail?: string | null } | null;
+      const profile = profileResult.data as {
+        acquisition_source?: string | null;
+        acquisition_detail?: string | null;
+      } | null;
       const settings = settingsResult.data as {
         acquisition_source_enabled?: boolean;
         acquisition_source_required?: boolean;
@@ -161,20 +196,38 @@ function BecomeSeller() {
       toast.error("Mağaza adı minimum 2 simvol olmalıdır");
       return;
     }
+    if (!/^\d{10}$/.test(voen.replace(/\D/g, ""))) {
+      toast.error("Epoint qeydiyyatı üçün 10 rəqəmli VÖEN daxil edin");
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(epointAccountEmail.trim())) {
+      toast.error("Epoint hesabında istifadə etdiyiniz e-poçtu daxil edin");
+      return;
+    }
+    if (epointBusinessName.trim().length < 2 || !epointConfirmed) {
+      toast.error("Epoint qeydiyyatını tamamlayın və biznes səhifəsinin adını təsdiqləyin");
+      return;
+    }
 
     if (acquisitionEnabled) {
       if (acquisitionRequired && !acquisitionSource) {
         toast.error("Sizi haradan tanıdığımızı seçin");
         return;
       }
-      if (ACQUISITION_DETAIL_SOURCES.has(acquisitionSource as AcquisitionSource) && !acquisitionDetail.trim()) {
+      if (
+        ACQUISITION_DETAIL_SOURCES.has(acquisitionSource as AcquisitionSource) &&
+        !acquisitionDetail.trim()
+      ) {
         toast.error("Kim tərəfindən cəlb olunduğunuzu qeyd edin");
         return;
       }
-      const { error: sourceError } = await supabase.rpc("record_registration_source" as never, {
-        _source: acquisitionSource,
-        _detail: acquisitionDetail.trim() || null,
-      } as never);
+      const { error: sourceError } = await supabase.rpc(
+        "record_registration_source" as never,
+        {
+          _source: acquisitionSource,
+          _detail: acquisitionDetail.trim() || null,
+        } as never,
+      );
       if (sourceError) {
         toast.error(sourceError.message);
         return;
@@ -182,13 +235,25 @@ function BecomeSeller() {
     }
 
     setBusy(true);
+    const { error: epointRegistrationError } = await supabase.rpc(
+      "submit_seller_epoint_registration" as never,
+      {
+        _account_email: epointAccountEmail.trim().toLowerCase(),
+        _business_name: epointBusinessName.trim(),
+      } as never,
+    );
+    if (epointRegistrationError) {
+      toast.error(epointRegistrationError.message);
+      setBusy(false);
+      return;
+    }
     const language = ["az", "en", "ru"].includes(i18n.language) ? i18n.language : "az";
     const { data, error } = await supabase.functions.invoke("seller-payment-init", {
       body: {
         shop_name: shopName.trim(),
         shop_city: shopCity.trim() || null,
         phone: normalizedPhone,
-        voen: voen.trim() || null,
+        voen: voen.replace(/\D/g, ""),
         language,
       },
     });
@@ -198,8 +263,13 @@ function BecomeSeller() {
         data?.error === "payment_not_configured"
           ? "Ödəniş xidməti hələ aktivləşdirilməyib"
           : error
-            ? await getFunctionErrorMessage(error, "Ödəniş səhifəsi açıla bilmədi. Yenidən cəhd edin.")
-            : typeof data?.error === "string" ? data.error : "Ödəniş səhifəsi açıla bilmədi. Yenidən cəhd edin.";
+            ? await getFunctionErrorMessage(
+                error,
+                "Ödəniş səhifəsi açıla bilmədi. Yenidən cəhd edin.",
+              )
+            : typeof data?.error === "string"
+              ? data.error
+              : "Ödəniş səhifəsi açıla bilmədi. Yenidən cəhd edin.";
       toast.error(message);
       await loadApplication();
       setBusy(false);
@@ -211,13 +281,14 @@ function BecomeSeller() {
 
   useEffect(() => {
     if (
-      !user
-      || loading
-      || checking
-      || busy
-      || autoPaymentStartedRef.current
-      || (phoneOtpRequired && !isPhoneVerified)
-    ) return;
+      !user ||
+      loading ||
+      checking ||
+      busy ||
+      autoPaymentStartedRef.current ||
+      (phoneOtpRequired && !isPhoneVerified)
+    )
+      return;
     if (search.payment) return;
     const metadata = user.user_metadata ?? {};
     const cameFromSellerSignup =
@@ -225,12 +296,19 @@ function BecomeSeller() {
       metadata.onboarding_portal === "seller" ||
       metadata.account_role === "seller";
     if (!cameFromSellerSignup || application?.status === "active") return;
-    if (!shopName.trim()) return;
+    if (
+      !shopName.trim() ||
+      !epointConfirmed ||
+      !epointAccountEmail.trim() ||
+      !epointBusinessName.trim()
+    )
+      return;
     if (
       acquisitionEnabled &&
       acquisitionRequired &&
       (!acquisitionSource ||
-        (ACQUISITION_DETAIL_SOURCES.has(acquisitionSource as AcquisitionSource) && !acquisitionDetail.trim()))
+        (ACQUISITION_DETAIL_SOURCES.has(acquisitionSource as AcquisitionSource) &&
+          !acquisitionDetail.trim()))
     ) {
       return;
     }
@@ -246,6 +324,9 @@ function BecomeSeller() {
     busy,
     checking,
     isPhoneVerified,
+    epointAccountEmail,
+    epointBusinessName,
+    epointConfirmed,
     loading,
     phoneOtpRequired,
     search.payment,
@@ -291,7 +372,11 @@ function BecomeSeller() {
         {[
           { icon: TrendingUp, title: "Geniş auditoriya", subtitle: "Bütün Azərbaycan" },
           { icon: Package, title: "Sadə idarəetmə", subtitle: "Bir paneldən hamısı" },
-          { icon: CreditCard, title: `Birdəfəlik ${feeLabel}`, subtitle: "Təhlükəsiz Epoint ödənişi" },
+          {
+            icon: CreditCard,
+            title: `Birdəfəlik ${feeLabel}`,
+            subtitle: "Təhlükəsiz Epoint ödənişi",
+          },
         ].map((benefit) => (
           <div key={benefit.title} className="bg-card border border-border rounded-2xl p-4">
             <benefit.icon className="h-6 w-6 text-primary mb-2" />
@@ -326,6 +411,18 @@ function BecomeSeller() {
           <div className="font-bold">Status: Gözləmədə</div>
           <p className="text-sm mt-1">
             {feeLabel} ödəniş tamamlanana qədər məhsul əlavə etmək mümkün deyil.
+          </p>
+        </div>
+      )}
+
+      {application?.status === "pending_epoint_verification" && (
+        <div className="mb-5 rounded-2xl border border-blue-300 bg-blue-50 p-4 text-blue-950">
+          <div className="flex items-center gap-2 font-bold">
+            <BadgeCheck className="h-5 w-5" /> Epoint qeydiyyatı yoxlanılır
+          </div>
+          <p className="mt-1 text-sm">
+            Ödəniş qeydə alınıb. Admin Epoint biznes hesabınızı təsdiqlədikdən sonra satıcı kabineti
+            avtomatik açılacaq.
           </p>
         </div>
       )}
@@ -365,23 +462,68 @@ function BecomeSeller() {
           </div>
           <div>
             <label className="text-sm font-semibold">Telefon</label>
-            <PhoneNumberField
-              value={phone}
-              onChange={setPhone}
-              required
-            />
+            <PhoneNumberField value={phone} onChange={setPhone} required />
           </div>
         </div>
         <div>
-          <label className="text-sm font-semibold">
-            VÖEN <span className="font-normal text-muted-foreground">(varsa)</span>
-          </label>
+          <label className="text-sm font-semibold">VÖEN *</label>
           <input
             value={voen}
             onChange={(event) => setVoen(event.target.value)}
             maxLength={32}
             className="mt-1 w-full h-11 px-3 rounded-lg border border-input bg-background"
           />
+        </div>
+
+        <div className="rounded-2xl border-2 border-primary/30 bg-primary/5 p-4">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <div className="font-black">Epoint biznes hesabı məcburidir</div>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Bu məlumatlar admin tərəfindən yoxlanmadan satıcı hüquqları verilməyəcək.
+              </p>
+            </div>
+            <a
+              href="https://epoint.az/az/registration"
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-2 rounded-lg bg-primary px-3 py-2 text-sm font-bold text-primary-foreground"
+            >
+              Epoint-də qeydiyyat <ExternalLink className="h-4 w-4" />
+            </a>
+          </div>
+          <div className="mt-4 grid gap-4 sm:grid-cols-2">
+            <div>
+              <label className="text-sm font-semibold">Epoint hesabının e-poçtu *</label>
+              <input
+                type="email"
+                value={epointAccountEmail}
+                onChange={(event) => setEpointAccountEmail(event.target.value)}
+                maxLength={255}
+                required
+                className="mt-1 h-11 w-full rounded-lg border border-input bg-background px-3"
+              />
+            </div>
+            <div>
+              <label className="text-sm font-semibold">Epoint biznes səhifəsinin adı *</label>
+              <input
+                value={epointBusinessName}
+                onChange={(event) => setEpointBusinessName(event.target.value)}
+                maxLength={120}
+                required
+                className="mt-1 h-11 w-full rounded-lg border border-input bg-background px-3"
+              />
+            </div>
+          </div>
+          <label className="mt-4 flex cursor-pointer items-start gap-3 rounded-xl bg-background p-3 text-sm font-semibold">
+            <input
+              type="checkbox"
+              checked={epointConfirmed}
+              onChange={(event) => setEpointConfirmed(event.target.checked)}
+              className="mt-0.5 h-5 w-5 accent-primary"
+            />
+            Epoint qeydiyyatını tamamlamışam və məlumatların yoxlanılmasına razıyam.
+          </label>
         </div>
 
         <AcquisitionSourceFields
@@ -410,10 +552,10 @@ function BecomeSeller() {
           {busy ? "Ödəniş hazırlanır..." : `${feeLabel} ödə və satıcı ol`}
         </button>
         <p className="text-xs text-center text-muted-foreground">
-          Hesab yalnız Epoint-dən uğurlu ödəniş təsdiqi gəldikdən sonra aktivləşir.
+          Hesab yalnız Epoint biznes qeydiyyatı admin tərəfindən yoxlandıqdan və ödəniş
+          təsdiqləndikdən sonra aktivləşir.
         </p>
       </form>
     </div>
   );
 }
-

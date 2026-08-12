@@ -69,7 +69,7 @@ function Catalog() {
       const brands = [...new Set((data ?? []).map((row) => row.brand?.trim()).filter((value): value is string => Boolean(value)))];
       setAvailableBrands(brands.sort((a, b) => a.localeCompare(b, "az")));
     });
-    supabase.from("shops").select("id,name,city").eq("is_active", true).order("name").limit(500).then(({ data }) => setAvailableShops((data ?? []) as CatalogShopOption[]));
+    (supabase as any).from("shops").select("id,name,city").eq("is_active", true).order("name").limit(500).then(({ data }: { data: CatalogShopOption[] | null }) => setAvailableShops(data ?? []));
   }, []);
 
   useEffect(() => {
