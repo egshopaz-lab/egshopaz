@@ -1,15 +1,1 @@
-<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="EG Shop">
-  <defs>
-    <linearGradient id="boxFront" x1="166" y1="220" x2="352" y2="406" gradientUnits="userSpaceOnUse"><stop stop-color="#7C3AED"/><stop offset="1" stop-color="#4C1D95"/></linearGradient>
-    <linearGradient id="speed" x1="34" y1="257" x2="169" y2="257" gradientUnits="userSpaceOnUse"><stop stop-color="#FF7A66"/><stop offset="1" stop-color="#F43F5E"/></linearGradient>
-  </defs>
-  <path d="M28 205H154M8 258H137M39 311H160" stroke="url(#speed)" stroke-width="27" stroke-linecap="round"/>
-  <path d="M161 183L270 235V428L161 371V183Z" fill="url(#boxFront)"/>
-  <path d="M270 235L383 181V370L270 428V235Z" fill="#4C1D95"/>
-  <path d="M161 183L242 137L349 183L270 235L161 183Z" fill="#5B21B6"/>
-  <path d="M242 137L349 183L383 162L277 116L242 137Z" fill="#7C3AED"/>
-  <path d="M161 183L242 137L203 116L122 162L161 183Z" fill="#8B5CF6"/>
-  <path d="M270 235V428" stroke="white" stroke-opacity=".92" stroke-width="11"/>
-  <path d="M230 216L270 235L313 214V278L288 292V254L270 264L230 244V216Z" fill="white"/>
-</svg>
-
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg"><image href="/brand/eg-mark.svg" width="512" height="512"/></svg>

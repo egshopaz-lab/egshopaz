@@ -47,12 +47,13 @@ export const Route = createRootRoute({
       { property: "og:site_name", content: "EG Shop" },
       { property: "og:type", content: "website" },
       { property: "og:locale", content: "az_AZ" },
-      { property: "og:image", content: absoluteUrl("/brand/eg-social.svg") },
+      { property: "og:image", content: absoluteUrl("/brand/eg-social.png") },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:image", content: absoluteUrl("/brand/eg-social.svg") },
+      { name: "twitter:image", content: absoluteUrl("/brand/eg-social.png") },
     ],
     links: [
-      { rel: "icon", type: "image/png", href: "/brand/eg-logo-mark-v4.png" },
+      { rel: "icon", type: "image/svg+xml", href: "/brand/eg-mark.svg" },
+      { rel: "apple-touch-icon", href: "/brand/eg-app-icon.png" },
     ],
     scripts: [
       {
@@ -62,7 +63,7 @@ export const Route = createRootRoute({
           "@type": "Organization",
           name: "EG Shop",
           url: SITE_URL,
-          logo: absoluteUrl("/brand/eg-logo-mark-v4.png"),
+          logo: absoluteUrl("/brand/eg-app-icon.png"),
           sameAs: [],
         }),
       },
@@ -132,7 +133,7 @@ function WorkHeader({ label }: { label: string }) {
     <header className="sticky top-0 z-50 bg-background border-b border-border shadow-sm">
       <div className="container mx-auto px-4 h-14 flex items-center gap-3">
         <div className="flex min-w-0 items-center gap-2">
-          <img src="/brand/eg-logo-mark-v4.png" alt="" className="h-9 w-9 shrink-0 rounded-lg object-cover" />
+          <img src="/brand/eg-mark.svg" alt="" className="h-9 w-9 shrink-0 object-contain" />
           <span className="shrink-0 text-lg font-black leading-none">EG Shop</span>
           <span className="hidden truncate text-sm font-bold text-muted-foreground sm:inline">· {label}</span>
         </div>
@@ -232,7 +233,7 @@ function AppShell() {
   if (!portalReady && (isAuthRoute || isWorkPanel)) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background" aria-busy="true" aria-label="Portal yüklənir">
-        <img src="/brand/eg-logo-mark-v4.png" alt="EG Shop" className="h-14 w-14 animate-pulse rounded-xl object-cover" />
+        <img src="/brand/eg-mark.svg" alt="EG Shop" className="h-14 w-14 animate-pulse object-contain" />
       </div>
     );
   }

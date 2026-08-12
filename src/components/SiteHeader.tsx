@@ -58,11 +58,11 @@ export function SiteHeader() {
             aria-label="EG Shop"
           >
             <img
-              src="/brand/eg-logo-mark-v4.png"
+              src="/brand/eg-mark.svg"
               alt=""
               width={512}
               height={512}
-              className="h-10 w-10 shrink-0 rounded-xl object-cover shadow-sm ring-1 ring-white/25 sm:h-12 sm:w-12"
+              className="h-10 w-10 shrink-0 object-contain sm:h-12 sm:w-12"
             />
             <span className="hidden whitespace-nowrap text-xl font-black tracking-normal leading-none sm:inline">
               EG Shop

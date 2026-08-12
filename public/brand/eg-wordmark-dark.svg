@@ -1,22 +1,7 @@
-<svg width="520" height="128" viewBox="0 0 520 128" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="EG Shop">
-  <defs>
-    <linearGradient id="dBox" x1="39" y1="46" x2="104" y2="111" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#7C3AED"/>
-      <stop offset="1" stop-color="#4C1D95"/>
-    </linearGradient>
-    <linearGradient id="dSpeed" x1="7" y1="68" x2="42" y2="68" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#FF7A66"/>
-      <stop offset="1" stop-color="#F43F5E"/>
-    </linearGradient>
-  </defs>
-  <path d="M8 56H39M3 72H35M12 88H41" stroke="url(#dSpeed)" stroke-width="9" stroke-linecap="round"/>
-  <path d="M43 52L73 66V112L43 96V52Z" fill="url(#dBox)"/>
-  <path d="M73 66L104 51V96L73 112V66Z" fill="#4C1D95"/>
-  <path d="M43 52L65 39L94 52L73 66L43 52Z" fill="#5B21B6"/>
-  <path d="M65 39L94 52L104 46L75 33L65 39Z" fill="#7C3AED"/>
-  <path d="M43 52L65 39L54 33L32 46L43 52Z" fill="#8B5CF6"/>
-  <path d="M73 66V112" stroke="white" stroke-width="3.5"/>
-  <path d="M62 61L73 66L85 60V78L78 82V71L73 74L62 68V61Z" fill="white"/>
-  <text x="126" y="87" fill="#111827" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="67" font-weight="850" letter-spacing="-3.2">EG Shop</text>
+<svg width="560" height="128" viewBox="0 0 560 128" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="EG Shop">
+  <g transform="translate(4 2) scale(.235)">
+    <defs><mask id="wl"><rect width="512" height="512" fill="black"/><path d="M54 190L244 278V456L54 364V190Z" fill="white"/><path d="M101 267L202 315V351L101 303V267ZM101 339L185 379V415L101 375V339Z" fill="black"/></mask><mask id="wr"><rect width="512" height="512" fill="black"/><path d="M268 278L458 190V364L268 456V278Z" fill="white"/><path d="M315 316L420 267V303L353 334V370L398 349V328L436 310V373L315 431V316Z" fill="black"/></mask></defs>
+    <path d="M168 190V153C168 104 207 64 256 64C305 64 344 104 344 153V190" stroke="#312E81" stroke-width="30" stroke-linecap="round"/><path d="M170 205L256 247L342 205L256 166L170 205Z" fill="#FF6B5F"/><rect width="512" height="512" fill="#312E81" mask="url(#wl)"/><rect width="512" height="512" fill="#7C3AED" mask="url(#wr)"/><path d="M256 247V456" stroke="#F8FAFC" stroke-width="18" stroke-linecap="round"/>
+  </g>
+  <text x="142" y="86" fill="#0F172A" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="66" font-weight="850" letter-spacing="-3">EG Shop</text>
 </svg>
-
