@@ -95,7 +95,6 @@ function epointDescription(serviceType: string, description: string): string {
     slot_product: "EG Shop mehsul reklam slotu",
     slot_shop: "EG Shop magaza reklam slotu",
     slot_banner: "EG Shop banner reklam slotu",
-    reservation: "EG Shop rezervasiya odenisi",
   };
   const base = descriptions[serviceType] ?? description
     .normalize("NFKD")
@@ -129,7 +128,7 @@ async function markProviderFailure(
 }
 
 function resultBase(serviceType: string): URL {
-  if (serviceType === "product_order" || serviceType === "reservation") {
+  if (serviceType === "product_order") {
     return new URL(Deno.env.get("SITE_URL") ?? "https://egshop.az");
   }
   if (serviceType === "pvz_registration") {
@@ -192,10 +191,7 @@ Deno.serve(async (req: Request) => {
       : {};
     const language = ["az", "en", "ru"].includes(String(body.language)) ? String(body.language) : "az";
 
-    const isReservation = serviceType === "reservation";
-    const rpcResult = await fetch(
-      `${supabaseUrl}/rest/v1/rpc/${isReservation ? "prepare_reservation_payment_intent" : "prepare_payment_intent"}`,
-      {
+    const rpcResult = await fetch(`${supabaseUrl}/rest/v1/rpc/prepare_payment_intent`, {
       method: "POST",
       headers: {
         apikey: secretKey,
@@ -203,14 +199,12 @@ Deno.serve(async (req: Request) => {
         "Content-Type": "application/json",
         "Cache-Control": "no-store",
       },
-      body: JSON.stringify(isReservation
-        ? { _user_id: userId, _resource_id: resourceId }
-        : {
-            _user_id: userId,
-            _service_type: serviceType,
-            _resource_id: resourceId,
-            _payload: payload,
-          }),
+      body: JSON.stringify({
+        _user_id: userId,
+        _service_type: serviceType,
+        _resource_id: resourceId,
+        _payload: payload,
+      }),
     });
     if (!rpcResult.ok) {
       const detail = (await rpcResult.text()).slice(0, 1_000);
