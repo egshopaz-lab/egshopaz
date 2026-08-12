@@ -1,0 +1,20 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="EG Shop">
+  <defs>
+    <mask id="left-letter-light">
+      <rect width="512" height="512" fill="black"/>
+      <path d="M54 190L244 278V456L54 364V190Z" fill="white"/>
+      <path d="M101 267L202 315V351L101 303V267Z" fill="black"/>
+      <path d="M101 339L185 379V415L101 375V339Z" fill="black"/>
+    </mask>
+    <mask id="right-letter-light">
+      <rect width="512" height="512" fill="black"/>
+      <path d="M268 278L458 190V364L268 456V278Z" fill="white"/>
+      <path d="M315 316L420 267V303L353 334V370L398 349V328L436 310V373L315 431V316Z" fill="black"/>
+    </mask>
+  </defs>
+  <path d="M168 190V153C168 104 207 64 256 64C305 64 344 104 344 153V190" stroke="#FFFFFF" stroke-width="30" stroke-linecap="round"/>
+  <path d="M170 205L256 247L342 205L256 166L170 205Z" fill="#FF7A6E"/>
+  <rect width="512" height="512" fill="#FFFFFF" mask="url(#left-letter-light)"/>
+  <rect width="512" height="512" fill="#DDD6FE" mask="url(#right-letter-light)"/>
+  <path d="M256 247V456" stroke="#4C1D95" stroke-width="18" stroke-linecap="round"/>
+</svg>

@@ -58,15 +58,19 @@ export function SiteHeader() {
             aria-label="EG Shop"
           >
             <img
-              src="/brand/eg-mark.svg"
+              src="/brand/eg-mark-light.svg"
               alt=""
               width={512}
               height={512}
-              className="h-10 w-10 shrink-0 object-contain sm:h-12 sm:w-12"
+              className="h-10 w-10 shrink-0 object-contain sm:hidden"
             />
-            <span className="hidden whitespace-nowrap text-xl font-black tracking-normal leading-none sm:inline">
-              EG Shop
-            </span>
+            <img
+              src="/brand/eg-wordmark-light.svg"
+              alt=""
+              width={560}
+              height={128}
+              className="hidden h-10 w-auto shrink-0 object-contain sm:block lg:h-11"
+            />
           </Link>
 
           <form onSubmit={onSearch} className="hidden max-w-3xl flex-1 lg:flex">
