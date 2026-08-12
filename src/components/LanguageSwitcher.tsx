@@ -11,7 +11,7 @@ const LANGS: { code: "az" | "ru" | "en"; label: string }[] = [
 ];
 
 export function LanguageSwitcher({ compact = false }: { compact?: boolean }) {
-  const { i18n, t } = useTranslation();
+  const { i18n } = useTranslation();
   const activeLang = i18n.resolvedLanguage || i18n.language;
   const current = LANGS.find((l) => activeLang.startsWith(l.code)) ?? LANGS[0];
 
@@ -27,14 +27,9 @@ export function LanguageSwitcher({ compact = false }: { compact?: boolean }) {
     <DropdownMenu>
       <DropdownMenuTrigger className="flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-1 px-2 py-1.5 rounded-md hover:bg-white/15 sm:hover:bg-secondary transition outline-none text-xs sm:text-sm text-white sm:text-inherit">
         <Globe className="h-4 w-4" />
-        {compact ? (
-          <span className="font-semibold uppercase text-xs">{current.code}</span>
-        ) : (
-          <>
-            <span className="hidden sm:inline font-medium">{current.code.toUpperCase()}</span>
-            <span className="sm:hidden font-semibold">{t("header.language")}</span>
-          </>
-        )}
+        <span className={`font-semibold uppercase ${compact ? "text-xs" : "text-sm"}`}>
+          {current.code}
+        </span>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-44">
         {LANGS.map((l) => (
@@ -43,9 +38,6 @@ export function LanguageSwitcher({ compact = false }: { compact?: boolean }) {
             onClick={() => void changeLanguage(l.code)}
             className={l.code === current.code ? "bg-secondary font-semibold" : ""}
           >
-            <span className="mr-2 inline-flex w-6 justify-center text-xs font-bold uppercase text-muted-foreground">
-              {l.code}
-            </span>
             {l.label}
           </DropdownMenuItem>
         ))}

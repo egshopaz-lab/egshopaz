@@ -8,7 +8,10 @@ export interface Filters {
   minPrice?: number;
   maxPrice?: number;
   brand?: string;
+  shopId?: string;
   minRating?: number;
+  minReviews?: number;
+  minStock?: number;
   onlyDiscount?: boolean;
   inStockOnly?: boolean;
   freeShipping?: boolean;
@@ -32,17 +35,21 @@ export interface DynamicCatalogAttribute {
   options: Array<{ id: string; value: string; label_az: string }>;
 }
 
+export interface CatalogShopOption { id: string; name: string; city: string | null }
+
 import { AZ_CITY_NAMES } from "@/lib/azCities";
 const CITIES = AZ_CITY_NAMES;
 const DELIVERY_DAYS = [1, 3, 7, 14];
 
 export function CatalogFilters({
   brands,
+  shops = [],
   value,
   onChange,
   dynamicAttributes = [],
 }: {
   brands: string[];
+  shops?: CatalogShopOption[];
   value: Filters;
   onChange: (f: Filters) => void;
   dynamicAttributes?: DynamicCatalogAttribute[];
@@ -83,7 +90,10 @@ export function CatalogFilters({
     if (value.minPrice != null) n++;
     if (value.maxPrice != null) n++;
     if (value.brand) n++;
+    if (value.shopId) n++;
     if (value.minRating) n++;
+    if (value.minReviews) n++;
+    if (value.minStock) n++;
     if (value.onlyDiscount) n++;
     if (value.inStockOnly) n++;
     if (value.freeShipping) n++;
@@ -120,6 +130,16 @@ export function CatalogFilters({
         </div>
       )}
 
+      {shops.length > 0 && (
+        <div>
+          <label className="text-xs font-bold uppercase text-muted-foreground">{t("catalog.shop")}</label>
+          <select value={value.shopId ?? ""} onChange={(e) => onChange({ ...value, shopId: e.target.value || undefined })} className="mt-2 h-10 w-full rounded-lg border border-input bg-background px-3 text-sm">
+            <option value="">{t("catalog.allShops")}</option>
+            {shops.map((shop) => <option key={shop.id} value={shop.id}>{shop.name}{shop.city ? ` · ${shop.city}` : ""}</option>)}
+          </select>
+        </div>
+      )}
+
       <div>
         <label className="text-xs font-bold uppercase text-muted-foreground">{t("catalog.minRating")}</label>
         <div className="flex gap-1 mt-2">
@@ -142,6 +162,11 @@ export function CatalogFilters({
             </button>
           ))}
         </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-3">
+        <label className="block"><span className="text-xs font-bold uppercase text-muted-foreground">{t("catalog.minReviews")}</span><select value={value.minReviews ?? ""} onChange={(e) => onChange({ ...value, minReviews: e.target.value ? Number(e.target.value) : undefined })} className="mt-2 h-10 w-full rounded-lg border border-input bg-background px-3 text-sm"><option value="">{t("catalog.all")}</option><option value="5">5+</option><option value="20">20+</option><option value="50">50+</option><option value="100">100+</option></select></label>
+        <label className="block"><span className="text-xs font-bold uppercase text-muted-foreground">{t("catalog.minStock")}</span><select value={value.minStock ?? ""} onChange={(e) => onChange({ ...value, minStock: e.target.value ? Number(e.target.value) : undefined })} className="mt-2 h-10 w-full rounded-lg border border-input bg-background px-3 text-sm"><option value="">{t("catalog.all")}</option><option value="1">1+</option><option value="5">5+</option><option value="10">10+</option><option value="20">20+</option></select></label>
       </div>
 
       <div>
@@ -412,7 +437,7 @@ export function CatalogFilters({
       </div>
 
       {/* Active pills */}
-      {(value.brand || value.minRating || priceActive || value.onlyDiscount || value.inStockOnly || value.freeShipping || value.fastDelivery || value.newArrivals || value.minDiscount || value.maxDeliveryDays || value.city || value.condition) && (
+      {(value.brand || value.shopId || value.minRating || value.minReviews || value.minStock || priceActive || value.onlyDiscount || value.inStockOnly || value.freeShipping || value.fastDelivery || value.newArrivals || value.minDiscount || value.maxDeliveryDays || value.city || value.condition) && (
         <div className="flex items-center gap-1.5 flex-wrap mt-2">
           <span className="text-[11px] text-muted-foreground font-semibold">{sortLabel} ·</span>
           {value.brand && (
@@ -420,6 +445,9 @@ export function CatalogFilters({
               {value.brand} <button onClick={() => onChange({ ...value, brand: undefined })}><X className="h-3 w-3" /></button>
             </span>
           )}
+          {value.shopId && <span className="inline-flex h-7 items-center gap-1 rounded-full bg-primary/10 px-2 text-[11px] font-bold text-primary">{shops.find((shop) => shop.id === value.shopId)?.name ?? t("catalog.shop")} <button onClick={() => onChange({ ...value, shopId: undefined })}><X className="h-3 w-3" /></button></span>}
+          {value.minReviews && <span className="inline-flex h-7 items-center gap-1 rounded-full bg-primary/10 px-2 text-[11px] font-bold text-primary">{value.minReviews}+ {t("catalog.reviewsShort")} <button onClick={() => onChange({ ...value, minReviews: undefined })}><X className="h-3 w-3" /></button></span>}
+          {value.minStock && <span className="inline-flex h-7 items-center gap-1 rounded-full bg-primary/10 px-2 text-[11px] font-bold text-primary">{value.minStock}+ {t("catalog.stockShort")} <button onClick={() => onChange({ ...value, minStock: undefined })}><X className="h-3 w-3" /></button></span>}
           {priceActive && (
             <span className="inline-flex items-center gap-1 px-2 h-7 rounded-full bg-primary/10 text-primary text-[11px] font-bold">
               {priceLabel} <button onClick={() => onChange({ ...value, minPrice: undefined, maxPrice: undefined })}><X className="h-3 w-3" /></button>

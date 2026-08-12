@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useState } from "react";
 import {
   Ban,
+  Building2,
   Edit3,
+  Eye,
   PackageCheck,
   PackageX,
   RotateCcw,
@@ -9,6 +11,7 @@ import {
   ShieldCheck,
   Trash2,
   UserX,
+  X,
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -36,6 +39,16 @@ interface AccountRow {
   seller_product_access_override: boolean;
 }
 
+interface SellerDetails {
+  application: Record<string, unknown> | null;
+  shops: Array<Record<string, unknown>>;
+  modules: Array<Record<string, unknown>>;
+  productCount: number;
+  activeProductCount: number;
+  orderCount: number;
+  revenue: number;
+}
+
 const statusLabels: Record<string, string> = {
   active: "Aktiv",
   inactive: "Passiv",
@@ -57,6 +70,9 @@ export function AdminAccountManagement({
   const [payment, setPayment] = useState("");
   const [loading, setLoading] = useState(true);
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [detailsRow, setDetailsRow] = useState<AccountRow | null>(null);
+  const [details, setDetails] = useState<SellerDetails | null>(null);
+  const [detailsLoading, setDetailsLoading] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -79,6 +95,39 @@ export function AdminAccountManagement({
     const timeout = window.setTimeout(() => void load(), 250);
     return () => window.clearTimeout(timeout);
   }, [load]);
+
+  const openSellerDetails = async (row: AccountRow) => {
+    setDetailsRow(row);
+    setDetails(null);
+    setDetailsLoading(true);
+    const db = supabase as any;
+    const [applicationResult, shopsResult, modulesResult, productsResult, activeProductsResult, itemsResult] =
+      await Promise.all([
+        db.from("seller_applications").select("*").eq("user_id", row.user_id).maybeSingle(),
+        db.from("shops").select("*").eq("seller_id", row.user_id).order("is_primary", { ascending: false }).order("created_at"),
+        db.from("seller_business_modules").select("module_code,selected_at,config,business_modules(name_az,description_az)").eq("seller_id", row.user_id),
+        db.from("products").select("id", { count: "exact", head: true }).eq("seller_id", row.user_id),
+        db.from("products").select("id", { count: "exact", head: true }).eq("seller_id", row.user_id).eq("is_active", true),
+        db.from("order_items").select("price,quantity,orders(status,payment_status)").eq("seller_id", row.user_id).limit(2000),
+      ]);
+    const firstError = [applicationResult, shopsResult, modulesResult, productsResult, activeProductsResult, itemsResult]
+      .find((result) => result.error)?.error;
+    if (firstError) toast.error(`Satıcı detalları tam yüklənmədi: ${firstError.message}`);
+    const paidItems = (itemsResult.data ?? []).filter((item: any) =>
+      ["paid", "success", "completed"].includes(item.orders?.payment_status ?? "") ||
+      item.orders?.status === "completed",
+    );
+    setDetails({
+      application: applicationResult.data ?? null,
+      shops: shopsResult.data ?? [],
+      modules: modulesResult.data ?? [],
+      productCount: productsResult.count ?? 0,
+      activeProductCount: activeProductsResult.count ?? 0,
+      orderCount: (itemsResult.data ?? []).length,
+      revenue: paidItems.reduce((sum: number, item: any) => sum + Number(item.price ?? 0) * Number(item.quantity ?? 0), 0),
+    });
+    setDetailsLoading(false);
+  };
 
   const visibleRows =
     initialRole !== "seller" || !payment
@@ -334,6 +383,11 @@ export function AdminAccountManagement({
                   </div>
                 )}
                 <div className="flex flex-wrap gap-1.5 border-t pt-3">
+                  {initialRole === "seller" && (
+                    <button onClick={() => void openSellerDetails(row)} className={`${actionCls} text-primary`}>
+                      <Eye className="h-3 w-3" /> Tam məlumat
+                    </button>
+                  )}
                   <button
                     disabled={busyId === row.user_id}
                     onClick={() => void edit(row)}
@@ -529,6 +583,11 @@ export function AdminAccountManagement({
                     )}
                     <td className="p-3">
                       <div className="flex flex-wrap gap-1.5">
+                        {initialRole === "seller" && (
+                          <button onClick={() => void openSellerDetails(row)} className={`${actionCls} text-primary`}>
+                            <Eye className="h-3 w-3" /> Tam məlumat
+                          </button>
+                        )}
                         <button
                           disabled={busyId === row.user_id}
                           onClick={() => void edit(row)}
@@ -611,6 +670,34 @@ export function AdminAccountManagement({
           </tbody>
         </table>
       </div>
+      {detailsRow && (
+        <div className="fixed inset-0 z-[100] flex items-end justify-center bg-foreground/45 backdrop-blur-sm md:items-center md:p-5" onClick={() => setDetailsRow(null)}>
+          <section className="max-h-[96dvh] w-full overflow-y-auto rounded-t-3xl bg-background p-5 shadow-2xl md:max-w-5xl md:rounded-3xl md:p-7" onClick={(event) => event.stopPropagation()}>
+            <header className="sticky top-0 z-10 mb-5 flex items-start justify-between gap-4 border-b bg-background pb-4">
+              <div><p className="text-xs font-bold uppercase tracking-wider text-primary">Satıcı profili</p><h2 className="text-2xl font-black">{detailsRow.full_name ?? detailsRow.shop_name ?? "Adsız satıcı"}</h2><p className="text-sm text-muted-foreground">{detailsRow.email} · {detailsRow.phone ?? "Telefon yoxdur"}</p></div>
+              <button onClick={() => setDetailsRow(null)} className="rounded-xl border p-2 hover:bg-secondary" aria-label="Bağla"><X className="h-5 w-5" /></button>
+            </header>
+            {detailsLoading ? <div className="py-16 text-center text-muted-foreground">Satıcının bütün məlumatları yüklənir...</div> : details && (
+              <div className="space-y-5">
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4"><SummaryCard label="Bütün məhsullar" value={details.productCount} /><SummaryCard label="Aktiv məhsullar" value={details.activeProductCount} /><SummaryCard label="Sifariş sətirləri" value={details.orderCount} /><SummaryCard label="Təsdiqlənmiş gəlir" value={formatAZN(details.revenue)} /></div>
+                <div className="grid gap-5 lg:grid-cols-2">
+                  <DetailSection title="Şəxsi və hüquqi məlumatlar"><DetailGrid items={[["Ad", recordValue(details.application, "first_name")], ["Soyad", recordValue(details.application, "last_name")], ["Ata adı", recordValue(details.application, "father_name")], ["Doğum tarixi", recordValue(details.application, "date_of_birth")], ["FİN kodu", recordValue(details.application, "fin_code")], ["Vəsiqə", recordValue(details.application, "identity_document_number")], ["Yaşayış ünvanı", recordValue(details.application, "residential_address")], ["Satıcı növü", sellerTypeLabel(recordValue(details.application, "seller_type"))], ["VÖEN", recordValue(details.application, "voen")], ["Telefon təsdiqi", dateValue(details.application, "phone_verified_at")]]} /></DetailSection>
+                  <DetailSection title="Qeydiyyat və ödəniş"><DetailGrid items={[["Müraciət statusu", recordValue(details.application, "status") || detailsRow.seller_status], ["Ödəniş statusu", recordValue(details.application, "payment_status") || detailsRow.seller_payment_status], ["Qeydiyyat haqqı", formatAZN(Number(recordValue(details.application, "registration_fee") || detailsRow.seller_registration_fee || 0))], ["Ödəniş tarixi", dateValue(details.application, "paid_at")], ["Aktivləşmə tarixi", dateValue(details.application, "activated_at")], ["Qeydiyyat tarixi", formatDate(detailsRow.created_at)], ["Mənbə", acquisitionSourceLabel(detailsRow.acquisition_source)], ["Cəlb edən / qeyd", detailsRow.acquisition_detail], ["Məhsul icazəsi", paidStatuses.has(detailsRow.seller_payment_status ?? "") ? "Ödənişlə avtomatik" : detailsRow.seller_product_access_override ? "Admin tərəfindən verilib" : "İcazə yoxdur"]]} /></DetailSection>
+                </div>
+                <DetailSection title={`Mağazalar (${details.shops.length})`}>{details.shops.length ? <div className="grid gap-3 md:grid-cols-2">{details.shops.map((shop, index) => <article key={String(shop.id ?? index)} className="rounded-2xl border p-4"><div className="flex items-center gap-2"><Building2 className="h-4 w-4 text-primary" /><b>{String(shop.name ?? "Adsız mağaza")}</b>{shop.is_primary === true && <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-bold text-primary">Əsas</span>}</div><DetailGrid items={[["Şəhər", shop.city], ["Ünvan", shop.address], ["E-poçt", shop.email], ["Status", shop.is_active ? "Aktiv" : "Passiv"], ["Yaranma", shop.created_at ? formatDate(String(shop.created_at)) : null]]} /></article>)}</div> : <p className="text-sm text-muted-foreground">Mağaza yaradılmayıb.</p>}</DetailSection>
+                <DetailSection title={`Biznes modulları (${details.modules.length})`}>{details.modules.length ? <div className="flex flex-wrap gap-2">{details.modules.map((module, index) => { const businessModule = module.business_modules as Record<string, unknown> | null; return <span key={String(module.module_code ?? index)} className="rounded-xl bg-secondary px-3 py-2 text-sm font-bold">{String(businessModule?.name_az ?? module.module_code ?? "Modul")}</span>; })}</div> : <p className="text-sm text-muted-foreground">Biznes modulu seçilməyib.</p>}</DetailSection>
+              </div>
+            )}
+          </section>
+        </div>
+      )}
     </div>
   );
 }
+
+function recordValue(record: Record<string, unknown> | null, key: string) { const value = record?.[key]; return value == null || value === "" ? null : String(value); }
+function dateValue(record: Record<string, unknown> | null, key: string) { const value = recordValue(record, key); return value ? formatDate(value) : null; }
+function sellerTypeLabel(value: string | null) { return ({ individual: "Fərdi şəxs", sole_proprietor: "Fərdi sahibkar", legal_entity: "Hüquqi şəxs" } as Record<string, string>)[value ?? ""] ?? value; }
+function SummaryCard({ label, value }: { label: string; value: string | number }) { return <div className="rounded-2xl border bg-card p-4"><p className="text-xs font-semibold text-muted-foreground">{label}</p><p className="mt-1 text-2xl font-black">{value}</p></div>; }
+function DetailSection({ title, children }: { title: string; children: React.ReactNode }) { return <section className="rounded-2xl border bg-card p-4"><h3 className="mb-3 font-black">{title}</h3>{children}</section>; }
+function DetailGrid({ items }: { items: Array<[string, unknown]> }) { return <dl className="mt-3 grid gap-x-5 gap-y-3 sm:grid-cols-2">{items.map(([label, value]) => <div key={label}><dt className="text-[11px] font-bold uppercase tracking-wide text-muted-foreground">{label}</dt><dd className="break-words text-sm font-semibold">{value == null || value === "" ? "—" : String(value)}</dd></div>)}</dl>; }

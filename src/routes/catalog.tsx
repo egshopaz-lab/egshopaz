@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { ProductCard, type ProductCardData } from "@/components/ProductCard";
 import { SponsoredProducts } from "@/components/SponsoredProducts";
-import { CatalogFilters, type DynamicCatalogAttribute, type Filters } from "@/components/CatalogFilters";
+import { CatalogFilters, type CatalogShopOption, type DynamicCatalogAttribute, type Filters } from "@/components/CatalogFilters";
 import { catName } from "@/lib/catName";
 import { CategoryIcon } from "@/components/CategoryIcon";
 import i18n from "@/i18n";
@@ -52,6 +52,7 @@ function Catalog() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [products, setProducts] = useState<ProductCardData[]>([]);
   const [availableBrands, setAvailableBrands] = useState<string[]>([]);
+  const [availableShops, setAvailableShops] = useState<CatalogShopOption[]>([]);
   const [dynamicAttributes, setDynamicAttributes] = useState<DynamicCatalogAttribute[]>([]);
   const [loading, setLoading] = useState(true);
   const [openParents, setOpenParents] = useState<Record<string, boolean>>({});
@@ -68,6 +69,7 @@ function Catalog() {
       const brands = [...new Set((data ?? []).map((row) => row.brand?.trim()).filter((value): value is string => Boolean(value)))];
       setAvailableBrands(brands.sort((a, b) => a.localeCompare(b, "az")));
     });
+    supabase.from("shops").select("id,name,city").eq("is_active", true).order("name").limit(500).then(({ data }) => setAvailableShops((data ?? []) as CatalogShopOption[]));
   }, []);
 
   useEffect(() => {
@@ -115,7 +117,10 @@ function Catalog() {
     if (filters.minPrice != null) query = query.gte("price", filters.minPrice);
     if (filters.maxPrice != null) query = query.lte("price", filters.maxPrice);
     if (filters.brand) query = query.eq("brand", filters.brand);
+    if (filters.shopId) query = query.eq("shop_id", filters.shopId);
     if (filters.minRating) query = query.gte("rating", filters.minRating);
+    if (filters.minReviews) query = query.gte("reviews_count", filters.minReviews);
+    if (filters.minStock) query = query.gte("stock", filters.minStock);
     if (filters.onlyDiscount) query = query.not("old_price", "is", null);
     if (filters.inStockOnly) query = query.gt("stock", 0);
     if (filters.freeShipping) query = query.eq("free_shipping", true);
@@ -284,7 +289,7 @@ function Catalog() {
 
         <div className="min-w-0">
           <div className="mb-5 rounded-2xl border border-border bg-card p-3 shadow-sm">
-            <CatalogFilters brands={allBrandsList} value={filters} onChange={setFilters} dynamicAttributes={dynamicAttributes} />
+            <CatalogFilters brands={allBrandsList} shops={availableShops} value={filters} onChange={setFilters} dynamicAttributes={dynamicAttributes} />
           </div>
 
           {loading ? (

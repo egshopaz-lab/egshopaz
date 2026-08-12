@@ -129,7 +129,7 @@ export function PanelLayout({ title, subtitle, items, children }: Props) {
   };
 
   return (
-    <div className="container mx-auto px-3 py-4 sm:px-4 sm:py-6 grid gap-4 lg:grid-cols-[272px_1fr] lg:gap-6">
+    <div className="container mx-auto grid gap-4 px-3 py-4 font-sans antialiased sm:px-4 sm:py-6 lg:grid-cols-[272px_1fr] lg:gap-6">
       <aside className="h-fit min-w-0 max-w-full overflow-hidden rounded-2xl border border-border bg-card p-3 lg:sticky lg:top-20 lg:self-start">
         <div className="px-3 py-3 border-b border-border mb-3 lg:mb-2">
           <div className="flex items-start justify-between gap-2">
