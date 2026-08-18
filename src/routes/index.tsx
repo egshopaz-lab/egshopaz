@@ -103,7 +103,7 @@ function SellerSpotlight() {
             <BadgeCheck className="h-4 w-4 text-violet-200" /> Satıcılar üçün EG Shop
           </div>
           <h2 className="mt-4 max-w-xl text-3xl font-black leading-tight tracking-tight sm:text-4xl">
-            Biznesinizi milyonlarla alıcıya təqdim edin.
+            Biznesinizi daha çox alıcıya təqdim edin.
           </h2>
           <p className="mt-3 max-w-xl text-sm leading-6 text-white/80 sm:text-base">
             Mağazanızı yaradın, məhsullarınızı yerləşdirin və bütün satış prosesinizi sadə, təhlükəsiz paneldən idarə edin.
