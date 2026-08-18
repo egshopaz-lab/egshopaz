@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ArrowRight, Copy, Flame, Gift, ShoppingBag, Tag, TicketPercent } from "lucide-react";
+import { ArrowRight, BadgeCheck, ChartNoAxesCombined, Copy, Flame, Gift, PackageCheck, ShoppingBag, Store, Tag, TicketPercent } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
@@ -14,7 +14,7 @@ import { HomeBannerCarousel } from "@/components/HomeBannerCarousel";
 import i18n from "@/i18n";
 import { absoluteUrl } from "@/lib/site";
 import { SellerLanding } from "@/components/SellerLanding";
-import { usePortal, usePortalReady } from "@/lib/portals";
+import { portalUrl, usePortal, usePortalReady } from "@/lib/portals";
 
 export const Route = createFileRoute("/")({
   validateSearch: z.object({ payment: z.enum(["success", "error"]).optional() }),
@@ -81,6 +81,58 @@ function ProductSection({
         {products.map((product) => (
           <ProductCard key={product.id} p={product} />
         ))}
+      </div>
+    </section>
+  );
+}
+
+function SellerSpotlight() {
+  const benefits = [
+    { Icon: Store, title: "Öz mağazanız", text: "Mağaza, məhsul və sifarişləri bir paneldən idarə edin." },
+    { Icon: ChartNoAxesCombined, title: "Aydın satış nəzarəti", text: "Satış, stok və kampaniyaları real vaxtda izləyin." },
+    { Icon: PackageCheck, title: "Sürətli başlanğıc", text: "Qeydiyyatdan sonra məhsullarınızı rahatlıqla yerləşdirin." },
+  ];
+
+  return (
+    <section className="relative isolate overflow-hidden rounded-[2rem] border border-violet-200/80 bg-gradient-to-br from-violet-950 via-violet-800 to-fuchsia-700 px-5 py-7 text-white shadow-elegant sm:px-8 sm:py-9 lg:px-10">
+      <div className="pointer-events-none absolute -right-20 -top-24 h-72 w-72 rounded-full bg-fuchsia-300/25 blur-3xl" />
+      <div className="pointer-events-none absolute -bottom-32 left-1/3 h-72 w-72 rounded-full bg-cyan-300/15 blur-3xl" />
+      <div className="relative grid items-center gap-7 lg:grid-cols-[1.1fr_1fr] lg:gap-10">
+        <div>
+          <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-xs font-extrabold backdrop-blur">
+            <BadgeCheck className="h-4 w-4 text-violet-200" /> Satıcılar üçün EG Shop
+          </div>
+          <h2 className="mt-4 max-w-xl text-3xl font-black leading-tight tracking-tight sm:text-4xl">
+            Biznesinizi milyonlarla alıcıya təqdim edin.
+          </h2>
+          <p className="mt-3 max-w-xl text-sm leading-6 text-white/80 sm:text-base">
+            Mağazanızı yaradın, məhsullarınızı yerləşdirin və bütün satış prosesinizi sadə, təhlükəsiz paneldən idarə edin.
+          </p>
+          <div className="mt-5 flex flex-wrap items-center gap-3">
+            <a
+              href={portalUrl("seller", "/register")}
+              className="inline-flex min-h-12 items-center gap-2 rounded-2xl bg-white px-5 py-3 text-sm font-black text-violet-800 shadow-lg shadow-violet-950/25 transition hover:-translate-y-0.5 hover:bg-violet-50"
+            >
+              <Store className="h-4 w-4" /> Satıcı ol <ArrowRight className="h-4 w-4" />
+            </a>
+            <a
+              href={portalUrl("seller", "/")}
+              className="inline-flex min-h-12 items-center gap-2 rounded-2xl border border-white/25 bg-white/10 px-5 py-3 text-sm font-bold text-white backdrop-blur transition hover:bg-white/15"
+            >
+              Necə işləyir? <ArrowRight className="h-4 w-4" />
+            </a>
+          </div>
+          <p className="mt-4 text-xs font-semibold text-white/65">Qeydiyyat · Təhlükəsiz ödəniş · Satıcı dəstəyi</p>
+        </div>
+        <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
+          {benefits.map(({ Icon, title, text }) => (
+            <div key={title} className="rounded-2xl border border-white/15 bg-white/10 p-4 backdrop-blur-sm">
+              <span className="grid h-10 w-10 place-items-center rounded-xl bg-white/15 text-violet-100"><Icon className="h-5 w-5" /></span>
+              <h3 className="mt-3 font-extrabold">{title}</h3>
+              <p className="mt-1 text-xs leading-5 text-white/70">{text}</p>
+            </div>
+          ))}
+        </div>
       </div>
     </section>
   );
@@ -163,7 +215,7 @@ function Index() {
   }
 
   return (
-    <div className="container mx-auto space-y-6 px-3 py-3 sm:px-4 sm:py-5 lg:space-y-9">
+    <div className="container mx-auto space-y-7 px-3 py-3 sm:px-4 sm:py-5 lg:space-y-10">
       {payment === "success" && (
         <div
           role="status"
@@ -187,7 +239,8 @@ function Index() {
         </div>
       )}
 
-        <HomeBannerCarousel />
+      <HomeBannerCarousel />
+      <SellerSpotlight />
       <HomeCategoryBrowser />
 
       {productsLoaded && allProducts.length === 0 ? (

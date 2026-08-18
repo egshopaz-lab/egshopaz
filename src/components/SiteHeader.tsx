@@ -221,9 +221,9 @@ export function SiteHeader() {
           <div className="ml-auto flex items-center gap-4 text-xs">
             <a
               href={portalUrl("seller", "/register")}
-              className="text-white/75 transition hover:text-white"
+              className="inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1.5 font-extrabold text-violet-700 shadow-sm transition hover:-translate-y-0.5 hover:bg-violet-50 hover:shadow-md"
             >
-              {t("home.sellerCta")}
+              <Store className="h-3.5 w-3.5" /> {t("home.sellerCta")}
             </a>
             <a
               href={portalUrl("pvz", "/register")}
