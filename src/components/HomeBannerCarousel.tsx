@@ -95,7 +95,7 @@ export function HomeBannerCarousel() {
 
   return (
     <section
-      className="group relative overflow-hidden rounded-3xl bg-slate-950 shadow-elegant"
+      className="group relative overflow-hidden rounded-[2rem] border border-slate-200/80 bg-slate-950 shadow-elegant ring-1 ring-black/[0.02]"
       aria-roledescription="carousel"
       aria-label="Kampaniyalar"
       onTouchStart={(event) => {

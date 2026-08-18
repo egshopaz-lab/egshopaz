@@ -87,7 +87,7 @@ export function HomeCategoryBrowser() {
   if (!roots.length) return null;
 
   return (
-    <section className="min-w-0 space-y-4" aria-labelledby="popular-categories-title">
+    <section className="min-w-0 space-y-4 rounded-[2rem] border border-slate-200/80 bg-slate-50/70 p-3.5 shadow-sm sm:p-5" aria-labelledby="popular-categories-title">
       <div className="flex items-end justify-between gap-3 px-1">
         <div>
           <p className="text-xs font-extrabold uppercase tracking-[0.18em] text-primary">EG Shop</p>
@@ -101,7 +101,7 @@ export function HomeCategoryBrowser() {
         <Link
           to="/catalog"
           search={{ q: undefined, cat: undefined } as never}
-          className="inline-flex items-center gap-1 text-sm font-bold text-primary hover:underline"
+          className="inline-flex items-center gap-1 rounded-xl bg-white px-3 py-2 text-sm font-bold text-primary shadow-sm transition hover:-translate-y-0.5 hover:shadow"
         >
           {t("common.all")} <ChevronRight className="h-4 w-4" />
         </Link>
@@ -120,7 +120,7 @@ export function HomeCategoryBrowser() {
               aria-pressed={selected}
             >
               <span
-                className={`relative mx-auto grid aspect-square w-full place-items-center overflow-hidden rounded-3xl border transition duration-200 group-hover:-translate-y-1 group-hover:shadow-lg ${selected ? "border-primary ring-2 ring-primary/20 shadow-md" : "border-white/70"}`}
+                className={`relative mx-auto grid aspect-square w-full place-items-center overflow-hidden rounded-3xl border transition duration-200 group-hover:-translate-y-1 group-hover:shadow-lg ${selected ? "border-primary ring-2 ring-primary/20 shadow-md" : "border-slate-200 bg-white shadow-sm"}`}
                 style={{ backgroundColor: category.background_color || "#f3e8ff" }}
               >
                 {category.image_url ? (
@@ -151,7 +151,7 @@ export function HomeCategoryBrowser() {
       </div>
 
       {activeRoot && (
-        <div className="rounded-3xl border border-border/70 bg-card p-4 shadow-sm sm:p-5">
+        <div className="rounded-3xl border border-border/70 bg-card p-4 shadow-md sm:p-5">
           <div className="mb-4 flex items-center justify-between gap-3 border-b pb-3">
             <div className="flex min-w-0 items-center gap-3">
               <span

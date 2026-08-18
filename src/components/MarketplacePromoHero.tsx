@@ -6,11 +6,11 @@ export function MarketplacePromoHero() {
   const { t } = useTranslation();
 
   return (
-    <section className="grid gap-3 lg:grid-cols-[1.7fr_1fr]" aria-label={t("home.heroBadge")}>
+    <section className="grid gap-3 rounded-[2rem] border border-slate-200/80 bg-slate-50/75 p-2.5 shadow-sm sm:p-3 lg:grid-cols-[1.7fr_1fr]" aria-label={t("home.heroBadge")}>
       <Link
         to="/catalog"
         search={{ q: undefined, cat: undefined } as never}
-        className="group relative min-h-[176px] overflow-hidden rounded-3xl bg-gradient-to-br from-fuchsia-600 via-violet-700 to-indigo-950 p-5 text-white shadow-elegant sm:min-h-[230px] sm:p-8"
+        className="group relative min-h-[176px] overflow-hidden rounded-[1.65rem] bg-gradient-to-br from-fuchsia-600 via-violet-700 to-indigo-950 p-5 text-white shadow-elegant transition duration-300 hover:-translate-y-0.5 sm:min-h-[230px] sm:p-8"
       >
         <div className="absolute -right-12 -top-16 h-56 w-56 rounded-full bg-white/20 blur-3xl" />
         <div className="absolute bottom-[-55%] right-[8%] h-64 w-64 rounded-full border-[38px] border-white/10" />
@@ -36,7 +36,7 @@ export function MarketplacePromoHero() {
         <Link
           to="/catalog"
           search={{ q: undefined, cat: "elektronika" } as never}
-          className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-cyan-100 to-blue-200 p-4 text-slate-900 transition hover:-translate-y-0.5 sm:p-5"
+          className="relative overflow-hidden rounded-[1.4rem] bg-gradient-to-br from-cyan-100 to-blue-200 p-4 text-slate-900 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md sm:p-5"
         >
           <span className="text-[11px] font-extrabold uppercase tracking-wide text-blue-700">
             {t("home.heroElectronics")}
@@ -50,7 +50,7 @@ export function MarketplacePromoHero() {
         </Link>
         <Link
           to="/promotions"
-          className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-amber-100 to-orange-200 p-4 text-slate-900 transition hover:-translate-y-0.5 sm:p-5"
+          className="relative overflow-hidden rounded-[1.4rem] bg-gradient-to-br from-amber-100 to-orange-200 p-4 text-slate-900 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md sm:p-5"
         >
           <span className="text-[11px] font-extrabold uppercase tracking-wide text-orange-700">
             {t("sidebar.promotions")}
@@ -75,7 +75,7 @@ export function MarketplacePromoHero() {
           return (
             <div
               key={label as string}
-              className="flex items-center gap-2 rounded-xl bg-secondary/70 px-3 py-2 text-xs font-bold text-foreground sm:text-sm"
+              className="flex items-center gap-2 rounded-xl border border-white/80 bg-white/85 px-3 py-2 text-xs font-bold text-foreground shadow-sm sm:text-sm"
             >
               <ItemIcon className="h-4 w-4 shrink-0 text-primary" /> {label as string}
             </div>

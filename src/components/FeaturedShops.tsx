@@ -97,8 +97,8 @@ export function FeaturedShops() {
   if (shops.length === 0) return null;
 
   return (
-    <section>
-      <div className="flex items-end justify-between mb-4">
+    <section className="rounded-[2rem] border border-slate-200/80 bg-gradient-to-br from-slate-50 to-violet-50/50 p-4 shadow-sm sm:p-6">
+      <div className="mb-4 flex items-end justify-between">
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary to-blue-500 flex items-center justify-center shadow-card">
             <Store className="h-6 w-6 text-white" />
@@ -108,7 +108,7 @@ export function FeaturedShops() {
             <h2 className="text-2xl md:text-3xl font-black">{t("ads.featuredShops")}</h2>
           </div>
         </div>
-        <Link to="/followed-shops" className="text-sm text-primary font-bold hover:underline">{t("ads.followedShops")}</Link>
+        <Link to="/followed-shops" className="rounded-xl bg-white px-3 py-2 text-sm font-bold text-primary shadow-sm transition hover:-translate-y-0.5 hover:shadow">{t("ads.followedShops")}</Link>
       </div>
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
         {shops.map((s) => {
@@ -117,10 +117,10 @@ export function FeaturedShops() {
             const name = p.shop_name || p.full_name || t("shop.defaultName");
           const isFollowing = following.has(p.id);
           return (
-            <div key={s.id} className="bg-card border border-border rounded-2xl overflow-hidden hover:shadow-elegant transition group">
+            <div key={s.id} className="group overflow-hidden rounded-2xl border border-white/80 bg-card shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-elegant">
               <Link to="/shop/$id" params={{ id: p.id }} className="block">
                 <div className="aspect-[16/8] bg-gradient-brand relative">
-                  {p.shop_banner_url && <img src={p.shop_banner_url} alt={name} loading="lazy" className="w-full h-full object-cover" />}
+                  {p.shop_banner_url && <img src={p.shop_banner_url} alt={name} loading="lazy" className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />}
                   <div className="absolute top-1.5 left-1.5 bg-warning text-warning-foreground text-[9px] font-bold px-1.5 py-0.5 rounded-full">{t("ads.adShort")}</div>
                 </div>
                 <div className="px-3 pt-3 flex items-start gap-2 -mt-7">

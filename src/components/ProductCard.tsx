@@ -104,9 +104,9 @@ export function ProductCard({
     <Link
       to="/product/$id"
       params={{ id: p.id }}
-      className="group flex h-full min-w-0 flex-col overflow-hidden rounded-xl bg-card"
+      className="group flex h-full min-w-0 flex-col overflow-hidden rounded-2xl border border-border/70 bg-card p-1 shadow-sm transition duration-300 hover:-translate-y-1 hover:border-violet-200 hover:shadow-elegant"
     >
-      <div ref={wrapRef} className="relative aspect-[3/4] overflow-hidden rounded-xl bg-secondary">
+      <div ref={wrapRef} className="relative aspect-[3/4] overflow-hidden rounded-[0.9rem] bg-secondary">
         {p.image_url ? (
           <img
             src={p.image_url}
@@ -114,7 +114,7 @@ export function ProductCard({
             loading="lazy"
             decoding="async"
             sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
-            className="w-full h-full object-cover"
+            className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.035]"
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-muted-foreground text-xs">
@@ -142,7 +142,7 @@ export function ProductCard({
           <button
             onClick={toggleFav}
             disabled={favBusy}
-            className={`absolute right-2 top-2 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 shadow-sm backdrop-blur transition ${isFav ? "text-discount" : "text-foreground/70 hover:text-discount"}`}
+            className={`absolute right-2 top-2 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 shadow-sm ring-1 ring-black/5 backdrop-blur transition ${isFav ? "text-discount" : "text-foreground/70 hover:text-discount"}`}
             aria-label={t("product.addToFavorites")}
           >
             <Heart className={`h-5 w-5 ${isFav ? "fill-discount" : ""}`} />
@@ -150,9 +150,9 @@ export function ProductCard({
         )}
       </div>
 
-      <div className="flex flex-1 flex-col gap-1 px-0.5 pb-1 pt-2.5">
+      <div className="flex flex-1 flex-col gap-1 px-2 pb-2 pt-3">
         <div className="flex min-w-0 items-baseline gap-1.5">
-          <span className="text-lg font-black leading-none text-foreground sm:text-xl">
+          <span className="text-lg font-black leading-none tracking-tight text-foreground sm:text-xl">
             {formatAZN(p.price)}
           </span>
           {p.old_price && Number(p.old_price) > Number(p.price) && (
@@ -191,7 +191,7 @@ export function ProductCard({
         <button
           onClick={addToCart}
           disabled={adding || (p.stock != null && p.stock <= 0)}
-          className="mt-1.5 inline-flex h-9 w-full items-center justify-center gap-1.5 rounded-lg bg-gradient-brand text-xs font-bold text-primary-foreground transition hover:opacity-95 disabled:opacity-60 sm:h-10 sm:text-sm"
+          className="mt-1.5 inline-flex h-9 w-full items-center justify-center gap-1.5 rounded-xl bg-gradient-brand text-xs font-bold text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:shadow-md hover:opacity-95 disabled:opacity-60 sm:h-10 sm:text-sm"
         >
           <ShoppingCart className="h-4 w-4" />
           <span>
